@@ -9,19 +9,19 @@ additions are part of the work that uses them.
 | Work | Author | License | Used for |
 |---|---|---|---|
 | fusion-harness | IndyDevDan (disler) | MIT | Governance sessions and Verafy Next: multi-model opinions, debate, collaboration |
-| herdr | Herdr, Inc. | Apache-2.0 (per herdr.dev) | The Collective's agent workspace |
+| herdr | Herdr, Inc. (herdrdev/herdr) | Apache-2.0 | The Collective's agent workspace |
 | herdr-plus | cloudmanic | MIT | Workspace template and headless open |
-| tsk | smarzban | see repo | Task board |
-| herdr-projects, herdr-agent-progress | eliasstravik | see repos | Coordination and progress |
-| herdr-remote | dcolinmorgan | see repo | Phone and Telegram approvals |
-| herdr-radar | hhdebb | see repo | Agent overview |
-| memex | nicosuave | see repo | Transcript search |
+| tsk | smarzban | MIT | Task board |
+| herdr-projects, herdr-agent-progress | eliasstravik | MIT | Coordination and progress |
+| herdr-remote | dcolinmorgan | AGPL-3.0-or-later (commercial license also offered) | Phone and Telegram approvals |
+| herdr-radar | hhdebb | MIT | Agent overview |
+| memex | nicosuave | MIT | Transcript search |
 | age | Filippo Valsorda and contributors | BSD-3-Clause | Sealing auth |
 | Claude Code | Anthropic | commercial terms | Agent runtime |
-| Grok | xAI | commercial terms | Social agent |
+| Grok CLI | xAI | commercial terms | Social agent |
+| gitleaks | Zachary Rice and contributors | MIT | Public-commit redaction gate |
 
-Licenses marked "see repo" must be confirmed and filled in during setup (the
-setup plan requires it).
+Licenses confirmed against each project's repository during setup (2026-09-24).
 
 ## Research (the Research Library)
 
