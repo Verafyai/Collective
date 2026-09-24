@@ -29,10 +29,10 @@ compose_prompt() {
 
 run_once() {
   if [ -f org/STOP ] || [ -f "org/PAUSE-$ROLE" ]; then
-    echo "$(date -Is) stopped (STOP/PAUSE present)" | tee -a "$LOGDIR/run.log"; return 1; fi
+    echo "$(date -Iseconds) stopped (STOP/PAUSE present)" | tee -a "$LOGDIR/run.log"; return 1; fi
   local n; n=$(cat "$COUNTER" 2>/dev/null || echo 0)
   if [ "$n" -ge "$MAX_RUNS" ]; then
-    echo "$(date -Is) daily cap $MAX_RUNS reached" | tee -a "$LOGDIR/run.log"; return 0; fi
+    echo "$(date -Iseconds) daily cap $MAX_RUNS reached" | tee -a "$LOGDIR/run.log"; return 0; fi
   echo $((n+1)) > "$COUNTER"
   local p; p="$(compose_prompt)"
   local ev="python3 agents/bin/eventlog.py"
@@ -40,7 +40,7 @@ run_once() {
   local rid; rid="$($ev run-start --actor "$ROLE" --data "{\"run_no\": $((n+1)), \"model\": \"${!model:-default}\"}")"
   $ev record --actor "$ROLE" --type agent.prompt --run "$rid" --blob-file "$p"
   local tr; tr="$(mktemp)"
-  echo "===== $(date -Is) run $((n+1))/$MAX_RUNS · $rid =====" | tee -a "$LOGDIR/run.log"
+  echo "===== $(date -Iseconds) run $((n+1))/$MAX_RUNS · $rid =====" | tee -a "$LOGDIR/run.log"
   if [ "$ROLE" = "social" ]; then
     local cmd="${SOCIAL_AGENT_CMD//\{PROMPT_FILE\}/$p}"
     bash -c "$cmd" 2>&1 | tee "$tr" | tee -a "$LOGDIR/run.log" || true

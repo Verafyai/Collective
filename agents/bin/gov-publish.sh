@@ -16,8 +16,8 @@ hits="$(grep -rInE \
   -e '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}' \
   "$REC" org/cases | grep -vE '@example\.com|/(home|Users)/(user[0-9]+|USER)\b' || true)"
 if [ -n "$hits" ]; then
-  echo "REFUSED: redaction scan found possible sensitive data:"; echo "$hits" | cut -c1-160
-  printf '#incident\n### scribe · %s\nPublication of %s blocked by redaction scan. @rex please review.\n' "$(date -Is)" "$ID" \
+  echo "REFUSED: redaction scan found possible sensitive data at:"; echo "$hits" | cut -d: -f1-2
+  printf '#incident\n### scribe · %s\nPublication of %s blocked by redaction scan. @rex please review.\n' "$(date -Iseconds)" "$ID" \
     > "private/incidents/$(date +%F)-publish-$ID.md"
   exit 2
 fi

@@ -1,9 +1,10 @@
 """Amendments folder (Article 7.12) and projects (Article 21). Run: python3 tests/test_amendments_projects.py
 Works on a scratch copy."""
-import pathlib, shutil, subprocess, sys, tempfile, re
+import pathlib, shutil, subprocess, sys, tempfile, re, atexit
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 t = pathlib.Path(tempfile.mkdtemp()) / "c"
-shutil.copytree(ROOT, t, ignore=shutil.ignore_patterns(".git", "ledger", "logs", "pdfs"))
+atexit.register(shutil.rmtree, t.parent, True)   # leave nothing behind
+shutil.copytree(ROOT, t, ignore=shutil.ignore_patterns(".git", "ledger", "logs", "pdfs", ".env", "secrets", "*.key"))
 py = sys.executable
 def run(*a, ok=True):
     r = subprocess.run([py, *a], capture_output=True, text=True, cwd=t)

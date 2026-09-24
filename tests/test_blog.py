@@ -1,9 +1,11 @@
 """Weekly blog pipeline (Charter Article 19): facts → draft → approval → publish.
 Run: python3 tests/test_blog.py   (scratch copy, offline)"""
-import pathlib, shutil, subprocess, sys, tempfile, datetime, os
+import pathlib, shutil, subprocess, sys, tempfile, datetime, os, atexit
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 t = pathlib.Path(tempfile.mkdtemp()) / "c"
-shutil.copytree(ROOT, t, ignore=shutil.ignore_patterns(".git", "ledger", "logs", "pdfs"))
+atexit.register(shutil.rmtree, t.parent, True)   # leave nothing behind
+os.environ["GIT_CONFIG_GLOBAL"] = str(t.parent / "gitconfig")   # never touch the Steward's ~/.gitconfig
+shutil.copytree(ROOT, t, ignore=shutil.ignore_patterns(".git", "ledger", "logs", "pdfs", ".env", "secrets", "*.key"))
 if (t / "private" / ".git").exists(): shutil.rmtree(t / "private" / ".git")
 def sh(*cmd, ok=True):
     r = subprocess.run(list(cmd), capture_output=True, text=True, cwd=t)

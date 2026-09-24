@@ -1,9 +1,10 @@
 """End-to-end test of the Sprint cycle (Charter Article 14). Run: python3 tests/test_sprint.py
 Uses a scratch copy; the real repo is untouched."""
-import pathlib, shutil, subprocess, sys, tempfile, json
+import pathlib, shutil, subprocess, sys, tempfile, json, atexit
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 t = pathlib.Path(tempfile.mkdtemp())
-shutil.copytree(ROOT / "agents", t / "agents"); (t / "org").mkdir()
+atexit.register(shutil.rmtree, t, True)   # leave nothing behind
+shutil.copytree(ROOT / "agents", t / "agents", ignore=shutil.ignore_patterns(".env", "logs")); (t / "org").mkdir()
 shutil.copytree(ROOT / "org" / "cases", t / "org" / "cases")
 S = [sys.executable, str(t / "agents/bin/sprint.py")]
 def run(*a, ok=True):

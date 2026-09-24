@@ -18,17 +18,33 @@ scan_public() {  # redaction gate over everything the public commit would includ
   local files; files="$(git ls-files -mo --exclude-standard)"
   [ -z "$files" ] && return 0
   local hits
-  hits="$(printf '%s\n' "$files" | tr '\n' '\0' | xargs -0 grep -InE \
+  hits="$(printf '%s\n' "$files" | tr '\n' '\0' | xargs -0 grep -HInE \
     -e '(^|[^A-Za-z0-9])sk-(ant-)?[A-Za-z0-9_-]{20,}' -e 'gh[pous]_[A-Za-z0-9]{30,}' -e 'xox[abprs]-' -e 'AKIA[0-9A-Z]{16}' \
     -e '\b[0-9]{8,10}:[A-Za-z0-9_-]{35}\b' -e '(API_KEY|SECRET|TOKEN|PASSWORD)[A-Z_]*=[^[:space:]'"'"'"]{6,}' \
-    -e '-----BEGIN [A-Z ]*PRIVATE KEY-----' -e 'AGE-SECRET-KEY-1[0-9A-Z]{20,}' 2>/dev/null || true)"
-  if [ -n "$hits" ]; then
-    echo "REFUSED: public commit blocked; possible secrets:"; echo "$hits" | cut -c1-160
-    printf '#incident\n### system · %s\nPublic commit blocked by redaction scan. @rex review.\n%s\n' "$(date -Is)" "$(echo "$hits" | cut -d: -f1-2)" \
+    -e '-----BEGIN [A-Z ]*PRIVATE KEY-----' -e 'AGE-SECRET-KEY-1[0-9A-Z]{20,}' 2>/dev/null | cut -d: -f1-2 || true)"
+  if [ -z "$hits" ] && command -v gitleaks >/dev/null; then
+    # gitleaks sees exactly the files this commit would include, never git-ignored ones (agents/.env)
+    local stage; stage="$(mktemp -d)"
+    while IFS= read -r f; do
+      [ -f "$f" ] && mkdir -p "$stage/s/$(dirname "$f")" && cp -p "$f" "$stage/s/$f"
+    done <<< "$files"
+    if ! gitleaks detect --no-git --no-banner --redact --source "$stage/s" \
+         --report-format json --report-path "$stage/r.json" >/dev/null 2>&1; then
+      hits="$(python3 -c 'import json,os,sys
+for x in json.load(open(sys.argv[1])):
+    print("%s:%s: gitleaks %s" % (os.path.relpath(os.path.join(sys.argv[2], x["File"]), sys.argv[2]), x["StartLine"], x["RuleID"]))' \
+        "$stage/r.json" "$stage/s" 2>/dev/null || true)"
+      [ -n "$hits" ] || hits="gitleaks: scan failed, no report (fail closed)"
+    fi
+    rm -rf "$stage"
+  fi
+  if [ -n "$hits" ]; then   # locations only: the matched text is never printed or stored (Article 4.7)
+    echo "REFUSED: public commit blocked; possible secrets at:"; echo "$hits"
+    mkdir -p private/incidents
+    printf '#incident\n### system · %s\nPublic commit blocked by redaction scan. @rex review.\n%s\n' "$(date -Iseconds)" "$hits" \
       > "private/incidents/$(date +%F-%H%M%S)-public-commit-blocked.md"
     return 2
   fi
-  if command -v gitleaks >/dev/null; then gitleaks detect --no-git --source . >/dev/null 2>&1 || { echo "REFUSED: gitleaks"; return 2; }; fi
 }
 
 case "$cmd" in

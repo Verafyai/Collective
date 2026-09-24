@@ -1,9 +1,10 @@
 """Tests for agents/bin/case.py (Charter Article 13). Run: python3 tests/test_case_law.py
 Works on a scratch copy of org/cases so the real case law is untouched."""
-import pathlib, shutil, subprocess, sys, tempfile
+import pathlib, shutil, subprocess, sys, tempfile, atexit
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 tmp = pathlib.Path(tempfile.mkdtemp())
-shutil.copytree(ROOT / "agents", tmp / "agents"); (tmp / "org").mkdir()
+atexit.register(shutil.rmtree, tmp, True)   # leave nothing behind
+shutil.copytree(ROOT / "agents", tmp / "agents", ignore=shutil.ignore_patterns(".env", "logs")); (tmp / "org").mkdir()
 shutil.copytree(ROOT / "org" / "cases", tmp / "org" / "cases")
 CASE = [sys.executable, str(tmp / "agents/bin/case.py")]
 def run(*a): return subprocess.run(CASE + list(a), capture_output=True, text=True)

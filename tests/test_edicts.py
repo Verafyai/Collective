@@ -1,9 +1,10 @@
 """Tests for agents/bin/edict.py (Charter Article 15). Run: python3 tests/test_edicts.py
 Needs the private repo checked out at private/ (edicts are private)."""
-import pathlib, shutil, subprocess, sys, tempfile
+import pathlib, shutil, subprocess, sys, tempfile, atexit
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 t = pathlib.Path(tempfile.mkdtemp())
-shutil.copytree(ROOT / "agents", t / "agents"); shutil.copytree(ROOT / "private" / "edicts", t / "private" / "edicts")
+atexit.register(shutil.rmtree, t, True)   # leave nothing behind
+shutil.copytree(ROOT / "agents", t / "agents", ignore=shutil.ignore_patterns(".env", "logs")); shutil.copytree(ROOT / "private" / "edicts", t / "private" / "edicts")
 E = [sys.executable, str(t / "agents/bin/edict.py")]
 def run(*a): return subprocess.run(E + list(a), capture_output=True, text=True, cwd=t)
 assert run("check").returncode == 0

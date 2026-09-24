@@ -1,9 +1,11 @@
 """Tests for the two-repo split (Article 17) and Charter rewind (Article 16).
 Run: python3 tests/test_repos_charter.py   (works on a scratch copy, offline)"""
-import pathlib, shutil, subprocess, sys, tempfile, re
+import pathlib, shutil, subprocess, sys, tempfile, re, atexit, os
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 t = pathlib.Path(tempfile.mkdtemp()) / "c"
-shutil.copytree(ROOT, t, ignore=shutil.ignore_patterns(".git", "ledger", "logs", "pdfs"))
+atexit.register(shutil.rmtree, t.parent, True)   # leave nothing behind
+os.environ["GIT_CONFIG_GLOBAL"] = str(t.parent / "gitconfig")   # never touch the Steward's ~/.gitconfig
+shutil.copytree(ROOT, t, ignore=shutil.ignore_patterns(".git", "ledger", "logs", "pdfs", ".env", "secrets", "*.key"))
 def sh(*cmd, ok=True, cwd=t):
     r = subprocess.run(list(cmd), capture_output=True, text=True, cwd=cwd)
     if ok: assert r.returncode == 0, (cmd, r.stdout, r.stderr)
@@ -24,7 +26,26 @@ fake_key = "sk-" + "ant-api03-" + "ABCD" * 8          # assembled at runtime so 
 r = sh("agents/bin/repos.sh", "commit", "leaky", ok=False)
 assert "REFUSED" in r and list((t / "private" / "incidents").glob("*public-commit-blocked.md")), r
 assert "leak.txt" not in sh("git", "ls-files")
+assert fake_key not in r, "a refusal names locations, never the secret"
 (t / "prototypes" / "leak.txt").unlink()
+# 2b. git-ignored files are never scanned: a key in agents/.env doesn't block the public commit
+(t / "agents" / ".env").write_text("ANTHROPIC_API_KEY=" + fake_key + "\n")
+(t / "prototypes" / "ok.txt").write_text("fine\n")
+sh("agents/bin/repos.sh", "commit", "env stays ignored")
+tracked = sh("git", "ls-files").splitlines()
+assert "prototypes/ok.txt" in tracked and "agents/.env" not in tracked
+# 2c. gitleaks, when installed, catches what the grep scan misses, and its refusal is an incident too
+if shutil.which("gitleaks"):
+    import time; time.sleep(1.1)                          # incident files are named to the second
+    n = len(list((t / "private" / "incidents").glob("*public-commit-blocked.md")))
+    tok = "sk_" + "live_" + "4eC39HqLyjWDarjtT1zdp7dc" + "Xq9Zr2Lm"
+    (t / "prototypes" / "pay.py").write_text('stripe_key = "' + tok + '"\n')
+    r = sh("agents/bin/repos.sh", "commit", "gitleaks", ok=False)
+    assert "REFUSED" in r and "prototypes/pay.py:1" in r and tok not in r, r
+    assert "pay.py" not in sh("git", "ls-files")
+    assert len(list((t / "private" / "incidents").glob("*public-commit-blocked.md"))) == n + 1
+    (t / "prototypes" / "pay.py").unlink()
+(t / "agents" / ".env").unlink()
 # 3. edicts commit into the private repo
 sh(sys.executable, "agents/bin/edict.py", "new", "--title", "Test", "--text", "Do the thing.")
 assert "Edict E-" in sh("git", "-C", "private", "log", "--oneline", "-1")

@@ -1,0 +1,3 @@
+#amendment
+### rex · 2026-09-24T18:21:26Z
+Steward action A-0016 (Class C), edicts E-0042 and E-0043, answering org/board/2026-09-24-question-public-commit-gate.md (option B): gitleaks in repos.sh scans only the files the public commit would include and records an incident when it refuses; redaction refusals report file:line only; the invalid gitleaks flag -q is removed (Part V had drifted from the files on disk); date -Is → date -Iseconds in five scripts (blank timestamps on macOS); tests never copy secrets, clean up after themselves, and sandbox git config. Charter v6.2.2. Verified: charter-verify, amendment check, seed-check (121 files), all seven test files.
