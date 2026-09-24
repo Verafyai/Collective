@@ -1,0 +1,12 @@
+# herdr plugins for the Verafy org. Format: owner/repo  # role  [core|optional]
+# The setup agent reads each README before configuring. Listings are not
+# reviewed by Herdr: check stars, recent activity and the code of anything new.
+cloudmanic/herdr-plus            # workspace templates + headless open        core
+smarzban/tsk                     # shared task board (TUI for Rex, CLI for agents)  core
+eliasstravik/herdr-projects      # coordinator + worker threads + shared memory  core
+dcolinmorgan/herdr-remote        # approvals/monitoring from phone or Telegram   core
+hhdebb/herdr-radar               # who's working / waiting overview              core
+eliasstravik/herdr-agent-progress # agent-reported progress in sidebar           core
+nicosuave/memex                  # searchable transcripts + token tracking       core
+furkankly/zoetrope               # live flow-graph of sessions (demo footage)    optional
+IGUNUBLUE/hirc                   # agent-to-agent chat (new, unproven)           optional

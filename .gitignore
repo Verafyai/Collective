@@ -1,0 +1,15 @@
+# The private repo (CollectivePrivate) lives here and is never part of the public repo
+private/
+# Secrets and local settings (sealed copies live in private/secrets, local config in private/config)
+agents/.env
+agents/config.env
+*.key
+# Runtime noise
+agents/*/logs/
+media/exports/**/*.mp4
+node_modules/
+.venv/
+__pycache__/
+.DS_Store
+org/STOP
+org/PAUSE-*

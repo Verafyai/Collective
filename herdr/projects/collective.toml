@@ -1,0 +1,81 @@
+# herdr-plus project template: one tab per department.
+# bootstrap.sh copies this into herdr-plus's projects/ dir and fills in the path.
+name = "Collective"
+description = "Autonomous research-and-media org for @VerafyAI"
+group = "Verafy"
+working_dir = "__ORG_ROOT__"
+
+[[tabs]]
+name = "officers"
+
+[[tabs.panes]]
+label = "Project Manager"
+command = "agents/bin/run-role.sh pm --loop"
+
+[[tabs.panes]]
+label = "Scribe"
+command = "agents/bin/run-role.sh scribe --loop"
+split = "right"
+
+[[tabs.panes]]
+label = "Lawyer"
+command = "agents/bin/run-role.sh lawyer --loop"
+split = "down"
+
+[[tabs.panes]]
+label = "Auditor"
+command = "agents/bin/run-role.sh auditor --loop"
+split = "down"
+
+[[tabs]]
+name = "live"
+command = "python3 agents/bin/playback.py --follow"
+
+[[tabs]]
+name = "dashboard"
+command = "setup/wait-for-dashboard.sh"
+
+[[tabs]]
+name = "approvals"
+command = "watch -n 30 'ls -1t private/outbox/pending | head -20'"
+
+[[tabs]]
+name = "social"
+command = "agents/bin/run-role.sh social --loop"
+
+[[tabs]]
+name = "researcher"
+command = "agents/bin/run-role.sh researcher --loop"
+
+[[tabs]]
+name = "ideas"
+command = "agents/bin/run-role.sh ideas --loop"
+
+[[tabs]]
+name = "prototyper"
+command = "agents/bin/run-role.sh prototyper --loop"
+
+[[tabs]]
+name = "media"
+command = "agents/bin/run-role.sh media --loop"
+
+[[tabs]]
+name = "board"
+# Replace with the tsk TUI command once installed (see docs/plugin-notes.md).
+command = "tsk"
+
+[[tabs]]
+name = "governance"
+# fusion-harness governance sessions (Charter Article 7.3). Idle until the Scribe opens one.
+command = "echo 'Governance tab: run $GOV_SESSION_CMD when the Scribe opens a session'; exec $SHELL"
+
+[[tabs]]
+name = "control"
+
+[[tabs.panes]]
+label = "Shell (approve with agents/bin/approve.sh)"
+
+[[tabs.panes]]
+label = "Today's board"
+command = "watch -n 60 'ls -1t org/board | head -15'"
+split = "right"

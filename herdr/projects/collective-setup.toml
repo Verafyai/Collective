@@ -1,0 +1,25 @@
+# herdr-plus template for the SETUP phase (launch.sh, before private/.setup-complete exists).
+name = "Collective Setup"
+description = "The first Claude Code agent sets up the Collective while you watch"
+group = "Verafy"
+working_dir = "__ORG_ROOT__"
+
+[[tabs]]
+name = "setup"
+
+[[tabs.panes]]
+label = "Setup agent (Claude Code)"
+command = "setup/start-claude.sh"
+
+[[tabs.panes]]
+label = "Live events"
+command = "python3 agents/bin/playback.py --follow"
+split = "right"
+ratio = 0.35
+
+[[tabs]]
+name = "dashboard"
+command = "setup/wait-for-dashboard.sh"
+
+[[tabs]]
+name = "shell"

@@ -1,0 +1,49 @@
+# fusion-harness stacks for the Collective's governance and sprint sessions
+# (Charter Articles 3.5, 7.3, 14; org/OFFICERS.md).
+# The six voting offices each run on a DIFFERENT model family where possible,
+# so ballots aren't copies of one model's opinion. fusion-harness allows at
+# most 5 slots per session, so voting runs as two sessions (A and B) with
+# identical inputs and sealing. The Scribe holds the architect slot in both:
+# procedure only, never argument, never a ballot. The Lawyer doesn't take a
+# slot; the Lawyer's written #opinion is an input to every voice.
+# Replace model ids with ones visible in your pi setup; keep families distinct.
+
+session_a:
+  - name: scribe
+    model: anthropic/claude-sonnet-5
+    thinking: medium
+    architect: true
+    append_system_prompt: personas/scribe.md
+  - name: pm
+    model: anthropic/claude-opus-5-5
+    thinking: high
+    primary: true
+    append_system_prompt: personas/pm.md
+  - name: researcher
+    model: google/gemini-3-pro
+    thinking: high
+    append_system_prompt: personas/researcher.md
+  - name: ideas
+    model: openai/gpt-5
+    thinking: high
+    append_system_prompt: personas/ideas.md
+  - name: prototyper
+    model: deepseek/deepseek-v4
+    thinking: high
+    append_system_prompt: personas/prototyper.md
+
+session_b:
+  - name: scribe
+    model: anthropic/claude-sonnet-5
+    thinking: medium
+    architect: true
+    append_system_prompt: personas/scribe.md
+  - name: media
+    model: moonshot/kimi-k3
+    thinking: high
+    primary: true
+    append_system_prompt: personas/media.md
+  - name: social
+    model: xai/grok-4
+    thinking: high
+    append_system_prompt: personas/social.md
