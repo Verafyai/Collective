@@ -1,0 +1,85 @@
+/* The Collective Dashboard: a dense operations console. Light and dark; color is never the only signal. */
+:root {
+  --bg: #f6f7f9; --panel: #ffffff; --ink: #16181d; --muted: #5b6270; --line: #dfe3ea;
+  --accent: #2f5bd3; --accent-ink: #ffffff; --ok: #1d7a46; --warn: #9a5b00; --bad: #b3261e;
+  --chip: #eef1f6; --code: #f1f3f7; --focus: #2f5bd3;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1115; --panel: #171a21; --ink: #e7e9ee; --muted: #9aa3b2; --line: #2a2f3a;
+    --accent: #7ea2ff; --accent-ink: #0f1115; --ok: #5cc98b; --warn: #e3a64a; --bad: #ff7b72;
+    --chip: #222733; --code: #1d212a; --focus: #7ea2ff;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1115; --panel: #171a21; --ink: #e7e9ee; --muted: #9aa3b2; --line: #2a2f3a;
+  --accent: #7ea2ff; --accent-ink: #0f1115; --ok: #5cc98b; --warn: #e3a64a; --bad: #ff7b72;
+  --chip: #222733; --code: #1d212a; --focus: #7ea2ff;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 var(--sans); }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.skip { position: absolute; left: -999px; } .skip:focus { left: 8px; top: 8px; background: var(--panel); padding: 6px; z-index: 9; }
+
+.top { display: flex; align-items: center; gap: 16px; padding: 10px 16px; background: var(--panel);
+  border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5; flex-wrap: wrap; }
+.brand { display: flex; align-items: baseline; gap: 8px; }
+.brand .mark { color: var(--accent); } .brand .name { font-weight: 700; } .brand .sub { color: var(--muted); font-size: 12px; }
+.facts { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0; flex: 1; }
+.facts div { display: flex; gap: 6px; align-items: baseline; }
+.facts dt { color: var(--muted); font-size: 12px; } .facts dd { margin: 0; font-weight: 600; font-family: var(--mono); font-size: 12.5px; }
+.badge { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 700;
+  border: 1px solid currentColor; font-family: var(--sans); }
+.badge.ok { color: var(--ok); } .badge.bad { color: var(--bad); } .badge.warn { color: var(--warn); } .badge.muted { color: var(--muted); }
+button { font: inherit; border: 1px solid var(--line); background: var(--accent); color: var(--accent-ink);
+  border-radius: 6px; padding: 4px 12px; cursor: pointer; font-weight: 600; }
+button.ghost { background: transparent; color: var(--ink); }
+button.link { background: none; border: 0; color: var(--accent); padding: 0; font-weight: 500; text-decoration: underline; }
+
+.travel { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; padding: 8px 16px;
+  border-bottom: 1px solid var(--line); background: var(--bg); }
+.travel form { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; }
+.travel-title { font-weight: 700; }
+.travel input[type=number] { width: 7em; }
+.travel select, .travel input { font: inherit; background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 5px; padding: 2px 6px; max-width: 26em; }
+.asof { margin: 0; color: var(--muted); font-size: 12.5px; }
+.asof.past { color: var(--warn); font-weight: 600; }
+
+.layout { display: grid; grid-template-columns: 220px 1fr; min-height: calc(100vh - 140px); }
+.rail { border-right: 1px solid var(--line); background: var(--panel); }
+.rail ul { list-style: none; margin: 0; padding: 8px 0; position: sticky; top: 56px; }
+.rail a { display: flex; justify-content: space-between; gap: 8px; padding: 6px 16px; color: var(--ink); text-decoration: none; }
+.rail a[aria-current="page"] { background: var(--chip); font-weight: 700; box-shadow: inset 3px 0 0 var(--accent); }
+.rail a .soon { color: var(--muted); font-size: 11px; font-family: var(--mono); }
+.rail a:hover { background: var(--chip); }
+
+main { padding: 16px 20px 40px; min-width: 0; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 18px; margin-bottom: 16px; }
+.panel > h2 { margin: 0 0 2px; font-size: 18px; }
+.panel .src { color: var(--muted); font-size: 12px; margin: 0 0 12px; font-family: var(--mono); }
+.panel h3 { font-size: 14px; margin: 18px 0 6px; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-weight: 600; font-size: 12px; }
+td.mono, .mono { font-family: var(--mono); font-size: 12.5px; }
+td.mono { white-space: nowrap; }
+.scroll { max-height: 420px; overflow: auto; border: 1px solid var(--line); border-radius: 6px; }
+
+.md { max-width: 80ch; }
+.md h1 { font-size: 20px; } .md h2 { font-size: 17px; margin-top: 22px; } .md h3 { font-size: 15px; }
+.md code { background: var(--code); padding: 0 4px; border-radius: 4px; font-family: var(--mono); font-size: 12.5px; }
+.md pre { background: var(--code); padding: 10px; border-radius: 6px; overflow: auto; font-size: 12.5px; }
+.md blockquote { margin: 0; padding-left: 12px; border-left: 3px solid var(--line); color: var(--muted); }
+.md table { margin: 8px 0; }
+.charter-text { max-height: 70vh; overflow: auto; border: 1px solid var(--line); border-radius: 6px; padding: 0 16px; }
+.toc { columns: 2 260px; font-size: 13px; padding-left: 18px; }
+.diff { white-space: pre; font-family: var(--mono); font-size: 12px; max-height: 60vh; overflow: auto; background: var(--code); padding: 10px; border-radius: 6px; }
+.diff .add { color: var(--ok); } .diff .del { color: var(--bad); } .diff .hunk { color: var(--accent); }
+.soon-card { color: var(--muted); }
+.error { color: var(--bad); font-weight: 600; }
+.foot { color: var(--muted); font-size: 12px; padding: 10px 16px; border-top: 1px solid var(--line); }
+@media (max-width: 760px) { .layout { grid-template-columns: 1fr; } .rail ul { position: static; display: flex; flex-wrap: wrap; } }

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Collective Dashboard</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="/static/style.css">
+<script src="/static/app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top" role="banner">
+  <div class="brand">
+    <span class="mark" aria-hidden="true">◆</span>
+    <span class="name">The Collective</span>
+    <span class="sub">Verafy · dashboard P-001</span>
+  </div>
+  <dl class="facts" id="facts" aria-label="Current state"></dl>
+  <div class="tools">
+    <button type="button" id="theme" class="ghost" aria-label="Switch light or dark theme">◐</button>
+  </div>
+</header>
+
+<section class="travel" aria-label="Time travel">
+  <form id="travel-form">
+    <span class="travel-title">View the Collective</span>
+    <label><input type="radio" name="kind" value="live" checked> live</label>
+    <label><input type="radio" name="kind" value="commit"> at commit
+      <select id="t-commit" aria-label="Commit"></select></label>
+    <label id="t-event-wrap"><input type="radio" name="kind" value="event"> at event #
+      <input id="t-event" type="number" min="1" inputmode="numeric" aria-label="Event number"></label>
+    <label><input type="radio" name="kind" value="date"> on
+      <input id="t-date" type="datetime-local" aria-label="Date and time"></label>
+    <button type="submit">Show</button>
+  </form>
+  <p id="asof" class="asof" role="status" aria-live="polite"></p>
+</section>
+
+<div class="layout">
+  <nav class="rail" aria-label="Panels"><ul id="rail"></ul></nav>
+  <main id="main" tabindex="-1"></main>
+</div>
+
+<footer class="foot">
+  Read-only · local only (127.0.0.1) · every panel is computed from versioned records ·
+  <span id="gen"></span>
+</footer>
+</body>
+</html>

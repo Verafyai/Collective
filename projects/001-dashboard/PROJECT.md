@@ -2,10 +2,10 @@
 id: P-001
 name: The Collective Dashboard
 owner: prototyper
-status: building
+status: released
 created: 2026-09-24
 code: dashboard/
-current_version: 
+current_version: 001
 ---
 
 # The Collective Dashboard
@@ -20,7 +20,7 @@ planned in a sprint and added with `projects.py version`:
 
 | Version | Scope (spec §7) | Status |
 |---|---|---|
-| 001 | Skeleton, header, Mission, Charter, Versioning, time travel | planned (setup Step 3b) |
+| 001 | Skeleton, header, Mission, Charter, Versioning, time travel | released 2026-09-24 |
 | 002 | Projects (products) with comments; decisions with evidence; current and past sprints | to plan in a sprint |
 | 003 | KPIs and OKRs (`metrics.py`, daily snapshots); Progress | to plan |
 | 004 | Calendar with `.ics` export; Blog and User Guide | to plan |
