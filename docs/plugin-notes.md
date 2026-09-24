@@ -7,9 +7,11 @@ plugin's README and a read of its source at the pinned commit. Herdr doesn't
 review or sandbox plugins: a plugin's build and runtime commands run as the
 Steward's user.
 
-**Pinning.** Every plugin is installed at the exact commit that was reviewed:
-`herdr plugin install <owner/repo> --ref <sha> --yes`. Updating a plugin means
-reviewing the new commit first.
+**Pinning.** Every plugin is installed at the exact commit that was reviewed,
+pinned in `setup/plugins.txt` (`owner/repo@commit`) and installed by
+`setup/bootstrap.sh` with `herdr plugin install <owner/repo> --ref <commit> --yes`.
+Plugins marked `held` aren't installed. Updating a plugin means reviewing the
+new commit's code, then changing its pin by amendment.
 
 ## Installed
 
@@ -20,9 +22,10 @@ reviewing the new commit first.
 | eliasstravik/herdr-projects | 5b7a0e6 | MIT | From source (`HERDR_PROJECTS_BUILD=source`), not the release download |
 | dcolinmorgan/herdr-remote | f728695 | AGPL-3.0-or-later | No build; one event hook |
 | eliasstravik/herdr-agent-progress | 7f3a3fe | MIT | `cargo build --release --locked` from source |
+| hhdebb/herdr-radar | 92905fc | MIT | No compile; Node scripts (E-0046) |
 
 **Not installed, by the Steward's decision (edict E-0045):** nicosuave/memex
-(649355e, MIT) and, for now, hhdebb/herdr-radar (92905fc, MIT). See below.
+(649355e, MIT). See below.
 **Optional, not installed:** furkankly/zoetrope (MIT), IGUNUBLUE/hirc (no
 license, no stars: don't install).
 
@@ -63,6 +66,16 @@ license, no stars: don't install).
   checksum: never run it; update by reviewing and re-pinning instead.
 - **Don't run `tsk setup`:** it writes skills into the Steward's global
   `~/.claude/skills`, `~/.grok/skills`, and other agents' folders.
+- **The Collective's configuration (A-0018):** the store is `org/tasks/`
+  (public, versioned; lock and backup files git-ignored), set by
+  `TSK_STATE_DIR` and exported with `TSK_NO_UPDATE_CHECK=1` from
+  `agents/config.env`. Statuses stand for the Charter's columns: `open` =
+  backlog, `ready` = approved, `started` = in progress, `review`, `done`
+  (`blocked` when stuck). The owner office is the task's thread
+  (`--thread pm|scribe|lawyer|auditor|researcher|ideas|prototyper|media|social`).
+  `bootstrap.sh` links the plugin's binary to `~/.local/bin/tsk`, because
+  offices call it by name (`Bash(tsk:*)`). The board tab runs the TUI on the
+  same store.
 
 ## herdr-projects (coordinator + worker threads)
 
@@ -83,6 +96,13 @@ license, no stars: don't install).
   `~/.claude/settings.json` hooks and installs a skill. It refuses
   permission-skipping flags in `--agent-arg`, but config.toml's
   `*_agent_args` must never be given one (Charter 4.6).
+- **Why no coordinator and worker threads yet:** it does support one
+  coordinator plus named workers, but its agents are started by the plugin,
+  not by `agents/bin/run-role.sh`. They'd bypass each office's tool
+  allowlist, daily cap, `org/STOP` and `PAUSE` checks, and the event log
+  (Charter Articles 4.6, 4.9, 12.9). **How it could be used later:** for the
+  Prototyper's multi-part builds, with `thread_agent` set to a wrapper that
+  calls `run-role.sh`-style gating, adopted by amendment.
 
 ## herdr-remote (phone approvals)
 
@@ -110,12 +130,18 @@ license, no stars: don't install).
   `~/.claude/settings.json` and `~/.codex/hooks.json`, injecting text into
   every Claude session on the machine, not just the Collective's.
 
-## Not installed for now: herdr-radar (sidebar skin)
+## herdr-radar (sidebar: who's working, blocked, idle)
 
+- **Installed** by the Steward's decision (E-0046), at 92905fc.
 - **Off-machine:** none (Unix sockets only; README says "No network").
-- **Why not yet:** its install step runs `node bin/setup.js`, which edits herdr's
-  `config.toml`, installs a font into the user font folder, and appends to
-  existing Ghostty and Kitty terminal configs.
+- **What it changes:** its setup (`node bin/setup.js`, or the `configure`
+  action) writes managed blocks into herdr's `config.toml`, installs a font
+  into the user font folder, and appends a codepoint map to existing Ghostty
+  and Kitty configs. `unconfigure` and `uninstall-font` revert them.
+- **Actions:** configure, unconfigure, install-font, uninstall-font, refresh,
+  state-start, state-stop, view-toggle, view-flip, view-native, settings. No
+  key bindings by default; the README suggests `prefix+a` and `prefix+comma`
+  as `plugin_action` bindings.
 
 ## Not installed: memex (transcript search, token tracking)
 

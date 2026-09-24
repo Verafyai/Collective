@@ -13,3 +13,5 @@ __pycache__/
 .DS_Store
 org/STOP
 org/PAUSE-*
+org/tasks/*.lock
+org/tasks/tsk.json.1

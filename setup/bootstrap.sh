@@ -33,12 +33,20 @@ if [ -f private/secrets/env.age ] && [ ! -f agents/.env ]; then run "agents/bin/
 echo "4) herdr plugins"
 installed="$(herdr plugin list 2>/dev/null || true)"
 while read -r line; do
-  repo="$(echo "$line" | awk '{print $1}')"; [ -z "$repo" ] || [[ "$repo" == \#* ]] && continue
+  spec="$(echo "$line" | awk '{print $1}')"; [ -z "$spec" ] || [[ "$spec" == \#* ]] && continue
+  repo="${spec%@*}"; ref=""; [ "$spec" != "$repo" ] && ref="${spec#*@}"
   tier="$(echo "$line" | awk '{print $NF}')"
+  [ "$tier" = held ] && { warn "held, not installed: $repo (see docs/plugin-notes.md)"; continue; }
   [ "$tier" = optional ] && [ $OPTIONAL = 0 ] && { warn "skip optional $repo"; continue; }
+  [ -z "$ref" ] && { warn "not installed: $repo has no reviewed commit pinned in setup/plugins.txt"; continue; }
   if echo "$installed" | grep -qi "$(basename "$repo")"; then ok "$repo (already installed)"
-  else run "herdr plugin install $repo" && ok "installed $repo" || warn "install failed: $repo (check its README)"; fi
+  # pinned to the reviewed commit; herdr-projects builds from that source, not a release download
+  else run "HERDR_PROJECTS_BUILD=source herdr plugin install $repo --ref $ref --yes" && ok "installed $repo @ ${ref:0:7}" || warn "install failed: $repo (check its README)"; fi
 done < setup/plugins.txt
+# tsk is called by name (Bash(tsk:*)); link the plugin's binary onto PATH
+t="$(ls -d "$HOME"/.config/herdr/plugins/github/herdr-tsk-*/target/release/tsk 2>/dev/null | head -1 || true)"
+if [ -n "$t" ]; then run "mkdir -p '$HOME/.local/bin' && ln -sf '$t' '$HOME/.local/bin/tsk'" && ok "tsk linked into ~/.local/bin"
+else warn "tsk binary not found; install smarzban/tsk first"; fi
 
 echo "5) Workspace template"
 if cfg="$(herdr plugin config-dir cloudmanic.herdr-plus 2>/dev/null)"; then
@@ -51,7 +59,7 @@ if [ -s private/ledger/events.ndjson ]; then ok "event log exists ($(wc -l < pri
 else run "python3 agents/bin/eventlog.py init --actor steward" && ok "event log initialized (genesis snapshot)"; fi
 
 echo "7) Runtime folders"
-run "mkdir -p research/briefs ideas prototypes media/exports private/outbox/{pending,approved,posted,rejected} org/board"
+run "mkdir -p research/briefs ideas prototypes media/exports private/outbox/{pending,approved,posted,rejected} org/board org/tasks"
 ok "folders ready"
 
 echo

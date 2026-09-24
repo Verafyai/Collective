@@ -48,24 +48,24 @@ Stop for Rex's review after each step marked ⏸.
 - Confirm the workspace template landed in herdr-plus's `projects/` folder.
 
 ## Step 3: Configure plugins ⏸
-- **tsk:**
-  - create the Verafy board with the columns backlog, approved, in-progress,
-    review, done;
-  - add a label per office (pm, scribe, lawyer, auditor, researcher, ideas,
-    prototyper,
-    media);
+- **tsk** (fixed statuses, no custom columns or labels; see org/STRUCTURE.md):
+  - the store is `org/tasks/` (`TSK_STATE_DIR`, exported with
+    `TSK_NO_UPDATE_CHECK=1` by `agents/config.env`);
+  - statuses stand for the columns (open = backlog, ready = approved,
+    started = in progress, review, done); the owner office is the task's
+    thread;
   - document the agent CLI commands in plugin-notes;
-  - put the right TUI command in the "board" tab of the template.
+  - the "board" tab of the template runs the TUI on that store.
 - **herdr-projects:** configure a coordinator thread for the Project Manager
   and a worker
   thread per role, if it supports that. Otherwise note how it could be used
   later.
-- **herdr-remote:**
-  - set up the phone/Telegram channel with Rex's bot token from `.env`;
-  - make approvals possible from the phone. At minimum, Rex can run
-    `agents/bin/approve.sh` remotely or approve through the plugin.
-- **herdr-radar, agent-progress, memex:** default config. Note the key
-  bindings in plugin-notes.
+- **herdr-remote:** Telegram is deferred by the Steward (E-0039); approvals
+  stay with `agents/bin/approve.sh`. If the relay is set up later, follow the
+  safeguards in plugin-notes (token set, no tunnel, no shell panes).
+- **agent-progress:** installed but not configured (its Configure action
+  hooks the Steward's global Claude settings). **herdr-radar:** default
+  config (E-0046). **memex:** held, not installed (E-0045).
 
 ## Step 3b: Dashboard, project P-001 version-001 ⏸
 - Build version-001 of the dashboard (`projects/001-dashboard/`: read its

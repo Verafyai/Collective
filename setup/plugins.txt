@@ -1,12 +1,13 @@
-# herdr plugins for the Verafy org. Format: owner/repo  # role  [core|optional]
-# The setup agent reads each README before configuring. Listings are not
-# reviewed by Herdr: check stars, recent activity and the code of anything new.
-cloudmanic/herdr-plus            # workspace templates + headless open        core
-smarzban/tsk                     # shared task board (TUI for Rex, CLI for agents)  core
-eliasstravik/herdr-projects      # coordinator + worker threads + shared memory  core
-dcolinmorgan/herdr-remote        # approvals/monitoring from phone or Telegram   core
-hhdebb/herdr-radar               # who's working / waiting overview              core
-eliasstravik/herdr-agent-progress # agent-reported progress in sidebar           core
-nicosuave/memex                  # searchable transcripts + token tracking       core
-furkankly/zoetrope               # live flow-graph of sessions (demo footage)    optional
-IGUNUBLUE/hirc                   # agent-to-agent chat (new, unproven)           optional
+# herdr plugins for the Verafy org. Format: owner/repo@commit  # role  [core|optional|held]
+# Each plugin is pinned to the commit whose code was reviewed (docs/plugin-notes.md).
+# Listings are not reviewed by Herdr: to update a plugin, review the new commit's
+# code first, then change its pin here by amendment. "held" = not installed.
+cloudmanic/herdr-plus@f38df3570bea8f7ca71dc1ba11bce3b123d14402            # workspace templates + headless open        core
+smarzban/tsk@fbe0847469e1576676af2e8f6b67588267c548ba                     # shared task board (TUI for Rex, CLI for agents)  core
+eliasstravik/herdr-projects@5b7a0e61733cd9950fe451e30e7a76d155ea335c      # coordinator + worker threads + shared memory  core
+dcolinmorgan/herdr-remote@f7286950d8a63a4857a996ab0dfbfa20f9317f4d        # approvals/monitoring from phone or Telegram   core
+eliasstravik/herdr-agent-progress@7f3a3fe4f197686703749f65d48bc281caca5df8 # agent-reported progress in sidebar           core
+hhdebb/herdr-radar@92905fcb19bd50039bda94b4f3a7044049d33508               # who's working / waiting overview (E-0046)       core
+nicosuave/memex@649355e4b442de9b63c24a3702f5c765233a84e4                  # searchable transcripts (indexes ALL transcripts; E-0045)  held
+furkankly/zoetrope               # live flow-graph of sessions (demo footage; not reviewed)    optional
+IGUNUBLUE/hirc                   # agent-to-agent chat (no license; don't install)           optional

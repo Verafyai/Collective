@@ -61,8 +61,8 @@ command = "agents/bin/run-role.sh media --loop"
 
 [[tabs]]
 name = "board"
-# Replace with the tsk TUI command once installed (see docs/plugin-notes.md).
-command = "tsk"
+# The Collective's task store (org/tasks), no update check (docs/plugin-notes.md).
+command = 'TSK_NO_UPDATE_CHECK=1 TSK_STATE_DIR="$PWD/org/tasks" tsk'
 
 [[tabs]]
 name = "governance"

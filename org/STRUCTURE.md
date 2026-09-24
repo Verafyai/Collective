@@ -85,6 +85,11 @@ exchanges. Anything decided there must be written to the board.
   board thread or artifact.
 - Only the Project Manager creates tasks from approved proposals. Agents can create tasks for
   themselves inside their own lane.
+- The store is `org/tasks/` (public and versioned). tsk has fixed statuses,
+  which stand for the board's columns: `open` = backlog, `ready` = approved,
+  `started` = in progress, `review` = review, `done` = done (`blocked` when
+  stuck). The owner office is the task's **thread**: `tsk add -t "…" --thread
+  <office>`, `tsk list --thread <office>`, `tsk status T12 started`.
 
 ## Cadence (defaults; change in `agents/config.env`)
 

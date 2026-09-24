@@ -12,7 +12,7 @@ AGENT-PERMISSIONS.md before any action you're unsure about.
    full. Read `org/MISSION.md` and `org/STRUCTURE.md` if you haven't this
    session.
 3. Read the last 20 entries of `org/LEARNINGS.md`.
-4. Check tsk for tasks assigned to your role, and the board for threads
+4. Check tsk for tasks assigned to your role (`tsk list --thread <role>`), and the board for threads
    mentioning your role.
 5. Do the work in your lane only. Never do another role's job; hand off by
    board post and tsk.
