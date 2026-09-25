@@ -5,7 +5,7 @@ Works on a scratch copy of the repo and starts the server on a free port.
 Checks: every page and API endpoint, the floor's live feed, board posts showing
 as speech, and the one allowed write (project comments) with its refusals.
 """
-import json, pathlib, shutil, socket, subprocess, sys, tempfile, time, urllib.request, urllib.error
+import json, pathlib, re, shutil, socket, subprocess, sys, tempfile, time, urllib.request, urllib.error
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 t = pathlib.Path(tempfile.mkdtemp()) / "c"
@@ -74,9 +74,13 @@ try:
     assert not any("genesis" in d["what"] for d in chat["doing"]), "bookkeeping stays out of chats"
     # one chat per project room (E-0091): only the agents in that room; the Collective-wide chat only in a huddle
     rooms = {c["room"]: c for c in json.loads(get("/api/conversations?by=room")[1])}
-    lab = json.loads(get("/api/conversations/room-lab")[1])
-    assert "ideas" in lab["members"] and "lawyer" not in lab["members"] and all(x["who"] in lab["members"] for x in lab["posts"]), lab
-    assert "lab" in rooms and rooms["lab"]["id"] == "room-lab" and not any(c["tag"] == "huddle" for c in rooms.values())
+    seated = {}
+    for a in json.loads((t / "agents/roster.json").read_text())["agents"]:
+        if a["status"] == "active": seated.setdefault(a["room"], []).append(a["key"])
+    for r, keys in seated.items():
+        c = json.loads(get(f"/api/conversations/room-{r}")[1])
+        assert sorted(c["members"]) == sorted(keys) and all(x["who"] in keys for x in c["posts"]), c
+    assert all(c["id"] == f"room-{r}" for r, c in rooms.items()) and not any(c["tag"] == "huddle" for c in rooms.values())
     live0 = json.loads(get("/api/live")[1])
     assert live0["rooms"]["council"]["name"].startswith("Project "), "rooms carry project codenames (E-0088)"
     assert all("asleep" in o and "open_tasks" in o for o in live0["offices"]), "idle agents with no task sleep (E-0090)"
@@ -119,11 +123,17 @@ try:
     assert "summary" in json.loads(get(f"/api/conversations/{conv[0]['id']}")[1])["posts"][0]
     # new projects from the floor (E-0089): refused until A-0030, then a spec makes a project, a room, and a thread
     SPEC = "What is it? A tracker of claims we've checked. Who is it for? Readers. Version 001 lists ten checked claims with sources. " * 3
+    ch = t / "CHARTER.md"; full = ch.read_text()
+    if "\n### A-0030 · " not in full: full += "\n### A-0030 · v9.9.9 · test\nratified_by: test\n"
+    ch.write_text(re.sub(r"\n### A-0030 · .*?(?=\n### |\Z)", "", full, flags=re.S))           # as if A-0030 weren't ratified yet
     code, body = post("/api/projects/new", {"codename": "Project Test", "spec": SPEC}); assert code == 403 and "A-0030" in body["error"], body
-    ch = t / "CHARTER.md"; ch.write_text(ch.read_text() + "\n<!-- test: **New projects from the floor.** -->\n")
+    assert subprocess.run([sys.executable, "agents/bin/rooms.py", "new", "--codename", "Project Early", "--spec", "x", "--steward"], cwd=t, capture_output=True).returncode, "rooms.py waits for A-0030 too"
+    ch.write_text(full)                                                                     # A-0030 ratified again
     time.sleep(5.2); code, body = post("/api/projects/new", {"codename": "Project Test", "spec": "too short"}); assert code == 400, body
-    time.sleep(5.2); code, body = post("/api/projects/new", {"codename": "Project Test", "name": "Claims tracker", "spec": SPEC})
+    time.sleep(5.2); code, body = post("/api/projects/new", {"codename": "Project Test", "name": "Claims tracker", "spec": SPEC, "spawn": ["scholar", "officer"]})
     assert code == 200 and body["ok"] and body["project"].startswith("P-"), body
+    assert body["spawned"] == ["Test Scholar"] and body["spawn_failed"], body                  # agent types proposed with it (E-0096); offices aren't
+    assert next(a for a in json.loads(get("/api/live")[1])["roster"] if a["key"] == "testscholar")["status"] == "proposed"
     room = body["room"]; rj = json.loads((t / "org/rooms.json").read_text())["rooms"][room]
     assert rj["name"] == "Project Test" and rj["project"] == body["project"] and rj["x"] >= 18, rj
     assert (t / "org/board" / f"project-{room}.md").exists() and "@pm" in (t / "org/board" / f"project-{room}.md").read_text()

@@ -220,11 +220,12 @@ charting library from a CDN. Live updates use Server-Sent Events.
 
 - Every room is a project with a codename (`org/rooms.json`); its label shows the
   codename and project id, and clicking it renames it.
-- **＋ New project** takes a codename and a spec (a prompt says what to cover). It makes
+- **＋ New project** takes a codename, a spec (the empty box's placeholder says what to cover), and
+  toggles for agent types to propose for its room (membership motions). It makes
   the project (`projects.py new --spec`, owned by the Project Manager), a new room, and a
   `#project` thread. Dragging an agent into a project room gives it a task there and a note
   in the thread; it works and talks there from its next run.
-- One chat per room: the posts of the agents seated there, with dotted lines to them only.
+- One chat per room: the posts of the agents seated there, its pill over the room (no lines).
   The Collective-wide chat appears only during a huddle, at the coffee machine. When
   someone speaks, a ghosted summary shows above the room's chat icon for a few seconds;
   there are no standing speech bubbles.

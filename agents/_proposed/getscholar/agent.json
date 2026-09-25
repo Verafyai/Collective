@@ -1,0 +1,16 @@
+{
+ "key": "getscholar",
+ "name": "Get Scholar",
+ "class": "scholar",
+ "room": "getajob",
+ "focus": "Works on Project Get a job (P-003): Scan the local job boards and apply for 20 jobs.",
+ "interval": 21600,
+ "cap": 5,
+ "model": "default",
+ "base_tools": "Read,Glob,Grep,Write(org/board/**),Edit(org/board/**),Bash(python3 agents/bin/case.py search:*),Bash(python3 agents/bin/case.py show:*),Bash(python3 agents/bin/sprint.py status:*),Bash(python3 agents/bin/projects.py show:*)",
+ "requested_tools": "WebSearch,WebFetch,Write(research/**),Edit(research/**)",
+ "votes": false,
+ "clone_of": null,
+ "color": "#6FA8DC",
+ "icon": "📚"
+}

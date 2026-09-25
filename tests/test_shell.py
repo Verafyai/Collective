@@ -1,6 +1,6 @@
 """The web terminal (Charter Article 18.7(c)(iii); dashboard/shell_bridge.py). Standard library only, no browser.
 Run: python3 tests/test_shell.py   (scratch copy; starts the dashboard on free ports)"""
-import atexit, base64, hashlib, json, os, pathlib, shutil, signal, socket, struct, subprocess, sys, tempfile, time, urllib.request, urllib.error
+import atexit, re, base64, hashlib, json, os, pathlib, shutil, signal, socket, struct, subprocess, sys, tempfile, time, urllib.request, urllib.error
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 t = pathlib.Path(tempfile.mkdtemp()) / "c"
@@ -103,8 +103,10 @@ try:
     except urllib.error.HTTPError as e: assert e.code == 403
     assert WS("x", p=PP, origin=f"http://127.0.0.1:{PP}").status == 403, "public view"
     # talking to an agent in the drawer (E-0092): refused until the Charter names it, then only for active agents
+    ch = t / "CHARTER.md"; full = ch.read_text()
+    ch.write_text(re.sub(r"\n### A-0030 · .*?(?=\n### |\Z)", "", full, flags=re.S))           # as if A-0030 weren't ratified yet
     assert WS(token(), cmd="agent&agent=scribe").status == 403, "agent talk waits for A-0030"
-    ch = t / "CHARTER.md"; ch.write_text(ch.read_text() + "\n<!-- test: the web terminal drawer -->\n")
+    ch.write_text(full if "\n### A-0030 · " in full else full + "\n### A-0030 · v9.9.9 · test\nratified_by: test\n")
     rr = t / "agents/bin/run-role.sh"; rr.write_text('#!/bin/bash\necho "talking-to-$1 $2"\nsleep 5\n'); rr.chmod(0o755)   # a stand-in: no model is called
     assert WS(token(), cmd="agent&agent=nobody").status == 400, "unknown agent"
     assert WS(token(), cmd="agent&agent=../x").status == 400, "not a key"

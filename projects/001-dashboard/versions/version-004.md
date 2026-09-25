@@ -10,15 +10,14 @@ date: 2026-09-24
 
 ## Plan
 
-## Plan
-
 Everything the Steward asked for after version 003 (edicts E-0083, E-0087 to E-0095), under
-Charter Articles 18.7(h)–(j), 18.8, and 21.2 (A-0028, A-0029; A-0030 proposed):
+Charter Articles 18.7(h)–(j), 18.8, and 21.2 (A-0028, A-0029, A-0030):
 - a real terminal in the browser: a shell, herdr, or a talk with one agent;
 - the camera: zoom, pan, and turn the floor;
-- rooms are projects with codenames; **＋ New project** from a spec; agents dragged into a
+- rooms are projects with codenames; **＋ New project** from a spec, with toggles for agent
+  types to propose for it (E-0096); agents dragged into a
   project room get a task and start talking there;
-- one chat per room, dotted lines to that room only; the Collective-wide chat only in a
+- one chat per room, its pill over the room, no dotted lines (E-0098); the Collective-wide chat only in a
   huddle; ghosted summaries above the chat icon instead of standing speech bubbles;
 - a telephone in each room wired to central command;
 - idle agents with no task sleep on the floor;
@@ -34,8 +33,8 @@ Charter Articles 18.7(h)–(j), 18.8, and 21.2 (A-0028, A-0029; A-0030 proposed)
   chats and whispers, the New project form, the side panel keeping its place.
 - `dashboard/server.py`: `/ws/shell`, `/api/shell/token`; `/api/conversations?by=room`
   and `room-<room>` chats; `asleep` and `open_tasks` on each office; `rooms` in `/api/live`;
-  `/api/projects/new` and `/api/rooms/<room>/rename` (gated on A-0030); a move into a
-  project room assigns work (gated on A-0030).
+  `/api/projects/new` and `/api/rooms/<room>/rename` (on A-0030's ratification); a move into a
+  project room assigns work (on A-0030's ratification).
 - `dashboard/floor.html`: a rotatable projection; frames every room; the subtitle.
 - `agents/bin/rooms.py` (new), `agents/bin/spawn.py` (rooms from `org/rooms.json`);
   tests extended (`tests/test_shell.py`, `tests/test_dashboard.py`).
@@ -48,8 +47,11 @@ agents into it. Idle agents nap. You can zoom, pan, and turn the floor, and open
 terminals, including a talk with any agent, without leaving the page.
 
 **Known limits:**
-- New projects, renaming, assigning by dragging, and agent talks in the drawer wait for
-  your approval of A-0030; until then they say so and do nothing.
+- Agents with `Bash(python3:*)` (Prototyper, Media) can run any Python, so no in-process check
+  (`perms.py --steward`, `rooms.py`) can stop them. It waits on your decision on governance keys
+  or narrower grants (v003 item 1, still open).
+- In a terminal talk with an agent, your messages are filed as one edict per session, not
+  one per direction (v003 item 2, partly open).
 - Agents start on a project at their next scheduled run, not the moment you drop them.
 - A room chat shows the posts of the agents seated there now; if you move an agent, its
   old posts move with it.
@@ -59,16 +61,5 @@ terminals, including a talk with any agent, without leaving the page.
 
 ## Links
 
-- Edicts E-0083, E-0087 to E-0095; amendments A-0028, A-0029, A-0030 (proposed).
+- Edicts E-0083, E-0087 to E-0095; amendments A-0028, A-0029, A-0030 (ratified by E-0097). Supersedes version 003, which was never accepted: its fixes are in this version.
 
-## Changes
-
-(filled in as it's built)
-
-## Release notes
-
-(filled in on release: what a human will see, what's known not to work)
-
-## Links
-
-(sprint item, case, commits)

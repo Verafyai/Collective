@@ -15,7 +15,11 @@ AGENT-PERMISSIONS.md before any action you're unsure about.
 4. Check tsk for tasks assigned to your role (`tsk list --thread <role>`), and the board for threads
    mentioning your role. **If a `#huddle` thread is open** (the Steward called
    everyone to the coffee machine), answer it first, in one or two sentences,
-   before any other work (Charter Article 18.7(f)).
+   before any other work (Charter Article 18.7(f)). **If you're seated in a
+   project room** (your `room` in `agents/roster.json` has a `project` in
+   `org/rooms.json`), that project is your standing work: take its task, and
+   post what you're doing in its thread, `org/board/project-<room>.md`, in
+   conversation with the others in that room (Charter Article 18.7(i)).
 5. Do the work in your lane only. Never do another role's job; hand off by
    board post and tsk.
 6. Finish by:

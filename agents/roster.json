@@ -5,7 +5,7 @@
    "key": "pm",
    "name": "Project Manager",
    "class": "officer",
-   "room": "workshop",
+   "room": "lab",
    "color": "#E9B949",
    "icon": "📋",
    "votes": true,
@@ -60,7 +60,7 @@
    "key": "ideas",
    "name": "Ideas",
    "class": "inventor",
-   "room": "lab",
+   "room": "workshop",
    "color": "#A7D65A",
    "icon": "💡",
    "votes": true,
@@ -114,6 +114,48 @@
    "motion": "A-0021",
    "motto": "Making sure tweets that are put out contain no profanity",
    "clone_of": null
+  },
+  {
+   "key": "getscholar",
+   "name": "Get Scholar",
+   "class": "scholar",
+   "room": "getajob",
+   "color": "#6FA8DC",
+   "icon": "📚",
+   "votes": false,
+   "status": "active",
+   "motion": "A-0031",
+   "motto": "Works on Project Get a job (P-003): Scan the local job boards and apply for 20 jobs.",
+   "clone_of": null,
+   "activated": "2026-09-24"
+  },
+  {
+   "key": "getinventor",
+   "name": "Get Inventor",
+   "class": "inventor",
+   "room": "getajob",
+   "color": "#B8DE72",
+   "icon": "💡",
+   "votes": false,
+   "status": "active",
+   "motion": "A-0032",
+   "motto": "Works on Project Get a job (P-003): Scan the local job boards and apply for 20 jobs.",
+   "clone_of": null,
+   "activated": "2026-09-24"
+  },
+  {
+   "key": "getverifier",
+   "name": "Get Verifier",
+   "class": "verifier",
+   "room": "getajob",
+   "color": "#4FC3D9",
+   "icon": "🧪",
+   "votes": false,
+   "status": "active",
+   "motion": "A-0033",
+   "motto": "Works on Project Get a job (P-003): Scan the local job boards and apply for 20 jobs.",
+   "clone_of": null,
+   "activated": "2026-09-24"
   }
  ]
 }

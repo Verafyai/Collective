@@ -24,14 +24,16 @@ css.textContent = `
 .zzz text{animation:zfloat 3.6s ease-out infinite;opacity:0}.zzz text:nth-child(2){animation-delay:1.2s}.zzz text:nth-child(3){animation-delay:2.4s}
 @keyframes zfloat{0%{opacity:0;transform:translate(0,0) scale(.7)}15%{opacity:.95}100%{opacity:0;transform:translate(14px,-30px) scale(1.25)}}
 @media (prefers-reduced-motion:reduce){.zzz text{animation:none;opacity:.8}}
+.pf-types{display:flex;flex-wrap:wrap;gap:6px}
+.pf-type{border:1.5px solid #C9C3B0;background:#fff;color:#1B2046;border-radius:999px;padding:6px 12px;font:600 13.5px var(--display);cursor:pointer}
+.pf-type[aria-pressed="true"]{background:#1B2046;color:#fff;border-color:#1B2046}
 .whisper{pointer-events:none;animation:whisper 3.6s ease-out forwards}
 @keyframes whisper{0%{opacity:0;transform:translateY(6px)}12%{opacity:1;transform:translateY(0)}70%{opacity:.85}100%{opacity:0;transform:translateY(-10px)}}
 @keyframes idlebob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2.5px)}}
 .agent .eye{transition:ry .06s}
 .agent.dragging{cursor:grabbing;transition:none!important;opacity:.92}
 .agent.dragging .fig{animation:none}
-.flag{cursor:help}.flag .lbl{opacity:0;transition:opacity .15s;pointer-events:none}
-.agent:hover .flag .lbl,.flag:hover .lbl,.flag:focus .lbl{opacity:1}
+.flag{cursor:help}
 .floater{pointer-events:none;animation:floatup 7s ease-out forwards}
 @keyframes floatup{0%{opacity:0;transform:translateY(8px)}8%{opacity:1;transform:translateY(0)}80%{opacity:1}100%{opacity:0;transform:translateY(-18px)}}
 .toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);background:#161D3E;border:1px solid var(--line);color:var(--text);
@@ -165,13 +167,30 @@ function drawFlags(){
       const x = (i - (fl.length - 1) / 2) * 22, g = el("g", {class:"flag", tabindex:0, transform:`translate(${x},-100)`}, a.g.querySelector(".fig"));
       el("circle", {r:10, fill:"#0F1430", stroke:"#fff", "stroke-opacity":.5}, g);
       const t = el("text", {y:4.5, "text-anchor":"middle", "font-size":12}, g); t.textContent = icon;
-      const lb = el("g", {class:"lbl"}, g), txt = f.note || label, w = Math.min(260, txt.length * 6.4 + 16);
-      el("rect", {x:-w/2, y:-40, width:w, height:22, rx:6, fill:"#0F1430", stroke:"var(--line)"}, lb);
-      const tt = el("text", {y:-25, "text-anchor":"middle", fill:"#E9ECF8", "font-size":11.5, "font-family":"Barlow"}, lb); tt.textContent = txt.length > 40 ? txt.slice(0, 39) + "…" : txt;
-      const ti = el("title", {}, g); ti.textContent = txt;
+      const txt = f.note || label; g.dataset.tip = txt;
+      g.addEventListener("pointerenter", () => showTips([g])); g.addEventListener("pointerleave", hideTips);
+      g.addEventListener("focus", () => showTips([g])); g.addEventListener("blur", hideTips);
     });
+    if(!a.tipsWired){ a.tipsWired = true;                         // hovering the agent shows all its labels
+      a.g.addEventListener("pointerenter", () => showTips([...a.g.querySelectorAll(".flag")]));
+      a.g.addEventListener("pointerleave", hideTips); }
   }
 }
+// hover labels live in their own layer, drawn last, so nothing covers them (E-0099)
+function tipLayer(){ let t = $("#tips"); if(!t || t.nextSibling){ t?.remove(); t = el("g", {id:"tips", "pointer-events":"none"}); } return t; }
+function showTips(flags){
+  const layer = tipLayer(); layer.innerHTML = "";
+  const inv = svg.getScreenCTM()?.inverse(); if(!inv) return;
+  flags.forEach((f, i) => {
+    if(!f.dataset.tip || !f.getScreenCTM()) return;
+    const p = svg.createSVGPoint().matrixTransform(inv.multiply(f.getScreenCTM()));
+    const txt = f.dataset.tip, w = Math.min(320, txt.length * 6.6 + 18), y = p.y - 40 - i * 26;
+    el("rect", {x:p.x - w/2, y, width:w, height:22, rx:6, fill:"#0F1430", stroke:"#8E97C4", "stroke-opacity":.6}, layer);
+    const t = el("text", {x:p.x, y:y + 15, "text-anchor":"middle", fill:"#E9ECF8", "font-size":12, "font-family":"Barlow"}, layer);
+    t.textContent = txt.length > 48 ? txt.slice(0, 47) + "…" : txt;
+  });
+}
+function hideTips(){ const t = $("#tips"); if(t) t.innerHTML = ""; }
 
 // ---------- the coffee machine and huddles (E-0076) ----------
 const COFFEE = {x: 7.6, y: 10.9};
@@ -519,8 +538,7 @@ drawChats = function(){
     if(!people.length) continue;
     const R = ROOMS[room], anchor = huddle ? iso(COFFEE.x, COFFEE.y, 90) : iso(R.x + R.w / 2, R.y + R.d / 2, 150);
     const cx = anchor.x, cy = anchor.y, w = 64 + String(c.count).length * 9, h = 34;
-    const col = huddle ? "#F2B84B" : (R?.edge ? "#B7BEE3" : "#8E97C4");
-    for(const k of people){ const p = AG[k].pos; el("line", {x1:cx, y1:cy + h/2, x2:p.x, y2:p.y - 104, stroke:col, "stroke-width":1.6, "stroke-dasharray":"2 5", opacity:.75}, $("#links")); }
+    // no dotted lines to the agents (E-0098): the pill sits over its room
     const fresh = seenCounts[c.id] !== undefined && c.count > seenCounts[c.id];
     const g = el("g", {class:"convo" + (fresh ? " fresh" : ""), "data-id":c.id, tabindex:0, role:"button", transform:`translate(${cx},${cy})`,
       "aria-label":`${huddle ? "The huddle" : c.title + "'s chat"}: ${people.map(k => who(k).name).join(", ")}. ${c.count} messages. Open the chat.`}, $("#chats"));
@@ -680,8 +698,12 @@ function projectForm(renameRoom){
     ${renameRoom ? "" : `<label style="display:block;font:600 14px var(--display);margin:10px 0 4px">What it is (a plain name)</label>
     <input id="pf-name" maxlength="80" placeholder="e.g. Verafy Claims Tracker" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid #C9C3B0;font:15px var(--ui)">
     <label style="display:block;font:600 14px var(--display);margin:10px 0 4px">Spec</label>
-    <textarea id="pf-spec" rows="14" style="width:100%;padding:10px;border-radius:8px;border:1px solid #C9C3B0;font:14px/1.45 var(--ui);box-sizing:border-box">${esc(SPEC_PROMPT)}</textarea>
-    <div id="pf-count" class="sub" style="margin-top:4px"></div>`}
+    <textarea id="pf-spec" rows="12" placeholder="${esc(SPEC_PROMPT)}" style="width:100%;padding:10px;border-radius:8px;border:1px solid #C9C3B0;font:14px/1.45 var(--ui);box-sizing:border-box"></textarea>
+    <div id="pf-count" class="sub" style="margin-top:4px"></div>
+    <label style="display:block;font:600 14px var(--display);margin:10px 0 4px">Spawn agents with it</label>
+    <div class="sub" style="margin:0 0 6px">Each one you pick is proposed for this project's room; it joins when the membership vote passes.</div>
+    <div class="pf-types">${Object.entries(CLASSES).filter(([, c]) => c.spawnable).map(([k, c]) =>
+      `<button type="button" class="pf-type" data-c="${esc(k)}" aria-pressed="false" title="${esc(c.about || "")}">${esc(c.icon || "")} ${esc(c.name)}</button>`).join("")}</div>`}
     <div style="display:flex;gap:8px;margin-top:12px"><button class="btn" id="pf-go">${renameRoom ? "Rename" : "Create project"}</button><button class="btn ghost" id="pf-no" style="color:#1B2046">Cancel</button></div></div>`;
   document.body.appendChild(f); f.addEventListener("keydown", e => { e.stopPropagation(); if(e.key === "Escape") f.remove(); });
   const close = () => f.remove(); f.querySelector(".x").onclick = close; f.querySelector("#pf-no").onclick = close;
@@ -689,10 +711,12 @@ function projectForm(renameRoom){
   const spec = f.querySelector("#pf-spec"), cnt = f.querySelector("#pf-count");
   const count = () => { if(!spec) return; const n = spec.value.trim().length; cnt.textContent = n < 200 ? `${200 - n} more characters needed` : `${n} characters`; };
   spec?.addEventListener("input", count); count(); f.querySelector("#pf-code").focus();
+  f.querySelectorAll(".pf-type").forEach(b => b.onclick = () => b.setAttribute("aria-pressed", String(b.getAttribute("aria-pressed") !== "true")));
   f.querySelector("#pf-go").onclick = async () => {
     const codename = f.querySelector("#pf-code").value.trim();
     const r = renameRoom ? await post(`/api/rooms/${renameRoom}/rename`, {codename})
-      : await post("/api/projects/new", {codename, name: f.querySelector("#pf-name").value.trim(), spec: spec.value.trim()});
+      : await post("/api/projects/new", {codename, name: f.querySelector("#pf-name").value.trim(), spec: spec.value.trim(),
+                                         spawn: [...f.querySelectorAll('.pf-type[aria-pressed="true"]')].map(b => b.dataset.c)});
     toast(r.message || r.error || (r.ok ? "Done." : "Refused."), !r.ok);
     if(r.ok){ close(); pollLive(); }
   };

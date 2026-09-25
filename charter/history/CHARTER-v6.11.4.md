@@ -1,7 +1,7 @@
 # CHARTER — The Collective
 
 ```
-Charter version: 6.11.5
+Charter version: 6.11.4
 Ratified by: Rex St. John (Steward)
 Genesis date: 2026-09-24
 ```
@@ -2530,24 +2530,6 @@ SPRINT_DELIBERATE='Mon 11:00'
 SPRINT_VOTE='Mon 16:00'
 SPRINT_POSTMORTEM='Sun 10:00'
 SPRINT_GRADE='Sun 14:00'
-
-# Get Scholar (scholar), spawned by A-0031
-GETSCHOLAR_INTERVAL=21600
-GETSCHOLAR_MAX_RUNS=5
-GETSCHOLAR_TOOLS="Read,Glob,Grep,Write(org/board/**),Edit(org/board/**),Bash(python3 agents/bin/case.py search:*),Bash(python3 agents/bin/case.py show:*),Bash(python3 agents/bin/sprint.py status:*),Bash(python3 agents/bin/projects.py show:*)"
-# requested, awaiting the Steward's ratification (Article 7.6): WebSearch,WebFetch,Write(research/**),Edit(research/**)
-
-# Get Inventor (inventor), spawned by A-0032
-GETINVENTOR_INTERVAL=14400
-GETINVENTOR_MAX_RUNS=6
-GETINVENTOR_TOOLS="Read,Glob,Grep,Write(org/board/**),Edit(org/board/**),Bash(python3 agents/bin/case.py search:*),Bash(python3 agents/bin/case.py show:*),Bash(python3 agents/bin/sprint.py status:*),Bash(python3 agents/bin/projects.py show:*)"
-# requested, awaiting the Steward's ratification (Article 7.6): Write(ideas/**),Edit(ideas/**)
-
-# Get Verifier (verifier), spawned by A-0033
-GETVERIFIER_INTERVAL=7200
-GETVERIFIER_MAX_RUNS=8
-GETVERIFIER_TOOLS="Read,Glob,Grep,Write(org/board/**),Edit(org/board/**),Bash(python3 agents/bin/case.py search:*),Bash(python3 agents/bin/case.py show:*),Bash(python3 agents/bin/sprint.py status:*),Bash(python3 agents/bin/projects.py show:*)"
-# requested, awaiting the Steward's ratification (Article 7.6): WebSearch,WebFetch,Write(research/verdicts/**),Edit(research/verdicts/**)
 ````
 
 ## V.17 `agents/.env.example`
@@ -5816,18 +5798,6 @@ label = "Shell (approve with agents/bin/approve.sh)"
 label = "Today's board"
 command = "watch -n 60 'ls -1t org/board | head -15'"
 split = "right"
-
-[[tabs]]
-name = "getscholar"
-command = "agents/bin/run-role.sh getscholar --loop"
-
-[[tabs]]
-name = "getinventor"
-command = "agents/bin/run-role.sh getinventor --loop"
-
-[[tabs]]
-name = "getverifier"
-command = "agents/bin/run-role.sh getverifier --loop"
 ````
 
 ## V.68 `.gitignore`
@@ -9733,13 +9703,3 @@ ratified_by: Rex St. John
 charter_sha256_before_entry: a4e99fb4cd1e556f5d40bc2ff7e2e086f4ae2ec6e4855eb2f5bd15c5c888bc7f
 prev_entry_hash: 49fb4effa8fa04da03453b0d16dadd2c7e4b3e371ec3cf54feb9c1ae00f2a72d
 entry_hash: 26b44e1edec563d091dfae910d503e72e9b2cd3b247f8a3741b95ecc9700923a
-
-### A-0035 · v6.11.5 · 2026-09-25 · Class C · New members' configuration recorded
-proposed_by: The Scribe's record (Article 7.7) of A-0031 to A-0033, done by the setup session
-thread: org/board/2026-09-25-amendment-a-0035.md
-change: Part V: agents/config.example.env gains GETSCHOLAR_, GETINVENTOR_, and GETVERIFIER_ INTERVAL, MAX_RUNS, and base TOOLS (requested tools noted, awaiting the Steward, Article 7.6); herdr/projects/collective.toml gains their loop tabs.
-vote: Steward action
-ratified_by: Rex St. John
-charter_sha256_before_entry: 4412f58634680ce7b6c5a622bb159c7fefc03534ea325ea019430fb4a0901a81
-prev_entry_hash: 26b44e1edec563d091dfae910d503e72e9b2cd3b247f8a3741b95ecc9700923a
-entry_hash: 21e9446f5a584ade0b32e170d00466103f752afd17c8cdb2d005ce9f7c449f14

@@ -680,7 +680,7 @@ def agent_write(h, key, action):
         p = guarded(h, "move", 1)
         if p is None: return
         code, out = run(PY, "agents/bin/spawn.py", "move", key, "--room", str(p.get("room", "")))
-        if code == 0 and PROJECT_MARK in read(ROOT / "CHARTER.md"):   # seated in a project room: it works on that project (E-0089)
+        if code == 0 and projects_on_floor():   # seated in a project room: it works on that project (E-0089)
             c2, o2 = run(PY, "agents/bin/rooms.py", "assign", key, str(p.get("room", "")))
             out = out.strip() + ("; " + o2.strip() if o2.strip() else "")
     elif action == "terminal":
@@ -713,11 +713,12 @@ def agent_write(h, key, action):
         return h.send(404, {"error": "not found"})
     h.send(200 if code == 0 else 400, {"ok": code == 0, "message": out.replace("REFUSED: ", "")})
 
-PROJECT_MARK = "**New projects from the floor.**"    # Article 18.7's wording once A-0030 is ratified (E-0089)
+def projects_on_floor():   # Article 18.7(i), (j): only once the amendment log holds A-0030 as ratified (Auditor, v004 item 2)
+    return SHELL.ratified("A-0030")
 
 def project_new(h):
     """/api/projects/new: the Steward starts a project from a spec, in a new room on the floor (E-0089)."""
-    if PROJECT_MARK not in read(ROOT / "CHARTER.md"):
+    if not projects_on_floor():
         return h.send(403, {"error": "New projects from the floor wait for the Steward's approval of amendment A-0030."})
     p = guarded(h, "new project", 5)
     if p is None: return
@@ -732,12 +733,26 @@ def project_new(h):
     if code:
         f.unlink(missing_ok=True); return h.send(400, {"ok": False, "error": out.replace("REFUSED: ", "").strip()[-300:]})
     info = json.loads(out.strip().splitlines()[-1])
+    # agent types toggled on the form: each is proposed for the new room, as a membership motion (Articles 3.6, 3.8)
+    word = info["codename"].replace("Project ", "", 1).split()[0][:16]
+    spawned, failed = [], []
+    classes = json.loads(read(ROOT / "agents/classes.json") or "{}").get("classes", {})
+    for c in [c for c in dict.fromkeys(p.get("spawn") or []) if isinstance(c, str)][:7]:
+        if not classes.get(c, {}).get("spawnable"): failed.append(f"{c}: not a spawnable type"); continue
+        nm = f"{word} {classes[c]['name']}"[:30]
+        focus = f"Works on {info['codename']} ({info['project']}): {summary(spec, 200)}"[:300]
+        c2, o2 = run(PY, "agents/bin/spawn.py", "propose", "--class", c, "--name", nm, "--focus", focus, "--room", info["room"], "--proposer", "steward")
+        (spawned if c2 == 0 else failed).append(nm if c2 == 0 else f"{nm}: {o2.replace('REFUSED: ', '')[-120:]}")
+    info["spawned"], info["spawn_failed"] = spawned, failed
     run(PY, "agents/bin/edict.py", "new", "--title", f"New project: {info['codename']}", "--text", spec,
         "--restatement", f"The Steward started {info['codename']} ({info['project']}) from the floor with this spec ({f.relative_to(ROOT)}).")
-    h.send(200, {"ok": True, "message": f"{info['codename']} ({info['project']}) is open. Drag agents into its room to start them on it.", **info})
+    msg = f"{info['codename']} ({info['project']}) is open. Drag agents into its room to start them on it."
+    if spawned: msg += f" Proposed for its room, awaiting the membership vote: {', '.join(spawned)}."
+    if failed: msg += f" Not proposed: {'; '.join(failed)}."
+    h.send(200, {"ok": True, "message": msg, **info})
 
 def room_rename(h, room):
-    if PROJECT_MARK not in read(ROOT / "CHARTER.md"):
+    if not projects_on_floor():
         return h.send(403, {"error": "Renaming rooms waits for the Steward's approval of amendment A-0030."})
     p = guarded(h, "rename", 2)
     if p is None: return

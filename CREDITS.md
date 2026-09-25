@@ -22,6 +22,7 @@ additions are part of the work that uses them.
 | gitleaks | Zachary Rice and contributors | MIT | Public-commit redaction gate |
 | Barlow, Barlow Semi Condensed (fonts) | Jeremy Tribby (The Barlow Project Authors) | SIL Open Font License 1.1 | Dashboard floor and scope; served locally from `dashboard/fonts/` |
 | Public Sans (font) | USWDS (The Public Sans Project Authors) | SIL Open Font License 1.1 | Dashboard records; served locally |
+| xterm.js (@xterm/xterm 6.0.0) and @xterm/addon-fit 0.11.0 | The xterm.js authors (SourceLair, Microsoft, and contributors) | MIT | The dashboard's web terminal; vendored in `dashboard/vendor/xterm/` with SHA256SUMS |
 | Source Serif 4 (font) | Adobe (The Source Serif 4 Project Authors) | SIL Open Font License 1.1 | Dashboard records; served locally |
 
 Licenses confirmed against each project's repository during setup (2026-09-24).

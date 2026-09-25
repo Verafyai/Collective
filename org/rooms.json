@@ -1,9 +1,37 @@
 {
  "note": "Each room on the floor is named for a project (edict E-0088). Room keys (council, lab, studio, workshop) never change; names do. A live record: renamed by the Steward.",
  "rooms": {
-  "council":  {"name": "Project Valkyrie", "project": "P-001", "about": "The Collective Dashboard: the window every human looks through"},
-  "workshop": {"name": "Project Plumb Line", "project": "P-002", "about": "Verafy Bench: measuring whether panels beat one judge"},
-  "lab":      {"name": "Project Lodestar", "project": "P-003", "about": "Verafy Verdicts (proposed): a public, sourced verdict log"},
-  "studio":   {"name": "Project Keystone", "project": "P-004", "about": "Verafy Facts (proposed): verify once, reuse everywhere"}
+  "council": {
+   "name": "Project Valkyrie",
+   "project": "P-001",
+   "about": "The Collective Dashboard: the window every human looks through"
+  },
+  "workshop": {
+   "name": "Project Plumb Line",
+   "project": "P-002",
+   "about": "Verafy Bench: measuring whether panels beat one judge"
+  },
+  "lab": {
+   "name": "Project Lodestar",
+   "project": null,
+   "about": "Verafy Verdicts: a public, sourced verdict log (proposed, not yet a project)"
+  },
+  "studio": {
+   "name": "Project Keystone",
+   "project": null,
+   "about": "Verafy Facts: verify once, reuse everywhere (proposed, not yet a project)"
+  },
+  "getajob": {
+   "name": "Project Get a job",
+   "project": "P-003",
+   "about": "# Need to get a job The Steward's spec, written on the floor (Get a job). Scan the local job boards and apply for 20 job",
+   "x": 24,
+   "y": 0,
+   "w": 6,
+   "d": 6,
+   "floor": "#23404A",
+   "edge": "#346070",
+   "created": "2026-09-25T02:04:52Z"
+  }
  }
 }

@@ -79,3 +79,15 @@ label = "Shell (approve with agents/bin/approve.sh)"
 label = "Today's board"
 command = "watch -n 60 'ls -1t org/board | head -15'"
 split = "right"
+
+[[tabs]]
+name = "getscholar"
+command = "agents/bin/run-role.sh getscholar --loop"
+
+[[tabs]]
+name = "getinventor"
+command = "agents/bin/run-role.sh getinventor --loop"
+
+[[tabs]]
+name = "getverifier"
+command = "agents/bin/run-role.sh getverifier --loop"

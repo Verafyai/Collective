@@ -3,7 +3,7 @@ Steward's machine streamed to xterm.js over a WebSocket. Python standard library
 
 Three commands, and nothing else: `shell` ($SHELL -l, falling back to /bin/bash), `herdr` (the full
 herdr UI), and `agent` (agents/bin/run-role.sh <key> --interactive: a recorded talk with one active agent,
-Article 18.8; available once the Charter names the web terminal drawer there). Refused unless ALL hold: private view; Host is 127.0.0.1:<port> or localhost:<port>; an
+Article 18.8; available once amendment A-0030 is ratified). Refused unless ALL hold: private view; Host is 127.0.0.1:<port> or localhost:<port>; an
 Origin header equal to the dashboard's own origin (WebSockets skip same-origin rules); and a one-time
 token from GET /api/shell/token, valid for 30 seconds. At most 4 shells at once; each process group is
 killed on disconnect or after 30 minutes idle.
@@ -98,11 +98,11 @@ class Frames:
 def refuse(h, code, why):
     h.send(code, {"error": why})
 
-AGENT_TALK_MARK = "the web terminal drawer"   # Article 18.8's wording once talking to agents in the drawer is ratified (E-0092)
+from rooms import ratified                   # reads the amendment log, not a string the code contains (Auditor, v004 item 2)
 
 def agent_talk_ok():
-    try: return AGENT_TALK_MARK in (ROOT / "CHARTER.md").read_text()
-    except OSError: return False
+    """Talking to an agent in the drawer (Article 18.8), once A-0030 is ratified (E-0092)."""
+    return ratified("A-0030")
 
 def active_agent(key):
     if not re.fullmatch(r"[a-z][a-z0-9]{1,15}", key or ""): return False

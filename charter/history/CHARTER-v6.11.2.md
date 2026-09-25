@@ -1,7 +1,7 @@
 # CHARTER — The Collective
 
 ```
-Charter version: 6.11.5
+Charter version: 6.11.2
 Ratified by: Rex St. John (Steward)
 Genesis date: 2026-09-24
 ```
@@ -2530,24 +2530,6 @@ SPRINT_DELIBERATE='Mon 11:00'
 SPRINT_VOTE='Mon 16:00'
 SPRINT_POSTMORTEM='Sun 10:00'
 SPRINT_GRADE='Sun 14:00'
-
-# Get Scholar (scholar), spawned by A-0031
-GETSCHOLAR_INTERVAL=21600
-GETSCHOLAR_MAX_RUNS=5
-GETSCHOLAR_TOOLS="Read,Glob,Grep,Write(org/board/**),Edit(org/board/**),Bash(python3 agents/bin/case.py search:*),Bash(python3 agents/bin/case.py show:*),Bash(python3 agents/bin/sprint.py status:*),Bash(python3 agents/bin/projects.py show:*)"
-# requested, awaiting the Steward's ratification (Article 7.6): WebSearch,WebFetch,Write(research/**),Edit(research/**)
-
-# Get Inventor (inventor), spawned by A-0032
-GETINVENTOR_INTERVAL=14400
-GETINVENTOR_MAX_RUNS=6
-GETINVENTOR_TOOLS="Read,Glob,Grep,Write(org/board/**),Edit(org/board/**),Bash(python3 agents/bin/case.py search:*),Bash(python3 agents/bin/case.py show:*),Bash(python3 agents/bin/sprint.py status:*),Bash(python3 agents/bin/projects.py show:*)"
-# requested, awaiting the Steward's ratification (Article 7.6): Write(ideas/**),Edit(ideas/**)
-
-# Get Verifier (verifier), spawned by A-0033
-GETVERIFIER_INTERVAL=7200
-GETVERIFIER_MAX_RUNS=8
-GETVERIFIER_TOOLS="Read,Glob,Grep,Write(org/board/**),Edit(org/board/**),Bash(python3 agents/bin/case.py search:*),Bash(python3 agents/bin/case.py show:*),Bash(python3 agents/bin/sprint.py status:*),Bash(python3 agents/bin/projects.py show:*)"
-# requested, awaiting the Steward's ratification (Article 7.6): WebSearch,WebFetch,Write(research/verdicts/**),Edit(research/verdicts/**)
 ````
 
 ## V.17 `agents/.env.example`
@@ -5816,18 +5798,6 @@ label = "Shell (approve with agents/bin/approve.sh)"
 label = "Today's board"
 command = "watch -n 60 'ls -1t org/board | head -15'"
 split = "right"
-
-[[tabs]]
-name = "getscholar"
-command = "agents/bin/run-role.sh getscholar --loop"
-
-[[tabs]]
-name = "getinventor"
-command = "agents/bin/run-role.sh getinventor --loop"
-
-[[tabs]]
-name = "getverifier"
-command = "agents/bin/run-role.sh getverifier --loop"
 ````
 
 ## V.68 `.gitignore`
@@ -8454,7 +8424,7 @@ Works on a scratch copy of the repo and starts the server on a free port.
 Checks: every page and API endpoint, the floor's live feed, board posts showing
 as speech, and the one allowed write (project comments) with its refusals.
 """
-import json, pathlib, re, shutil, socket, subprocess, sys, tempfile, time, urllib.request, urllib.error
+import json, pathlib, shutil, socket, subprocess, sys, tempfile, time, urllib.request, urllib.error
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 t = pathlib.Path(tempfile.mkdtemp()) / "c"
@@ -8523,13 +8493,9 @@ try:
     assert not any("genesis" in d["what"] for d in chat["doing"]), "bookkeeping stays out of chats"
     # one chat per project room (E-0091): only the agents in that room; the Collective-wide chat only in a huddle
     rooms = {c["room"]: c for c in json.loads(get("/api/conversations?by=room")[1])}
-    seated = {}
-    for a in json.loads((t / "agents/roster.json").read_text())["agents"]:
-        if a["status"] == "active": seated.setdefault(a["room"], []).append(a["key"])
-    for r, keys in seated.items():
-        c = json.loads(get(f"/api/conversations/room-{r}")[1])
-        assert sorted(c["members"]) == sorted(keys) and all(x["who"] in keys for x in c["posts"]), c
-    assert all(c["id"] == f"room-{r}" for r, c in rooms.items()) and not any(c["tag"] == "huddle" for c in rooms.values())
+    lab = json.loads(get("/api/conversations/room-lab")[1])
+    assert "ideas" in lab["members"] and "lawyer" not in lab["members"] and all(x["who"] in lab["members"] for x in lab["posts"]), lab
+    assert "lab" in rooms and rooms["lab"]["id"] == "room-lab" and not any(c["tag"] == "huddle" for c in rooms.values())
     live0 = json.loads(get("/api/live")[1])
     assert live0["rooms"]["council"]["name"].startswith("Project "), "rooms carry project codenames (E-0088)"
     assert all("asleep" in o and "open_tasks" in o for o in live0["offices"]), "idle agents with no task sleep (E-0090)"
@@ -8572,12 +8538,9 @@ try:
     assert "summary" in json.loads(get(f"/api/conversations/{conv[0]['id']}")[1])["posts"][0]
     # new projects from the floor (E-0089): refused until A-0030, then a spec makes a project, a room, and a thread
     SPEC = "What is it? A tracker of claims we've checked. Who is it for? Readers. Version 001 lists ten checked claims with sources. " * 3
-    ch = t / "CHARTER.md"; full = ch.read_text()
-    if "\n### A-0030 · " not in full: full += "\n### A-0030 · v9.9.9 · test\nratified_by: test\n"
-    ch.write_text(re.sub(r"\n### A-0030 · .*?(?=\n### |\Z)", "", full, flags=re.S))           # as if A-0030 weren't ratified yet
     code, body = post("/api/projects/new", {"codename": "Project Test", "spec": SPEC}); assert code == 403 and "A-0030" in body["error"], body
     assert subprocess.run([sys.executable, "agents/bin/rooms.py", "new", "--codename", "Project Early", "--spec", "x", "--steward"], cwd=t, capture_output=True).returncode, "rooms.py waits for A-0030 too"
-    ch.write_text(full)                                                                     # A-0030 ratified again
+    ch = t / "CHARTER.md"; ch.write_text(ch.read_text() + "\n### A-0030 · v9.9.9 · test\nratified_by: test\n")   # a stand-in log entry
     time.sleep(5.2); code, body = post("/api/projects/new", {"codename": "Project Test", "spec": "too short"}); assert code == 400, body
     time.sleep(5.2); code, body = post("/api/projects/new", {"codename": "Project Test", "name": "Claims tracker", "spec": SPEC, "spawn": ["scholar", "officer"]})
     assert code == 200 and body["ok"] and body["project"].startswith("P-"), body
@@ -9106,7 +9069,7 @@ class Session:
 ````python
 """The web terminal (Charter Article 18.7(c)(iii); dashboard/shell_bridge.py). Standard library only, no browser.
 Run: python3 tests/test_shell.py   (scratch copy; starts the dashboard on free ports)"""
-import atexit, re, base64, hashlib, json, os, pathlib, shutil, signal, socket, struct, subprocess, sys, tempfile, time, urllib.request, urllib.error
+import atexit, base64, hashlib, json, os, pathlib, shutil, signal, socket, struct, subprocess, sys, tempfile, time, urllib.request, urllib.error
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 t = pathlib.Path(tempfile.mkdtemp()) / "c"
@@ -9209,10 +9172,8 @@ try:
     except urllib.error.HTTPError as e: assert e.code == 403
     assert WS("x", p=PP, origin=f"http://127.0.0.1:{PP}").status == 403, "public view"
     # talking to an agent in the drawer (E-0092): refused until the Charter names it, then only for active agents
-    ch = t / "CHARTER.md"; full = ch.read_text()
-    ch.write_text(re.sub(r"\n### A-0030 · .*?(?=\n### |\Z)", "", full, flags=re.S))           # as if A-0030 weren't ratified yet
     assert WS(token(), cmd="agent&agent=scribe").status == 403, "agent talk waits for A-0030"
-    ch.write_text(full if "\n### A-0030 · " in full else full + "\n### A-0030 · v9.9.9 · test\nratified_by: test\n")
+    ch = t / "CHARTER.md"; ch.write_text(ch.read_text() + "\n### A-0030 · v9.9.9 · test\nratified_by: test\n")   # a stand-in log entry
     rr = t / "agents/bin/run-role.sh"; rr.write_text('#!/bin/bash\necho "talking-to-$1 $2"\nsleep 5\n'); rr.chmod(0o755)   # a stand-in: no model is called
     assert WS(token(), cmd="agent&agent=nobody").status == 400, "unknown agent"
     assert WS(token(), cmd="agent&agent=../x").status == 400, "not a key"
@@ -9713,33 +9674,3 @@ ratified_by: Rex St. John
 charter_sha256_before_entry: 707235f3451028b943fe3b99e2ef7647cb77a296af69bceb0b8710c354ec0fac
 prev_entry_hash: ef38aa79616db62c3b94a9c7f8385b12405005522125806253f9ffb2e0a81de4
 entry_hash: 633ba53fdcccc2da2230b0c615d47e695fb08938a8c24c78e015e5985308bdeb
-
-### A-0033 · v6.11.3 · 2026-09-25 · Class M · Spawn Get Verifier (Verifier)
-proposed_by: Rex St. John (Steward), from the New project form (Project Get a job, P-003); ratified by edict E-0101
-thread: org/board/2026-09-25-amendment-a-0033.md
-change: Membership: Get Verifier (`getverifier`, class Verifier) joins, seated in Project Get a job (room getajob, P-003). The Steward ratified the motion directly (Article 2.2, edict E-0101: 'they need to all get approved') instead of the Article 3.6 vote. Base tools only and no vote (Article 3.6 safeguards); requested tools still need the Steward (Article 7.6). The roster is a live record.
-vote: Steward action
-ratified_by: Rex St. John
-charter_sha256_before_entry: 2cc073a37268e404d1dfeb62da48ec5fba38804f0ffb2b1fad79f9ddb8edfd05
-prev_entry_hash: 633ba53fdcccc2da2230b0c615d47e695fb08938a8c24c78e015e5985308bdeb
-entry_hash: 49fb4effa8fa04da03453b0d16dadd2c7e4b3e371ec3cf54feb9c1ae00f2a72d
-
-### A-0034 · v6.11.4 · 2026-09-25 · Class C · A-0030 follow-up: tests independent of live state
-proposed_by: Rex St. John (Steward), edict E-0097 (ratifying all of A-0030's open work)
-thread: org/board/2026-09-25-amendment-a-0034.md
-change: Part V: tests/test_shell.py and tests/test_dashboard.py simulate an unratified A-0030 by removing its log entry in their scratch copy (the gate reads the ratified log entry, not a marker), and check room chats against whatever rooms the roster seats agents in.
-vote: Steward action
-ratified_by: Rex St. John
-charter_sha256_before_entry: a4e99fb4cd1e556f5d40bc2ff7e2e086f4ae2ec6e4855eb2f5bd15c5c888bc7f
-prev_entry_hash: 49fb4effa8fa04da03453b0d16dadd2c7e4b3e371ec3cf54feb9c1ae00f2a72d
-entry_hash: 26b44e1edec563d091dfae910d503e72e9b2cd3b247f8a3741b95ecc9700923a
-
-### A-0035 · v6.11.5 · 2026-09-25 · Class C · New members' configuration recorded
-proposed_by: The Scribe's record (Article 7.7) of A-0031 to A-0033, done by the setup session
-thread: org/board/2026-09-25-amendment-a-0035.md
-change: Part V: agents/config.example.env gains GETSCHOLAR_, GETINVENTOR_, and GETVERIFIER_ INTERVAL, MAX_RUNS, and base TOOLS (requested tools noted, awaiting the Steward, Article 7.6); herdr/projects/collective.toml gains their loop tabs.
-vote: Steward action
-ratified_by: Rex St. John
-charter_sha256_before_entry: 4412f58634680ce7b6c5a622bb159c7fefc03534ea325ea019430fb4a0901a81
-prev_entry_hash: 26b44e1edec563d091dfae910d503e72e9b2cd3b247f8a3741b95ecc9700923a
-entry_hash: 21e9446f5a584ade0b32e170d00466103f752afd17c8cdb2d005ce9f7c449f14

@@ -1,0 +1,16 @@
+{
+ "key": "getverifier",
+ "name": "Get Verifier",
+ "class": "verifier",
+ "room": "getajob",
+ "focus": "Works on Project Get a job (P-003): Scan the local job boards and apply for 20 jobs.",
+ "interval": 7200,
+ "cap": 8,
+ "model": "default",
+ "base_tools": "Read,Glob,Grep,Write(org/board/**),Edit(org/board/**),Bash(python3 agents/bin/case.py search:*),Bash(python3 agents/bin/case.py show:*),Bash(python3 agents/bin/sprint.py status:*),Bash(python3 agents/bin/projects.py show:*)",
+ "requested_tools": "WebSearch,WebFetch,Write(research/verdicts/**),Edit(research/verdicts/**)",
+ "votes": false,
+ "clone_of": null,
+ "color": "#4FC3D9",
+ "icon": "🧪"
+}

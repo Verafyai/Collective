@@ -24,6 +24,17 @@ PALETTE = [("#23404A", "#346070"), ("#40302A", "#634A3E"), ("#2C3A26", "#465C3C"
            ("#27304A", "#3C4A70"), ("#433A1F", "#665A30")]
 CODENAME_RE = re.compile(r"^Project [A-Z][A-Za-z' -]{1,30}$")
 
+def ratified(aid):
+    """True only if the Charter's amendment log (Part VI, hash-chained) holds aid with a ratified_by line.
+    A gate must read what only ratification writes, never a string the gated code itself contains."""
+    try: text = (ROOT / "CHARTER.md").read_text()
+    except OSError: return False
+    heads = [m.start() for m in re.finditer(r"\n---\n\n# PART VI — ", text)]
+    if not heads: return False
+    m = re.search(r"^### " + re.escape(aid) + r" · .*?(?=^### |\Z)", text[heads[-1]:], re.S | re.M)
+    return bool(m and re.search(r"^ratified_by: \S", m.group(0), re.M))
+GATE = "A-0030"                                           # projects on the floor (Charter Article 18.7(i), (j))
+
 def now(): return datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 def load():
     try: return json.loads(ROOMS_F.read_text())
@@ -112,6 +123,7 @@ def main():
     for o in ("codename", "name", "spec"): ap.add_argument(f"--{o}")
     ap.add_argument("--steward", action="store_true")
     a = ap.parse_args()
+    if a.cmd != "list" and not ratified(GATE): sys.exit(f"REFUSED: project rooms wait for the Steward's ratification of {GATE}")
     if a.cmd == "list":
         for k in room_keys():
             r = load()["rooms"].get(k, {}); print(f"{k:<12} {r.get('name', '-'):<24} {r.get('project', '')}")
