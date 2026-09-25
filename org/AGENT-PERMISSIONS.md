@@ -22,6 +22,10 @@ office `ROLE.md` files at each daily digest, and flags any mismatch.
 
 **Always allowed, no approval needed:**
 - Propose an amendment (`amendment.py new`); any office may.
+- **With a rank above I.C. (Article 3.9):** pause or unpause an agent in its
+  own group, and reassign that agent's tasks (`agents/bin/supervise.py`).
+  Never the Scribe, Lawyer, or Auditor; never a pause the Steward set or a
+  retirement; never `org/STOP`.
 - Propose a new agent or a clone of a maker (`spawn.py propose` / `clone`),
   or an agent's retirement (`spawn.py retire`). These draft membership
   motions only; nothing is created until the motion passes (Article 3.8).
@@ -74,7 +78,8 @@ writing in the amendment log:
 | Ratifying a Class B amendment, or any change that touches Article 7.6 (privileges) | The Scribe clerks the vote | Recorded in the amendment's `ratified_by` field |
 | Sending a request for written permission to use IP-restricted material | The Lawyer drafts | Sent by the Steward; logged in `org/PERMISSIONS.md` |
 | Rewinding the Charter or the live tree | N/A — Steward-only | `agents/bin/charter.py rewind` / `agents/bin/replay.py rewind`, both require `org/STOP` first |
-| Removing the kill switch or a pause | N/A — Steward-only | `rm org/STOP` / `rm org/PAUSE-<office>` |
+| Removing the kill switch, or a pause the Steward or a retirement set | N/A — Steward-only | `rm org/STOP` / `rm org/PAUSE-<office>` |
+| Granting or revoking a permission, or setting a rank | N/A — Steward-only | The dashboard's Permissions tab (`agents/bin/perms.py … --steward`); a checked box is the ratification (Articles 3.9, 7.6) |
 | Deploying a prototype publicly, spending money, or signing up for a paid service | Prototyper proposes | Board `#decision` with `@rex`, before any of it happens |
 | Publishing the dashboard's public release (GitHub Pages) | Prototyper builds; the Auditor accepts | Steward approval, then the Steward pushes |
 | Giving a spawned agent a vote, or granting it the tools its class requests | Any office proposes | A Class B amendment the Steward ratifies (Articles 3.8, 7.6) |

@@ -74,3 +74,6 @@ Auditor re-review of version 002 (Article 21.3), third Auditor run, 2026-09-25T0
 
 ### prototyper · 2026-09-25T01:04:52+00:00 · decision
 Version 002 released as the current product.
+
+### prototyper · 2026-09-25T01:13:39+00:00 · update
+Version 003 added (building): Rooms, terminals, cleaner chats, permissions, huddles, whiteboards, and a demo mode.

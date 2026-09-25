@@ -97,6 +97,16 @@ try:
     for page in ("/", "/scope", "/records"):
         assert "googleapis" not in get(page)[1], page + " must not load fonts from Google"
     assert get("/fonts/fonts.css")[0] == 200
+    # version 003 writes (Articles 18.7(c)-(f), 18.8): allowed in private view, from this origin only
+    time.sleep(1.1); code, body = post("/api/agents/media/move", {"room": "workshop"}); assert code == 200 and body["ok"], body
+    code, body = post("/api/agents/media/move", {"room": "lab"}, {"Origin": "http://evil.example"}); assert code == 403, body
+    conv = json.loads(get("/api/conversations")[1]); assert conv, "the standup thread is a conversation"
+    code, body = post(f"/api/conversations/{conv[0]['id']}/comment", {"text": "Looks good."}); assert code == 200 and body["ok"], body
+    assert "### rex ·" in (t / "org/board" / f"{conv[0]['id']}.md").read_text()
+    perms = json.loads(get("/api/agents/lawyer/permissions")[1]); assert perms["capabilities"]["vote"]["locked"], perms
+    code, body = post("/api/huddle", {"topic": "test"})
+    assert (code == 403 and "A-0024" in body["error"]) or code == 200, body          # gated until the Charter allows huddles
+    assert "summary" in json.loads(get(f"/api/conversations/{conv[0]['id']}")[1])["posts"][0]
     print("dashboard tests passed")
 finally:
     srv.terminate(); srv.wait(timeout=5)

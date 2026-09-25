@@ -5,7 +5,11 @@ powers, and limits, held by one agent. This file is the reference for who does
 what. Each office's full working instructions are in `agents/<office>/ROLE.md`.
 Created by edict E-0034 (Charter Article 3.7, case C-0009). Offices change
 through Charter amendments, and membership through majority vote (Article
-3.6). **Any office may propose a new agent** (`spawn.py propose` or `clone`),
+3.6). **Ranks** (Article 3.9): the Steward may give an agent the rank of
+Manager, General Manager, or Big Boss, which lets it pause, unpause, and
+reassign the work of the agents it supervises. The Scribe, Lawyer, and
+Auditor stay at I.C.: they never supervise and are never supervised in their
+records, opinions, or audits. A rank never adds a vote. **Any office may propose a new agent** (`spawn.py propose` or `clone`),
 which drafts a membership motion (Article 3.8).
 
 ## Separation of powers

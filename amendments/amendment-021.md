@@ -2,11 +2,12 @@
 id: A-0021
 title: Spawn Charlie (Sentinel)
 class: M
-status: proposed
+status: ratified
 proposer: steward
 proposed: 2026-09-24
 text_sha256: 978255d9930310b995220113616e468c4503ac50766b630406d30d22cdf54b4e
-charter_version: (pending)
+charter_version: v6.5.0
+log_entry_hash: aa26a4a176bd52e6f45fcfb9acdc0ee2ba38984b86fe54956fda902c8a56011f
 ---
 
 # Amendment 021 · Spawn Charlie (Sentinel)
@@ -73,3 +74,4 @@ Lawyer's opinion: (pending)
 ## History
 
 - 2026-09-24: proposed by steward.
+- 2026-09-24: ratified and applied to the Charter as v6.5.0.

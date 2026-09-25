@@ -50,4 +50,21 @@ for st in ["deliberating", "voting", "passed"]: run("agents/bin/amendment.py", "
 run(S, "retire-apply", "vera")
 assert roster()["vera"]["status"] == "retired" and (t / "org/PAUSE-vera").exists()
 assert "ok:" in run("agents/bin/amendment.py", "check")
+# moving an agent between rooms is cosmetic and recorded (Article 18.7(c))
+run(S, "move", "researcher", "--room", "studio"); assert roster()["researcher"]["room"] == "studio"
+assert "REFUSED" in run(S, "move", "researcher", "--room", "moon", ok=False)
+assert "REFUSED" in run(S, "move", "vera", "--room", "lab", ok=False)          # retired agents stay put
+# permissions and ranks (Article 3.9): only the Steward; the neutral officers never vote or supervise
+P = "agents/bin/perms.py"
+assert "REFUSED" in run(P, "set", "researcher", "notify", "on", ok=False)
+assert "REFUSED" in run(P, "set", "lawyer", "vote", "on", "--steward", ok=False)
+assert "REFUSED" in run(P, "set", "researcher", "email", "on", "--steward", ok=False)
+assert "REFUSED" in run(P, "rank", "auditor", "manager", "--steward", ok=False)
+run(P, "rank", "pm", "manager", "--group", "researcher", "--steward")
+assert json.loads(run(P, "show", "pm"))["supervises"] == ["researcher"]
+SV = "agents/bin/supervise.py"
+run(SV, "pause", "researcher", "--by", "pm"); assert (t / "org/PAUSE-researcher").exists()
+assert "REFUSED" in run(SV, "pause", "media", "--by", "pm", ok=False)              # outside its group
+(t / "org/PAUSE-researcher").write_text("paused by the Steward\n")
+assert "REFUSED" in run(SV, "unpause", "researcher", "--by", "pm", ok=False)       # the Steward's pause stays
 print("spawn tests passed")

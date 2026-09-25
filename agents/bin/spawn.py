@@ -15,6 +15,7 @@ and it doesn't vote unless a Class B amendment grants it.
   spawn.py activate KEY                         after the motion passes: create the agent
   spawn.py retire KEY [--reason "..."]          propose retiring an agent (a membership motion)
   spawn.py retire-apply KEY                     after that motion passes: retire it
+  spawn.py move KEY --room ROOM                move an agent to another room (cosmetic; Article 18.7(c))
   spawn.py list | bio KEY
 """
 import argparse, datetime, json, pathlib, re, subprocess, sys, tempfile
@@ -150,6 +151,19 @@ def retire_apply(key):
     event("agent.retired", {"summary": f"{ag['name']} retired ({ag['retire_motion']})", "agent": key})
     print(f"{ag['name']} retired; its history is kept.")
 
+def move(key, room):
+    """Seat an agent in another room. Cosmetic: no powers, vote, tools, or schedule change (Article 18.7(c))."""
+    if room not in ROOMS: sys.exit(f"REFUSED: room must be one of {', '.join(sorted(ROOMS))}")
+    ag = find(key) or sys.exit(f"REFUSED: no agent '{key}'")
+    if ag["status"] == "retired": sys.exit(f"REFUSED: {key} is retired")
+    if ag.get("room") == room: print(f"{key} is already in the {room}"); return
+    roster = load(ROSTER); old = ag.get("room", "")
+    for x in roster["agents"]:
+        if x["key"] == key: x["room"] = room
+    save(ROSTER, roster)
+    event("agent.moved", {"summary": f"{ag['name']} moved from the {old or '?'} to the {room}", "agent": key, "from": old, "to": room})
+    print(f"moved {key}: {old or '?'} -> {room}")
+
 def bio(key):
     ag = find(key) or sys.exit(f"no agent '{key}'")
     role = ROOT / "agents" / key / "ROLE.md"
@@ -160,7 +174,7 @@ def bio(key):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=["classes", "propose", "clone", "activate", "retire", "retire-apply", "list", "bio"])
+    ap.add_argument("cmd", choices=["classes", "propose", "clone", "activate", "retire", "retire-apply", "move", "list", "bio"])
     ap.add_argument("arg", nargs="?"); ap.add_argument("--class", dest="cls"); ap.add_argument("--name"); ap.add_argument("--focus")
     ap.add_argument("--key"); ap.add_argument("--room"); ap.add_argument("--interval"); ap.add_argument("--cap"); ap.add_argument("--model")
     ap.add_argument("--proposer"); ap.add_argument("--reason")
@@ -172,6 +186,7 @@ def main():
     elif a.cmd == "activate": activate(a.arg)
     elif a.cmd == "retire": retire(a.arg, a.reason, a.proposer)
     elif a.cmd == "retire-apply": retire_apply(a.arg)
+    elif a.cmd == "move": move(a.arg, a.room)
     elif a.cmd == "list":
         for x in agents(): print(f"{x['key']:<12} {x['status']:<9} {x['class']:<9} {'votes' if x['votes'] else '     '}  {x['name']}")
     elif a.cmd == "bio": print(json.dumps(bio(a.arg), indent=1, ensure_ascii=False))

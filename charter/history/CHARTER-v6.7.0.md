@@ -1,7 +1,7 @@
 # CHARTER — The Collective
 
 ```
-Charter version: 6.8.0
+Charter version: 6.7.0
 Ratified by: Rex St. John (Steward)
 Genesis date: 2026-09-24
 ```
@@ -793,15 +793,7 @@ an event:
   appended to that board thread as `### rex · <timestamp>`. A comment that
   gives a direction is also recorded as an edict (Article 15);
 - **(e)** in private view only, the Steward's permission and rank changes on
-  an agent's Permissions tab (Article 3.9);
-- **(f)** in private view only, a huddle the Steward calls or closes (see
-  **Huddles.** below).
-
-**Huddles.** The Steward can call everyone to the floor's coffee machine: the
-Huddle button (or the coffee machine itself) starts a `#huddle` board thread
-addressed to every agent, and the Steward closes it when done. A huddle
-pauses no one; each office answers it first, in one or two sentences, on its
-next run (COMMON.md), and the floor shows everyone gathered while it's open.
+  an agent's Permissions tab (Article 3.9).
 
 It changes no other record. The public release, which can't accept writes,
 links to GitHub Discussions for comments, and the Scribe imports those
@@ -1899,9 +1891,7 @@ AGENT-PERMISSIONS.md before any action you're unsure about.
    session.
 3. Read the last 20 entries of `org/LEARNINGS.md`.
 4. Check tsk for tasks assigned to your role (`tsk list --thread <role>`), and the board for threads
-   mentioning your role. **If a `#huddle` thread is open** (the Steward called
-   everyone to the coffee machine), answer it first, in one or two sentences,
-   before any other work (Charter Article 18.7(f)).
+   mentioning your role.
 5. Do the work in your lane only. Never do another role's job; hand off by
    board post and tsk.
 6. Finish by:
@@ -8873,13 +8863,3 @@ ratified_by: Rex St. John
 charter_sha256_before_entry: 54917010373a62a5b430c319e60c34b39f8f534b810a5e539b7bb6c17cbac981
 prev_entry_hash: 38b4a581df90fe8679f8de5e1251d467828cae25d7731467ae4500f1bd602935
 entry_hash: 8de3db11acb31ba2af11ff2940f71ead3cb75ea877abaf002eacfedb7ee9afc5
-
-### A-0024 · v6.8.0 · 2026-09-24 · Class B · Huddles at the coffee machine
-proposed_by: Rex St. John (Steward), edicts E-0076, E-0077 (ratification)
-thread: org/board/2026-09-24-amendment-a-0024.md
-change: Article 18.7(f): in private view only, the Steward calls a huddle (the Huddle button or the floor's coffee machine), which starts a #huddle board thread addressed to every agent, and closes it; recorded as events. While it is open the floor gathers everyone at the coffee machine. COMMON.md (V.6): if a #huddle thread is open, each office answers it first, in one or two sentences, before any other work. A huddle pauses no one: agents answer on their next scheduled run.
-vote: Steward action
-ratified_by: Rex St. John
-charter_sha256_before_entry: 34df978daec52337de04f1b8d9476ae9b61543c090a0f42e62c0fb2454be4bdf
-prev_entry_hash: 8de3db11acb31ba2af11ff2940f71ead3cb75ea877abaf002eacfedb7ee9afc5
-entry_hash: 02143f668bcc5b0deefbd86682232e5717f0782cb27b7656cf18addb7968e541

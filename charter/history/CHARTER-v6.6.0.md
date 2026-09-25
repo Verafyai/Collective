@@ -1,7 +1,7 @@
 # CHARTER — The Collective
 
 ```
-Charter version: 6.8.0
+Charter version: 6.6.0
 Ratified by: Rex St. John (Steward)
 Genesis date: 2026-09-24
 ```
@@ -191,26 +191,6 @@ amendment.
 - **After any activation or retirement,** the Scribe records the change in
   this Charter (Article 7.7), including the agent's files and
   configuration in Part V.
-
-3.9 **Ranks and permissions (edicts E-0069, E-0070).**
-- **Permissions.** On the dashboard's Permissions tab, the Steward grants or
-  revokes an agent's capabilities: post to X, post to GitHub, send
-  notifications, and vote. A checked box is the Steward's ratification of
-  that grant (Article 7.6): `agents/bin/perms.py` records it as an edict and
-  an event and applies it to the office's tools, and the Scribe records it in
-  this Charter. The entrenched limits stay: every public post still needs
-  the Steward's approval (Article 4.3), and the public repo stays the
-  Steward's to push (Article 17.4). Email, Telegram, and text messages are
-  listed but unavailable until a tool exists and an amendment enables it.
-- **Ranks.** Every agent has a rank: I.C. (the default), Manager (supervises
-  a group the Steward picks), General Manager (every maker), or Big Boss
-  (every agent except the Scribe, Lawyer, and Auditor). A supervisor may
-  pause and unpause the agents in its group and reassign their tasks
-  (`agents/bin/supervise.py`). It can't lift a pause the Steward set or a
-  retirement, touch `org/STOP`, or direct the neutral officers' records,
-  opinions, or audits. A rank never adds a vote or grants tools.
-- **The neutral officers** (the Scribe, Lawyer, and Auditor) never vote and
-  never hold a rank above I.C. (Article 3.7).
 
 ## Article 4 — Fundamental rules (entrenched)
 
@@ -791,17 +771,7 @@ an event:
   changes no agent's powers, vote, tools, or schedule;
 - **(d)** in private view only, a comment by the Steward in a floor chat,
   appended to that board thread as `### rex · <timestamp>`. A comment that
-  gives a direction is also recorded as an edict (Article 15);
-- **(e)** in private view only, the Steward's permission and rank changes on
-  an agent's Permissions tab (Article 3.9);
-- **(f)** in private view only, a huddle the Steward calls or closes (see
-  **Huddles.** below).
-
-**Huddles.** The Steward can call everyone to the floor's coffee machine: the
-Huddle button (or the coffee machine itself) starts a `#huddle` board thread
-addressed to every agent, and the Steward closes it when done. A huddle
-pauses no one; each office answers it first, in one or two sentences, on its
-next run (COMMON.md), and the floor shows everyone gathered while it's open.
+  gives a direction is also recorded as an edict (Article 15).
 
 It changes no other record. The public release, which can't accept writes,
 links to GitHub Discussions for comments, and the Scribe imports those
@@ -1340,11 +1310,7 @@ powers, and limits, held by one agent. This file is the reference for who does
 what. Each office's full working instructions are in `agents/<office>/ROLE.md`.
 Created by edict E-0034 (Charter Article 3.7, case C-0009). Offices change
 through Charter amendments, and membership through majority vote (Article
-3.6). **Ranks** (Article 3.9): the Steward may give an agent the rank of
-Manager, General Manager, or Big Boss, which lets it pause, unpause, and
-reassign the work of the agents it supervises. The Scribe, Lawyer, and
-Auditor stay at I.C.: they never supervise and are never supervised in their
-records, opinions, or audits. A rank never adds a vote. **Any office may propose a new agent** (`spawn.py propose` or `clone`),
+3.6). **Any office may propose a new agent** (`spawn.py propose` or `clone`),
 which drafts a membership motion (Article 3.8).
 
 ## Separation of powers
@@ -1556,10 +1522,6 @@ office `ROLE.md` files at each daily digest, and flags any mismatch.
 
 **Always allowed, no approval needed:**
 - Propose an amendment (`amendment.py new`); any office may.
-- **With a rank above I.C. (Article 3.9):** pause or unpause an agent in its
-  own group, and reassign that agent's tasks (`agents/bin/supervise.py`).
-  Never the Scribe, Lawyer, or Auditor; never a pause the Steward set or a
-  retirement; never `org/STOP`.
 - Propose a new agent or a clone of a maker (`spawn.py propose` / `clone`),
   or an agent's retirement (`spawn.py retire`). These draft membership
   motions only; nothing is created until the motion passes (Article 3.8).
@@ -1612,8 +1574,7 @@ writing in the amendment log:
 | Ratifying a Class B amendment, or any change that touches Article 7.6 (privileges) | The Scribe clerks the vote | Recorded in the amendment's `ratified_by` field |
 | Sending a request for written permission to use IP-restricted material | The Lawyer drafts | Sent by the Steward; logged in `org/PERMISSIONS.md` |
 | Rewinding the Charter or the live tree | N/A — Steward-only | `agents/bin/charter.py rewind` / `agents/bin/replay.py rewind`, both require `org/STOP` first |
-| Removing the kill switch, or a pause the Steward or a retirement set | N/A — Steward-only | `rm org/STOP` / `rm org/PAUSE-<office>` |
-| Granting or revoking a permission, or setting a rank | N/A — Steward-only | The dashboard's Permissions tab (`agents/bin/perms.py … --steward`); a checked box is the ratification (Articles 3.9, 7.6) |
+| Removing the kill switch or a pause | N/A — Steward-only | `rm org/STOP` / `rm org/PAUSE-<office>` |
 | Deploying a prototype publicly, spending money, or signing up for a paid service | Prototyper proposes | Board `#decision` with `@rex`, before any of it happens |
 | Publishing the dashboard's public release (GitHub Pages) | Prototyper builds; the Auditor accepts | Steward approval, then the Steward pushes |
 | Giving a spawned agent a vote, or granting it the tools its class requests | Any office proposes | A Class B amendment the Steward ratifies (Articles 3.8, 7.6) |
@@ -1899,9 +1860,7 @@ AGENT-PERMISSIONS.md before any action you're unsure about.
    session.
 3. Read the last 20 entries of `org/LEARNINGS.md`.
 4. Check tsk for tasks assigned to your role (`tsk list --thread <role>`), and the board for threads
-   mentioning your role. **If a `#huddle` thread is open** (the Steward called
-   everyone to the coffee machine), answer it first, in one or two sentences,
-   before any other work (Charter Article 18.7(f)).
+   mentioning your role.
 5. Do the work in your lane only. Never do another role's job; hand off by
    board post and tsk.
 6. Finish by:
@@ -8261,23 +8220,6 @@ for st in ["deliberating", "voting", "passed"]: run("agents/bin/amendment.py", "
 run(S, "retire-apply", "vera")
 assert roster()["vera"]["status"] == "retired" and (t / "org/PAUSE-vera").exists()
 assert "ok:" in run("agents/bin/amendment.py", "check")
-# moving an agent between rooms is cosmetic and recorded (Article 18.7(c))
-run(S, "move", "researcher", "--room", "studio"); assert roster()["researcher"]["room"] == "studio"
-assert "REFUSED" in run(S, "move", "researcher", "--room", "moon", ok=False)
-assert "REFUSED" in run(S, "move", "vera", "--room", "lab", ok=False)          # retired agents stay put
-# permissions and ranks (Article 3.9): only the Steward; the neutral officers never vote or supervise
-P = "agents/bin/perms.py"
-assert "REFUSED" in run(P, "set", "researcher", "notify", "on", ok=False)
-assert "REFUSED" in run(P, "set", "lawyer", "vote", "on", "--steward", ok=False)
-assert "REFUSED" in run(P, "set", "researcher", "email", "on", "--steward", ok=False)
-assert "REFUSED" in run(P, "rank", "auditor", "manager", "--steward", ok=False)
-run(P, "rank", "pm", "manager", "--group", "researcher", "--steward")
-assert json.loads(run(P, "show", "pm"))["supervises"] == ["researcher"]
-SV = "agents/bin/supervise.py"
-run(SV, "pause", "researcher", "--by", "pm"); assert (t / "org/PAUSE-researcher").exists()
-assert "REFUSED" in run(SV, "pause", "media", "--by", "pm", ok=False)              # outside its group
-(t / "org/PAUSE-researcher").write_text("paused by the Steward\n")
-assert "REFUSED" in run(SV, "unpause", "researcher", "--by", "pm", ok=False)       # the Steward's pause stays
 print("spawn tests passed")
 ````
 
@@ -8383,16 +8325,6 @@ try:
     for page in ("/", "/scope", "/records"):
         assert "googleapis" not in get(page)[1], page + " must not load fonts from Google"
     assert get("/fonts/fonts.css")[0] == 200
-    # version 003 writes (Articles 18.7(c)-(f), 18.8): allowed in private view, from this origin only
-    time.sleep(1.1); code, body = post("/api/agents/media/move", {"room": "workshop"}); assert code == 200 and body["ok"], body
-    code, body = post("/api/agents/media/move", {"room": "lab"}, {"Origin": "http://evil.example"}); assert code == 403, body
-    conv = json.loads(get("/api/conversations")[1]); assert conv, "the standup thread is a conversation"
-    code, body = post(f"/api/conversations/{conv[0]['id']}/comment", {"text": "Looks good."}); assert code == 200 and body["ok"], body
-    assert "### rex ·" in (t / "org/board" / f"{conv[0]['id']}.md").read_text()
-    perms = json.loads(get("/api/agents/lawyer/permissions")[1]); assert perms["capabilities"]["vote"]["locked"], perms
-    code, body = post("/api/huddle", {"topic": "test"})
-    assert (code == 403 and "A-0024" in body["error"]) or code == 200, body          # gated until the Charter allows huddles
-    assert "summary" in json.loads(get(f"/api/conversations/{conv[0]['id']}")[1])["posts"][0]
     print("dashboard tests passed")
 finally:
     srv.terminate(); srv.wait(timeout=5)
@@ -8430,196 +8362,6 @@ elif command -v open >/dev/null 2>&1; then
 else
   echo "run this in a terminal: cd $ROOT && $CMD"; exit 2
 fi
-````
-
-## V.128 `agents/bin/perms.py`
-
-````python
-#!/usr/bin/env python3
-"""Agent permissions and ranks (Charter Article 3.9; the dashboard's Permissions tab, Article 18.7(e)).
-
-A permission is granted or revoked only by the Steward: a checked box on the dashboard *is* the
-Steward's ratification of that grant (Article 7.6). Each change is recorded as an edict and an
-event, applied to the office's tools in agents/config.env, and flagged on the board for the
-Scribe to record in the Charter (Part V, agents/config.example.env). The entrenched limits stay:
-every public post still needs the Steward's approval (4.3), the public repo stays the Steward's
-to push (17.4), the neutral officers never vote or supervise (3.7), and no rank adds a vote.
-
-  perms.py show KEY                          what the agent may do, as JSON
-  perms.py set KEY CAPABILITY on|off --steward
-  perms.py rank KEY RANK [--group a,b,c] --steward
-"""
-import argparse, datetime, json, pathlib, re, subprocess, sys
-
-ROOT = pathlib.Path(__file__).resolve().parents[2]
-ROSTER, CONFIG = ROOT / "agents/roster.json", ROOT / "agents/config.env"
-NEUTRAL = {"scribe", "lawyer", "auditor"}          # Article 3.7: they record, advise, and audit; they never vote or supervise
-RANKS = {"ic": "I.C.", "manager": "Manager", "gm": "General Manager", "bigboss": "Big Boss"}
-CAPS = {  # capability: (label, tool it adds to the office's *_TOOLS, or None, limit shown to the Steward, available)
-    "post_x":      ("Post to X", "Bash(agents/bin/x-post.sh:*)", "Posts only drafts you approved (Article 4.3).", True),
-    "post_github": ("Post to GitHub", None, "Drafts issues and comments into the outbox; they go out only after your approval (4.3). The public repo stays yours to push (17.4).", True),
-    "notify":      ("Send notifications", "Bash(agents/bin/notify.sh:*)", "Local notifications to you.", True),
-    "vote":        ("Vote", None, "A vote in sprints and amendments (Articles 3.8, 14).", True),
-    "email":       ("Send email", None, "Not available: no email tool exists. Agents never get your Gmail.", False),
-    "telegram":    ("Post to Telegram", None, "Not available yet: Telegram is deferred (E-0039).", False),
-    "sms":         ("Send text messages", None, "Not available: no messaging tool exists.", False),
-}
-SUPERVISE_TOOL = "Bash(python3 agents/bin/supervise.py:*)"
-
-def load(): return json.loads(ROSTER.read_text())
-def save(d): ROSTER.write_text(json.dumps(d, indent=1, ensure_ascii=False) + "\n")
-def find(d, key): return next((a for a in d["agents"] if a["key"] == key), None)
-
-def run(*a): return subprocess.run([sys.executable, *a], cwd=ROOT, capture_output=True, text=True)
-
-def record(key, what, words):
-    """The Steward's dashboard action: an edict (his decision, in his words), an event, and a note for the Scribe."""
-    r = run("agents/bin/edict.py", "new", "--title", f"Permissions: {what}", "--text", words,
-            "--restatement", f"The Steward, on the dashboard's Permissions tab, {what}. A checked box is his ratification "
-                             f"of the grant (Article 7.6); applied to agents/config.env and the roster.")
-    eid = (re.search(r"issued (E-\d{4})", r.stdout) or [None, "E-?"])[1]
-    run("agents/bin/eventlog.py", "record", "--actor", "steward", "--type", "agent.permission",
-        "--data", json.dumps({"summary": f"{what} ({eid})", "agent": key}))
-    b = ROOT / "org/board" / f"{datetime.date.today().isoformat()}-permissions.md"
-    ts = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    with b.open("a") as f:
-        f.write(("" if b.exists() and b.stat().st_size else "#decision\n") +
-                f"\n### rex · {ts}\n{what[0].upper() + what[1:]} ({eid}, Article 3.9). @scribe please record it in the Charter (Part V, agents/config.example.env and agents/roster.json).\n")
-    return eid
-
-def tools_line(role):
-    s = CONFIG.read_text(); m = re.search(rf'^{role.upper()}_TOOLS="(.*)"$', s, re.M)
-    return s, m
-
-def set_tool(role, tool, on):
-    s, m = tools_line(role)
-    if not m: return False                                  # Social has no *_TOOLS: its grants are recorded in the roster
-    have = [t for t in split(m.group(1)) if t]
-    if on and tool not in have: have.append(tool)
-    if not on: have = [t for t in have if t != tool]
-    CONFIG.write_text(s[:m.start(1)] + ",".join(have) + s[m.end(1):]); return True
-
-def split(t):
-    out, depth, cur = [], 0, ""
-    for ch in t:
-        depth += (ch == "(") - (ch == ")")
-        if ch == "," and depth == 0: out.append(cur.strip()); cur = ""
-        else: cur += ch
-    return out + ([cur.strip()] if cur.strip() else [])
-
-def show(key):
-    d = load(); a = find(d, key) or sys.exit(f"REFUSED: no agent '{key}'")
-    grants, rank = set(a.get("grants", [])), a.get("rank", "ic")
-    caps = {}
-    for c, (label, tool, limit, avail) in CAPS.items():
-        on = a.get("votes", False) if c == "vote" else c in grants
-        locked = (not avail) or (c == "vote" and key in NEUTRAL)
-        why = limit if avail else limit
-        if c == "vote" and key in NEUTRAL: why = "Locked: the Scribe, Lawyer, and Auditor stay neutral and never vote (Article 3.7)."
-        caps[c] = {"label": label, "on": bool(on), "locked": locked, "available": avail, "note": why}
-    sup = rank != "ic"
-    caps["override"] = {"label": "Override agents", "on": sup, "locked": True, "available": True,
-                        "note": "Comes with rank: pause, unpause, and reassign the tasks of agents it supervises. Never the neutral officers' work."}
-    caps["supervise"] = {"label": "Supervise an agent group", "on": sup, "locked": True, "available": True,
-                         "note": "Comes with rank: Manager (a group you pick), General Manager (every maker), Big Boss (every agent except the neutral officers)."}
-    return {"key": key, "rank": rank, "rank_label": RANKS.get(rank, rank), "rank_locked": key in NEUTRAL,
-            "supervises": scope(d, a), "group": a.get("supervises", []), "capabilities": caps, "ranks": RANKS}
-
-def scope(d, a):
-    rank = a.get("rank", "ic")
-    active = [x for x in d["agents"] if x["status"] == "active" and x["key"] != a["key"]]
-    if rank == "manager": return [k for k in a.get("supervises", []) if k not in NEUTRAL]
-    if rank == "gm": return [x["key"] for x in active if x.get("class") != "officer"]
-    if rank == "bigboss": return [x["key"] for x in active if x["key"] not in NEUTRAL]
-    return []
-
-def main():
-    ap = argparse.ArgumentParser(); ap.add_argument("cmd", choices=["show", "set", "rank"]); ap.add_argument("key")
-    ap.add_argument("value", nargs="?"); ap.add_argument("state", nargs="?"); ap.add_argument("--group", default="")
-    ap.add_argument("--steward", action="store_true")
-    a = ap.parse_args()
-    if a.cmd == "show": print(json.dumps(show(a.key), indent=1)); return
-    if not a.steward: sys.exit("REFUSED: only the Steward grants or revokes permissions (Articles 4.6, 7.6)")
-    d = load(); ag = find(d, a.key) or sys.exit(f"REFUSED: no agent '{a.key}'")
-    if ag["status"] != "active": sys.exit(f"REFUSED: {a.key} is {ag['status']}")
-    if a.cmd == "set":
-        cap, on = a.value, a.state == "on"
-        if cap not in CAPS or a.state not in ("on", "off"): sys.exit(f"REFUSED: usage: set KEY {{{','.join(CAPS)}}} on|off")
-        label, tool, _, avail = CAPS[cap]
-        if not avail: sys.exit(f"REFUSED: {label} isn't available: {CAPS[cap][2]}")
-        if cap == "vote":
-            if a.key in NEUTRAL: sys.exit("REFUSED: the neutral officers never vote (Article 3.7)")
-            if not on and sum(1 for x in d["agents"] if x["status"] == "active" and x.get("votes")) - (1 if ag.get("votes") else 0) < 3:
-                sys.exit("REFUSED: the Collective must keep at least three voting members (Article 3.6)")
-            ag["votes"] = on
-        else:
-            g = set(ag.get("grants", [])); (g.add if on else g.discard)(cap); ag["grants"] = sorted(g)
-            if tool: set_tool(a.key, tool, on)
-        save(d)
-        what = f"{'granted' if on else 'revoked'} {label.lower()} {'to' if on else 'from'} {ag['name']}"
-        print(f"{what} ({record(a.key, what, f'[dashboard] {label}: {a.state} for {a.key}')})"); return
-    if a.cmd == "rank":
-        rank = a.value
-        if rank not in RANKS: sys.exit(f"REFUSED: rank must be one of {', '.join(RANKS)}")
-        if a.key in NEUTRAL and rank != "ic": sys.exit("REFUSED: the neutral officers don't supervise anyone (Article 3.7)")
-        group = [k for k in a.group.split(",") if k]
-        if rank == "manager":
-            for k in group:
-                t = find(d, k)
-                if not t or t["status"] != "active" or k == a.key or k in NEUTRAL:
-                    sys.exit(f"REFUSED: '{k}' can't be in {ag['name']}'s group (unknown, inactive, itself, or a neutral officer)")
-        ag["rank"], ag["supervises"] = rank, (group if rank == "manager" else [])
-        set_tool(a.key, SUPERVISE_TOOL, rank != "ic"); save(d)
-        what = f"set {ag['name']}'s rank to {RANKS[rank]}" + (f", supervising {', '.join(group)}" if group else "")
-        print(f"{what} ({record(a.key, what, f'[dashboard] rank: {rank} for {a.key}' + (f' (group: {a.group})' if group else ''))})")
-
-if __name__ == "__main__":
-    main()
-````
-
-## V.129 `agents/bin/supervise.py`
-
-````python
-#!/usr/bin/env python3
-"""Supervision within a rank's group (Charter Article 3.9).
-
-  supervise.py pause KEY --by SUPERVISOR [--reason "..."]
-  supervise.py unpause KEY --by SUPERVISOR
-
-A supervisor may pause and unpause only the agents in its group (perms.py show SUPERVISOR). It can
-never touch the neutral officers, itself, a pause the Steward set, or a retirement; `org/STOP` stays
-the Steward's alone (Article 4.9). Every action is recorded as an event.
-"""
-import argparse, json, pathlib, subprocess, sys
-
-ROOT = pathlib.Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "agents/bin"))
-import perms
-
-MARK = "paused by supervisor "
-
-def main():
-    ap = argparse.ArgumentParser(); ap.add_argument("cmd", choices=["pause", "unpause"]); ap.add_argument("key")
-    ap.add_argument("--by", required=True); ap.add_argument("--reason", default="")
-    a = ap.parse_args()
-    d = perms.load(); boss = perms.find(d, a.by)
-    if not boss or boss["status"] != "active": sys.exit(f"REFUSED: no active agent '{a.by}'")
-    if a.key not in perms.scope(d, boss): sys.exit(f"REFUSED: {a.key} isn't in {a.by}'s group")
-    f = ROOT / "org" / f"PAUSE-{a.key}"
-    if a.cmd == "pause":
-        if f.exists(): print(f"{a.key} is already paused"); return
-        f.write_text(f"{MARK}{a.by}: {a.reason}\n")
-    else:
-        if not f.exists(): print(f"{a.key} isn't paused"); return
-        if not f.read_text().startswith(MARK): sys.exit("REFUSED: this pause was set by the Steward or a retirement; only the Steward removes it")
-        f.unlink()
-    subprocess.run([sys.executable, str(ROOT / "agents/bin/eventlog.py"), "record", "--actor", a.by, "--type", f"agent.{a.cmd}d",
-                    "--data", json.dumps({"summary": f"{a.by} {a.cmd}d {a.key}" + (f": {a.reason}" if a.reason else ""), "agent": a.key})],
-                   capture_output=True)
-    print(f"{a.cmd}d {a.key}")
-
-if __name__ == "__main__":
-    main()
 ````
 
 ---
@@ -8863,23 +8605,3 @@ ratified_by: Rex St. John
 charter_sha256_before_entry: 64c88ab0f17d4bcd057067c166e30d00b6a3932afa365ed1aadd2fca9ce3666a
 prev_entry_hash: aa26a4a176bd52e6f45fcfb9acdc0ee2ba38984b86fe54956fda902c8a56011f
 entry_hash: 38b4a581df90fe8679f8de5e1251d467828cae25d7731467ae4500f1bd602935
-
-### A-0023 · v6.7.0 · 2026-09-24 · Class B · Ranks and permissions
-proposed_by: Rex St. John (Steward), edicts E-0069, E-0070, E-0072 (ratification)
-thread: org/board/2026-09-24-amendment-a-0023.md
-change: New Article 3.9: the Steward grants or revokes an agent's capabilities (post to X, post to GitHub, send notifications, vote) on the dashboard's Permissions tab; a checked box is the ratification (Article 7.6), recorded by perms.py as an edict and an event, applied to the office's tools, and recorded by the Scribe; entrenched limits kept (4.3 approval of every post; 17.4 public pushes); email, Telegram, and text messages listed but unavailable. Ranks: I.C., Manager (a group the Steward picks), General Manager (every maker), Big Boss (every agent except the Scribe, Lawyer, and Auditor); a supervisor may pause, unpause, and reassign tasks within its group (supervise.py), never a pause the Steward set, a retirement, org/STOP, or the neutral officers' work; a rank never adds a vote or grants tools; the neutral officers never vote or rank above I.C. Article 18.7(e): the Permissions tab's changes are a dashboard write. Part V: new perms.py and supervise.py; AGENT-PERMISSIONS (V.3) and OFFICERS (V.2) updated; tests (V.125, V.126) cover moves, comments, permissions, ranks, supervision, and huddle gating.
-vote: Steward action
-ratified_by: Rex St. John
-charter_sha256_before_entry: 54917010373a62a5b430c319e60c34b39f8f534b810a5e539b7bb6c17cbac981
-prev_entry_hash: 38b4a581df90fe8679f8de5e1251d467828cae25d7731467ae4500f1bd602935
-entry_hash: 8de3db11acb31ba2af11ff2940f71ead3cb75ea877abaf002eacfedb7ee9afc5
-
-### A-0024 · v6.8.0 · 2026-09-24 · Class B · Huddles at the coffee machine
-proposed_by: Rex St. John (Steward), edicts E-0076, E-0077 (ratification)
-thread: org/board/2026-09-24-amendment-a-0024.md
-change: Article 18.7(f): in private view only, the Steward calls a huddle (the Huddle button or the floor's coffee machine), which starts a #huddle board thread addressed to every agent, and closes it; recorded as events. While it is open the floor gathers everyone at the coffee machine. COMMON.md (V.6): if a #huddle thread is open, each office answers it first, in one or two sentences, before any other work. A huddle pauses no one: agents answer on their next scheduled run.
-vote: Steward action
-ratified_by: Rex St. John
-charter_sha256_before_entry: 34df978daec52337de04f1b8d9476ae9b61543c090a0f42e62c0fb2454be4bdf
-prev_entry_hash: 8de3db11acb31ba2af11ff2940f71ead3cb75ea877abaf002eacfedb7ee9afc5
-entry_hash: 02143f668bcc5b0deefbd86682232e5717f0782cb27b7656cf18addb7968e541

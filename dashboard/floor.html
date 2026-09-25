@@ -168,7 +168,7 @@ details.prompt pre{white-space:pre-wrap;font:13px/1.5 var(--ui);background:#0F14
 const $ = s => document.querySelector(s);
 const NS = "http://www.w3.org/2000/svg";
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const api = p => fetch(p, {cache:"no-store"}).then(r => r.json());
+let api = p => fetch(p, {cache:"no-store"}).then(r => r.json());   // let: the labeled demo mode (?demo=1) replaces it
 const ago = ts => { if(!ts) return "never"; const s=(Date.now()-new Date(ts))/1000;
   return s<60?"just now":s<3600?Math.round(s/60)+" min ago":s<86400?Math.round(s/3600)+" h ago":Math.round(s/86400)+" d ago"; };
 
@@ -655,5 +655,6 @@ build(); Object.keys(CAST).forEach(k => { CAST[k].cls = {pm:"officer",scribe:"of
   setInterval(()=>{ pollLive().catch(()=>{}); pollEvents().catch(()=>{}); pollConvos().catch(()=>{}); }, 2500);
 })();
 </script>
+<script src="/static/floor-extras.js"></script>
 </body>
 </html>

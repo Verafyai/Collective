@@ -134,10 +134,20 @@ POST_RE = re.compile(r"^### (\S+) · (\S+)\n(.*?)(?=^### |\Z)", re.S | re.M)
 def _author(k):
     k = k.lower()
     return "steward" if k in ("rex", "steward") else k
+def summary(text, n=160):
+    """The post's summary: its first line when that line is short (the COMMON.md convention), else its first sentence."""
+    lines = [l.strip() for l in text.strip().splitlines() if l.strip()]
+    if not lines: return ""
+    first = re.sub(r"^[-*] +|^#+ +", "", lines[0])
+    if len(first) <= n and (len(lines) == 1 or len(first) >= 20): out = first
+    else:
+        flat = " ".join(lines); m = re.match(r"(.{20,%d}?[.!?])(\s|$)" % n, flat); out = m.group(1) if m else flat[:n].rstrip() + "…"
+    return re.sub(r"\*\*|`", "", out)
+
 def thread(path):
     text = read(path); lines = text.splitlines()
     tag = lines[0].strip() if lines and lines[0].startswith("#") and not lines[0].startswith("##") else ""
-    posts = [{"who": _author(m.group(1)), "ts": m.group(2), "text": m.group(3).strip()} for m in POST_RE.finditer(text)]
+    posts = [{"who": _author(m.group(1)), "ts": m.group(2), "text": m.group(3).strip(), "summary": summary(m.group(3))} for m in POST_RE.finditer(text)]
     name = pathlib.Path(path).stem
     title = re.sub(r"^\d{4}-\d{2}-\d{2}-", "", name).replace("-", " ").strip().capitalize()
     return {"id": name, "title": title or name, "tag": tag.lstrip("#").split()[0] if tag else "", "posts": posts}
@@ -153,7 +163,7 @@ def conversations(hours=48, limit=8):
         if len(who) < 2: continue            # a conversation needs at least two participants
         last = t["posts"][-1]
         out.append({"id": t["id"], "title": t["title"], "tag": t["tag"], "participants": who, "count": len(t["posts"]),
-                    "last_ts": last["ts"], "last_who": last["who"], "last_text": last["text"][:140]})
+                    "last_ts": last["ts"], "last_who": last["who"], "last_text": last["text"][:140], "last_summary": last["summary"]})
     out.sort(key=lambda c: c["last_ts"], reverse=True)
     cutoff = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(time.time() - hours * 3600))
     recent = [c for c in out if c["last_ts"][:19] >= cutoff]
@@ -206,7 +216,7 @@ def overview():
     pauses = sorted(p.name.replace("PAUSE-", "") for p in (ROOT / "org").glob("PAUSE-*"))
     waiting = []
     if not PUBLIC:
-        drafts = sorted(p.name for p in (ROOT / "private/outbox/pending").glob("*.md"))
+        drafts = sorted(p.name for p in (ROOT / "private/outbox/pending").glob("*.md") if not p.name.endswith(".REVIEW.md"))
         if drafts: waiting.append({"what": f"{len(drafts)} draft{'s' if len(drafts) != 1 else ''} to approve or reject",
                                    "how": "agents/bin/approve.sh private/outbox/pending/<file>", "detail": drafts[:5]})
         issued = []
@@ -347,6 +357,68 @@ def verify():
     _verify_cache.update(t=time.time(), data=out)
     return out
 
+def tasks():
+    """Every task on the tsk board (org/tasks, public): its number, title, owner office (thread), and state."""
+    try: d = json.loads(read(ROOT / "org/tasks/tsk.json") or "{}")
+    except ValueError: d = {}
+    return [{"n": t.get("number"), "title": t.get("title", ""), "office": t.get("thread") or "", "state": t.get("status", "open"),
+             "notes": (t.get("notes") or "")[:300]} for t in d.get("tasks", []) if not t.get("deleted") and not t.get("archived")]
+
+def huddle():
+    """The open huddle, if any: the newest org/board/*-huddle-*.md, open until the Steward closes it or 3 hours pass."""
+    files = sorted(glob.glob(str(ROOT / "org/board/*-huddle-*.md")))
+    if not files: return None
+    t = thread(files[-1])
+    if not t["posts"]: return None
+    start, last = t["posts"][0], t["posts"][-1]
+    closed = last["who"] == "steward" and last["text"].startswith("Huddle closed")
+    try: age = time.time() - calendar.timegm(time.strptime(start["ts"][:19], "%Y-%m-%dT%H:%M:%S"))
+    except ValueError: age = 0
+    return {"id": t["id"], "topic": summary(start["text"], 120), "started": start["ts"], "open": not closed and age < 3 * 3600,
+            "replies": len(t["posts"]) - 1}
+
+def huddle_write(h, action):
+    """/api/huddle (start) and /api/huddle/close: the Steward calls everyone to the coffee machine (Article 18.7(f))."""
+    if "Huddles." not in read(ROOT / "CHARTER.md"):   # a write the Charter doesn't allow yet (Article 18.7(f), A-0024)
+        return h.send(403, {"error": "Huddles are waiting for the Steward's approval of amendment A-0024."})
+    p = guarded(h, "huddle", 3)
+    if p is None: return
+    ts = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    cur = huddle()
+    if action == "close":
+        if not cur or not cur["open"]: return h.send(400, {"error": "no huddle is open"})
+        with (ROOT / "org/board" / f"{cur['id']}.md").open("a") as f: f.write(f"\n### rex · {ts}\nHuddle closed. Back to work.\n")
+        run(PY, "agents/bin/eventlog.py", "record", "--actor", "steward", "--type", "huddle.closed", "--data", json.dumps({"summary": "huddle closed", "path": f"org/board/{cur['id']}.md"}))
+        return h.send(200, {"ok": True, "message": "Huddle closed."})
+    if cur and cur["open"]: return h.send(400, {"error": "a huddle is already open"})
+    topic = str(p.get("topic", "")).strip() or "Quick huddle: where do things stand?"
+    if len(topic) > 1000: return h.send(400, {"error": "keep the topic under 1000 characters"})
+    name = f"{time.strftime('%Y-%m-%d', time.gmtime())}-huddle-{time.strftime('%H%M', time.gmtime())}"
+    (ROOT / "org/board" / f"{name}.md").write_text(f"#huddle\n### rex · {ts}\n{topic}\n\n@all: huddle at the coffee machine. On your next run, answer here first, in one or two sentences, before any other work.\n")
+    run(PY, "agents/bin/eventlog.py", "record", "--actor", "steward", "--type", "huddle.called", "--data", json.dumps({"summary": f"huddle called: {summary(topic, 80)}", "path": f"org/board/{name}.md"}))
+    h.send(200, {"ok": True, "message": "Huddle called: everyone answers on their next run.", "id": name})
+
+OUTBOX_BY = {"social": ("-thread-", "-reply-", "-post-"), "media": ("-media-",), "scribe": ("-blog-", "-announce")}
+def flags(offices):
+    """Why each agent is waiting, from the records: blocked, awaiting approval, needs instructions, scheduled, busy."""
+    T = tasks(); pending = [] if PUBLIC else [p.name for p in (ROOT / "private/outbox/pending").glob("*.md") if not p.name.endswith(".REVIEW.md")]
+    asks = {}
+    for bp in glob.glob(str(ROOT / "org/board/*.md")):
+        t = thread(bp)
+        if t["tag"] == "question" and t["posts"] and t["posts"][-1]["who"] != "steward" and "@rex" in read(bp):
+            asks.setdefault(t["posts"][-1]["who"], []).append(t["title"])
+    for k, o in offices.items():
+        f = []
+        if o["status"] == "working": f.append({"kind": "busy", "note": "Busy: running now"})
+        mine_blocked = [t for t in T if t["office"] == k and t["state"] == "blocked"]
+        if o["status"] == "stuck" or mine_blocked:
+            f.append({"kind": "blocked", "note": "Blocked: " + ("stuck in a run for over 2 hours" if o["status"] == "stuck" else f"task T{mine_blocked[0]['n']}: {mine_blocked[0]['title']}")})
+        drafts = [n for n in pending if any(x in n for x in OUTBOX_BY.get(k, ()))]
+        if drafts: f.append({"kind": "approval", "note": f"Awaiting approval: {len(drafts)} draft{'s' if len(drafts) > 1 else ''} in your outbox"})
+        if asks.get(k): f.append({"kind": "instructions", "note": "Needs instructions: " + asks[k][0]})
+        if not f and o["status"] in ("idle", "never"): f.append({"kind": "scheduled", "note": "Awaiting its next scheduled run"})
+        o["flags"] = f
+
 def live():
     """The control plane's single live feed: every office's state right now, activity, pipeline, schedule."""
     ev = events(limit=5000)
@@ -402,7 +474,8 @@ def live():
     cfg = read(ROOT / "agents/config.env") or read(ROOT / "agents/config.example.env")
     sched = dict(re.findall(r"^(SPRINT_[A-Z]+)='([^']*)'", cfg, re.M))
     ov = overview()
-    return {"offices": list(offices.values()), "roster": R, "activity": buckets, "incidents_24h": incidents_24h, "pipeline": pipeline,
+    flags(offices)
+    return {"offices": list(offices.values()), "roster": R, "huddle": huddle(), "activity": buckets, "incidents_24h": incidents_24h, "pipeline": pipeline,
             "schedule": sched, "waiting": ov["waiting"], "sprint": ov["sprint"], "stopped": ov["stopped"],
             "setup_complete": ov["setup_complete"], "charter_version": ov["charter_version"], "last_event": ov["last_event"],
             "public_head": ov["public_head"], "mode": ov["mode"], "counts": ov["counts"]}
@@ -470,6 +543,11 @@ class H(BaseHTTPRequestHandler):
         if not self.host_ok(): return self.send(403, {"error": "the dashboard answers only on 127.0.0.1"})
         if history_route(self): return
         u = urllib.parse.urlparse(self.path); q = urllib.parse.parse_qs(u.query)
+        m = re.match(r"^/api/agents/([a-z][a-z0-9]{1,15})/permissions$", u.path)
+        if m:
+            code, out = run(PY, "agents/bin/perms.py", "show", m.group(1))
+            return self.send(200, json.loads(out)) if code == 0 else self.send(404, {"error": out})
+        if u.path == "/api/tasks": return self.send(200, tasks())
         routes = {"/api/overview": overview, "/api/charter": charter, "/api/amendments": amendments, "/api/cases": cases,
                   "/api/projects": projects, "/api/sprints": sprints, "/api/edicts": edicts, "/api/verify": verify, "/api/live": live}
         if u.path in ("/", "/floor"):
@@ -498,6 +576,11 @@ class H(BaseHTTPRequestHandler):
     def do_POST(self):
         if not self.host_ok(): return self.send(403, {"error": "the dashboard answers only on 127.0.0.1"})
         if self.path == "/api/agents/propose": return self.propose_agent()
+        m = re.match(r"^/api/agents/([a-z][a-z0-9]{1,15})/(move|terminal|permissions)$", self.path)
+        if m: return agent_write(self, m.group(1), m.group(2))
+        if self.path in ("/api/huddle", "/api/huddle/close"): return huddle_write(self, "close" if self.path.endswith("close") else "start")
+        m = re.match(r"^/api/conversations/([\w.-]+)/comment$", self.path)
+        if m: return chat_comment(self, m.group(1))
         m = re.match(r"^/api/projects/(\d+)/comment$", self.path)
         if not m: return self.send(404, {"error": "not found"})
         if self.headers.get("Origin") not in (None, f"http://127.0.0.1:{self.server.server_port}", f"http://localhost:{self.server.server_port}"):
@@ -509,6 +592,60 @@ class H(BaseHTTPRequestHandler):
         except Exception: return self.send(400, {"error": "bad JSON"})
         code, body = comment(m.group(1), payload); LAST_COMMENT["t"] = time.time()
         self.send(code, body)
+
+LAST_WRITE = {}
+def guarded(h, kind, gap):
+    """Shared guard for the dashboard's writes: private view only, same origin, rate-limited, small JSON body."""
+    if PUBLIC: h.send(403, {"error": "this is off in public view"}); return None
+    if h.headers.get("Origin") not in (None, f"http://127.0.0.1:{h.server.server_port}", f"http://localhost:{h.server.server_port}"):
+        h.send(403, {"error": "cross-origin requests refused"}); return None
+    if time.time() - LAST_WRITE.get(kind, 0) < gap: h.send(429, {"error": f"one {kind} every {gap} seconds"}); return None
+    n = int(h.headers.get("Content-Length", "0") or 0)
+    if n > 8000: h.send(413, {"error": "too long"}); return None
+    try: p = json.loads(h.rfile.read(n) or b"{}")
+    except Exception: h.send(400, {"error": "bad JSON"}); return None
+    LAST_WRITE[kind] = time.time(); return p if isinstance(p, dict) else {}
+
+def agent_write(h, key, action):
+    """/api/agents/<key>/move | terminal | permissions (Articles 18.7(c), 18.8, 18.7(e))."""
+    if action == "move":
+        p = guarded(h, "move", 1)
+        if p is None: return
+        code, out = run(PY, "agents/bin/spawn.py", "move", key, "--room", str(p.get("room", "")))
+    elif action == "terminal":
+        p = guarded(h, "terminal", 3)
+        if p is None: return
+        code, out = run("bash", "agents/bin/terminal.sh", key, "--standalone" if p.get("standalone") else "auto")
+    elif action == "permissions":
+        p = guarded(h, "permission change", 1)
+        if p is None: return
+        if "rank" in p:
+            group = ",".join(k for k in p.get("group", []) if re.fullmatch(r"[a-z][a-z0-9]{1,15}", str(k)))
+            code, out = run(PY, "agents/bin/perms.py", "rank", key, str(p["rank"]), "--group", group, "--steward")
+        else:
+            code, out = run(PY, "agents/bin/perms.py", "set", key, str(p.get("capability", "")), "on" if p.get("on") else "off", "--steward")
+    else:
+        return h.send(404, {"error": "not found"})
+    h.send(200 if code == 0 else 400, {"ok": code == 0, "message": out.replace("REFUSED: ", "")})
+
+def chat_comment(h, cid):
+    """/api/conversations/<id>/comment: the Steward's comment in a floor chat (Article 18.7(d))."""
+    p = guarded(h, "comment", 2)
+    if p is None: return
+    text = str(p.get("text", "")).strip()
+    if not (1 <= len(text) <= 4000): return h.send(400, {"error": "a comment is 1 to 4000 characters"})
+    b = ROOT / "org/board" / f"{cid}.md"
+    if not re.fullmatch(r"[\w.-]+", cid) or not b.exists(): return h.send(404, {"error": "no such conversation"})
+    ts = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    with b.open("a") as f: f.write(f"\n### rex · {ts}\n{text}\n")
+    run(PY, "agents/bin/eventlog.py", "record", "--actor", "steward", "--type", "board.comment",
+        "--data", json.dumps({"summary": f"comment in {cid}: {summary(text, 100)}", "path": f"org/board/{cid}.md"}))
+    msg = "Comment added to the chat."
+    if p.get("direction"):   # a direction from the Steward is an edict (Article 15)
+        code, out = run(PY, "agents/bin/edict.py", "new", "--title", f"Chat direction: {summary(text, 60)}", "--text", text,
+                        "--restatement", f"A direction the Steward gave in the floor chat for {cid} (org/board/{cid}.md).")
+        m = re.search(r"issued (E-\d{4})", out); msg += f" Recorded as {m.group(1)}." if m else " (The edict couldn't be recorded: " + out[-200:] + ")"
+    h.send(200, {"ok": True, "message": msg})
 
 def _propose(self):
     """The wizard's one action: draft a membership motion for a new agent (Article 3.6). It creates no agent."""
