@@ -58,3 +58,18 @@ What we'll do differently: launch.sh now detects the plugin by its config folder
 What happened: With real keys in the git-ignored agents/.env, repos.sh's gitleaks pass (run over the whole folder with --no-git) refused every public commit. Fixing it surfaced more: the Charter's own gitleaks flag (-q) was invalid and had been removed on disk without an amendment; a single-file grep hit recorded the secret itself as its "location"; `date -Is` produced blank timestamps on macOS, including approval stamps; and the tests copied agents/.env into temp folders and overwrote the Steward's global git email. The setup agent ran one such test before noticing; the email was restored and the copy deleted.
 What we learned: A gate that scans more than it publishes blocks for the wrong reasons, and a gate that prints what it finds leaks it. Scripts only ever tested in a sandbox without real secrets, or on Linux, hide these faults until the first real run on the Steward's Mac. Read a test before running it against the live tree.
 What we'll do differently: Scan exactly the files being committed and report locations only (A-0016). Tests never copy secrets, always clean up, and never write outside their sandbox. Before running any script for the first time on the live tree, read what it touches.
+
+## 2026-09-24 · researcher · Verify metadata at the primary page, and read PDFs directly
+What happened: A web-search summary gave the wrong authors for arXiv 2606.01034; the arXiv page itself named different ones. The page-summarizing fetch returned "not stated" for every result in the Ising paper's PDF, although the numbers were all there when the saved PDF was read page by page.
+What we learned: Search snippets and fetch summaries are leads, not sources. Titles, authors, and every number in a brief must come from the paper's own page or PDF.
+What we'll do differently: Take metadata from the arXiv abstract page, read PDFs with the file reader when the summarizer comes back thin, and check key tables twice before quoting numbers.
+
+## 2026-09-24 · ideas · Fold a demo into the instrument it measures
+What happened: The best new brief (Kohli, n_eff) suggested both a standalone demo and a metric the P-002 Verafy Bench spec already lists (§4.5 "Agreement"). A separate prototype would have built the same code twice, and it would have used one of the three open-proposal slots on a duplicate.
+What we learned: When a paper's insight is also a measurement, the demo and the metric should be one module. The demo runs on simulated data now and on real Bench output later. Checking the code against a paper's published arithmetic (9 / (1 + 8 × 0.391) = 2.18) is a cheap, honest test, but it isn't a replication.
+What we'll do differently: Before proposing, check the active project specs for overlap. Propose overlapping ideas as work items of that project, and post them in the existing thread instead of opening a new proposal.
+
+## 2026-09-24 · lawyer · "Re-run" means recompute, unless someone pays for it
+What happened: E-0053's `reproducibility_rate` says the Auditor "re-runs" published results and gets "the same answer". Model outputs can't be reproduced (Art. 12.4, C-0004), so a literal re-run of a benchmark would be a new, paid experiment that can't match exactly.
+What we learned: For LLM results, reproducibility has two levels. Recomputing metrics from committed predictions, config, and split hash is deterministic and free. Re-calling the models is a new measurement that needs a tolerance band and a budget.
+What we'll do differently: Any KPI or "done when" test that says "reproduce" or "re-run" must say which level it means. The default is recomputation from committed artifacts.
