@@ -6,6 +6,6 @@ Every Verafy project: a prototype created from a spec and iterated over time
 | Project | Name | Owner | Status | Current version | Versions | Discussion |
 |---|---|---|---|---|---|---|
 | [P-001](001-dashboard/PROJECT.md) | The Collective Dashboard | prototyper | released | 002 | 3 | 20 posts |
-| [P-002](002-verafy-bench/PROJECT.md) | Verafy Bench | prototyper | building | — | 1 | 4 posts |
+| [P-002](002-verafy-bench/PROJECT.md) | Verafy Bench | prototyper | building | — | 1 | 6 posts |
 
 Candidate projects waiting for an approved spec are listed in [PROPOSED.md](PROPOSED.md).

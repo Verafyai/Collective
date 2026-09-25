@@ -46,10 +46,18 @@ shown.
 | AgentJudgeBench: A Multi-Difficulty Benchmark for Evaluating LLM Judges on Agentic Tool-Calling (Verma et al.) | https://arxiv.org/abs/2608.26623 | Agent evaluation | 2026-09-24 | new |
 | Auditing Automated Evaluation, Error Propagation, and Runtime Mitigation in Tool-Using Language Agents (AgentProp-Bench; Gurram) | https://arxiv.org/abs/2604.16706 | Agent evaluation | 2026-09-24 | new |
 | Post-hoc Alignment of LLM-judges to Human Judgment Distribution (NAPHA; Steindl, Voskarides, Gasparin, Marcheggiani) | https://arxiv.org/abs/2609.01073 | Human label variation | 2026-09-24 | new |
+| More Debate, Same Evidence: Structural Limits of Homogeneous Multi-Agent Groundedness (Ji) | https://arxiv.org/abs/2608.00243 | Debate, same evidence | 2026-09-24 (run 2) | briefed ([brief](briefs/more-debate-same-evidence.md)) |
+| When the Judge Changes, So Does the Measurement: Auditing LLM-as-Judge Reliability (Yang, Hou, Yang) | https://arxiv.org/abs/2607.08535 | Judge reliability, bias | 2026-09-24 (run 2) | new |
+| Tool-MAD: A Multi-Agent Debate Framework for Fact Verification with Diverse Tool Augmentation and Adaptive Retrieval (Jeong, Choi, Kim, Jang) | https://arxiv.org/abs/2601.04742 | Debate, fact verification (Track E) | 2026-09-24 (run 2) | new |
 
 Next to brief, for P-002 Verafy Bench: ROPOLL (S4 geometric median), the
 Finite-Calibration Regime Map (aggregator choice under few labels), and
 DebateCV / PROClaim (debate on claim verification, the S5 question).
+Tool-MAD is for Track E (version 004), so it can wait.
+
+## Datasets
+
+- P-002 license and provider-terms findings: `research/datasets/p002-licenses-and-terms.md` (2026-09-24).
 
 ## Standing searches (run every 6 h)
 - arXiv cs.CL / cs.AI / cs.LG: "LLM-as-a-judge", "LLM judge", "evaluator

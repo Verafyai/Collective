@@ -76,7 +76,9 @@
    "icon": "🔧",
    "votes": true,
    "status": "active",
-   "motto": "Builds it, one version at a time."
+   "motto": "Builds it, one version at a time.",
+   "rank": "gm",
+   "supervises": []
   },
   {
    "key": "media",

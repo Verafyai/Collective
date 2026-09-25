@@ -46,11 +46,11 @@
     {
       "id": "b12d1284-4d17-4c23-adff-21f6943d2b30",
       "number": 2,
-      "revision": "6b4f4b4a-0f5c-40e0-8274-74f76c2e2d7c",
+      "revision": "0f1a80e4-50f7-4c06-baa9-166c78a7d17e",
       "title": "P-002: file AVeriTeC license and provider publishing terms",
-      "notes": "Per #decision org/board/2026-09-24-decision-create-p-002-verafy-bench.md, Lawyer conditions (c) and (d): save the AVeriTeC CC BY-NC 4.0 license text and dataset-card terms into the P-002 v001 data manifest notes; list each candidate model provider's terms on publishing benchmark results for the Lawyer to review. No dataset download, no spend.",
+      "notes": "Filed research/datasets/p002-licenses-and-terms.md and noted in P-002 discussion. Blocked on: xAI enterprise terms unreadable (HTTP 403), needs @rex/@lawyer browser check; AVeriTeC non-commercial ruling is @rex's; Lawyer review pending.",
       "thread": "researcher",
-      "status": "open",
+      "status": "blocked",
       "scope": {
         "project": {
           "path": "/Users/rexstjohn/Desktop/Collective/Collective"
@@ -64,6 +64,20 @@
             1790294689,
             274622000
           ]
+        },
+        {
+          "kind": "status_set",
+          "at": [
+            1790299671,
+            87330000
+          ]
+        },
+        {
+          "kind": "edited",
+          "at": [
+            1790299671,
+            101469000
+          ]
         }
       ],
       "soft_deleted": false,
@@ -72,18 +86,18 @@
         274622000
       ],
       "updated_at": [
-        1790294689,
-        274622000
+        1790299671,
+        101469000
       ]
     },
     {
       "id": "7c7b3d7a-644f-4699-b71a-122560e893d3",
       "number": 3,
-      "revision": "c41ded4e-1767-433c-abc7-53a56950d0a1",
+      "revision": "d1f20c76-514c-4d7c-905c-5a19d5949f9d",
       "title": "S-0001: file your Sprint 0 proposal (sprints/S-0001/proposals/researcher.md) by Fri 09:00 PDT",
-      "notes": "Seven sections; check with sprint.py check. Choose the P-002 v001 dataset. See org/board/2026-09-24-sprint-0.md.",
+      "notes": "Filed sprints/S-0001/proposals/researcher.md; sprint.py check: proposals valid (2026-09-24 run 2).",
       "thread": "researcher",
-      "status": "open",
+      "status": "review",
       "scope": {
         "project": {
           "path": "/Users/rexstjohn/Desktop/Collective/Collective"
@@ -97,6 +111,20 @@
             1790299316,
             645512000
           ]
+        },
+        {
+          "kind": "status_set",
+          "at": [
+            1790299671,
+            47836000
+          ]
+        },
+        {
+          "kind": "edited",
+          "at": [
+            1790299671,
+            68088000
+          ]
         }
       ],
       "soft_deleted": false,
@@ -105,18 +133,18 @@
         645512000
       ],
       "updated_at": [
-        1790299316,
-        645512000
+        1790299671,
+        68088000
       ]
     },
     {
       "id": "ca2ef7c8-0140-450f-a99d-eedbae44e987",
       "number": 4,
-      "revision": "5d19bdb9-84c8-4762-aebd-c8ee0d69a4ef",
+      "revision": "95100683-2958-45f2-bf5b-6655cdfdec38",
       "title": "S-0001: file your Sprint 0 proposal (sprints/S-0001/proposals/ideas.md) by Fri 09:00 PDT",
       "notes": "Seven sections; check with sprint.py check. Panel Illusion is a P-002 work item (C-0011). See org/board/2026-09-24-sprint-0.md.",
       "thread": "ideas",
-      "status": "open",
+      "status": "done",
       "scope": {
         "project": {
           "path": "/Users/rexstjohn/Desktop/Collective/Collective"
@@ -130,6 +158,13 @@
             1790299318,
             186960000
           ]
+        },
+        {
+          "kind": "status_set",
+          "at": [
+            1790299814,
+            234424000
+          ]
         }
       ],
       "soft_deleted": false,
@@ -138,18 +173,18 @@
         186960000
       ],
       "updated_at": [
-        1790299318,
-        186960000
+        1790299814,
+        234424000
       ]
     },
     {
       "id": "ffa2cb39-f846-464c-a48d-cdd857a7dd02",
       "number": 5,
-      "revision": "dca85477-84d1-4759-abf2-57163fb602d4",
+      "revision": "07f9a34a-c22d-430e-95e6-2345b8349efd",
       "title": "S-0001: file your Sprint 0 proposal (sprints/S-0001/proposals/prototyper.md) by Fri 09:00 PDT",
       "notes": "Seven sections; check with sprint.py check. P-002 version 001 per C-0011; spend waits for the Steward's budget decision. See org/board/2026-09-24-sprint-0.md.",
       "thread": "prototyper",
-      "status": "open",
+      "status": "done",
       "scope": {
         "project": {
           "path": "/Users/rexstjohn/Desktop/Collective/Collective"
@@ -163,6 +198,13 @@
             1790299319,
             838355000
           ]
+        },
+        {
+          "kind": "status_set",
+          "at": [
+            1790299952,
+            92154000
+          ]
         }
       ],
       "soft_deleted": false,
@@ -171,8 +213,8 @@
         838355000
       ],
       "updated_at": [
-        1790299319,
-        838355000
+        1790299952,
+        92154000
       ]
     },
     {
