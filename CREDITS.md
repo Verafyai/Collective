@@ -22,6 +22,9 @@ additions are part of the work that uses them.
 | W&B Weave (weave 0.53.10) | Weights & Biases | Apache-2.0 | Traces, ops, and the eval suite in the Steward's private Weave project (Article 12.10, P-005) |
 | OpenTelemetry Python SDK and OTLP exporter (1.44.0), and the OTel GenAI semantic conventions | The OpenTelemetry authors | Apache-2.0 | The bridge from the event log to Weave's Agents view (agents/observability/otel_bridge.py) |
 | gitleaks detection rules (v8.30.1 config) | Zachary Rice and contributors | MIT | Patterns redact.py strips before anything is exported; fetched by bootstrap, pinned by SHA-256 |
+| pi (the Pi coding agent, @earendil-works/pi-coding-agent) | Earendil Works | see its package licence | The runtime fusion-harness drives for the Court's turns |
+| W&B Inference | Weights & Biases | service terms | Serves the Court's DeepSeek, Qwen, Kimi, GLM, gpt-oss, and Llama seats |
+| Open models served through W&B Inference: DeepSeek-V4-Pro (DeepSeek), Qwen3-235B (Alibaba Qwen), Kimi-K2.6 (Moonshot AI), GLM-5.2 (Z.ai), gpt-oss-120b (OpenAI), Llama 3.3 70B (Meta) | their authors | each model's own licence (Llama 3.3: the Llama 3.3 Community License, whose attribution terms must be checked before any public release that shows Llama output) | Seats in the Court (P-006) |
 | gitleaks | Zachary Rice and contributors | MIT | Public-commit redaction gate |
 | Barlow, Barlow Semi Condensed (fonts) | Jeremy Tribby (The Barlow Project Authors) | SIL Open Font License 1.1 | Dashboard floor and scope; served locally from `dashboard/fonts/` |
 | Public Sans (font) | USWDS (The Public Sans Project Authors) | SIL Open Font License 1.1 | Dashboard records; served locally |

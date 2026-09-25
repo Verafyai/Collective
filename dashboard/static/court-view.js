@@ -102,7 +102,8 @@ function gauge(cert){
   S.scales.gt.textContent = `${cert.score} · ${cert.band}`; S.scales.gbox.setAttribute("stroke", col); S.scales.gbox.setAttribute("fill", col + "33");
   const i = cert.inputs || {};
   S.scales.tip.textContent = `Certainty ${cert.score} (${cert.band})\nevidence strength ${i.evidence_strength}\ncross-family agreement ${i.cross_family_agreement}\n` +
-    `argument survival ${i.argument_survival}\njury margin ${i.jury_margin}\nJudge's confidence ${i.judge_confidence} (low weight)\ncapped at ${cert.cap}`;
+    `argument survival ${i.argument_survival}\njury margin ${i.jury_margin}\nJudge's confidence ${i.judge_confidence} (low weight)\ncapped at ${cert.cap}\n\n` +
+    `Deterministic arithmetic over inputs that models set: the discovery model rates reliability and independence, and the Judge rules on objections.`;
 }
 
 // ---------- the people ----------
@@ -201,6 +202,7 @@ function speakerOf(k){ return S.people[k]; }
 function leadTilt(){ const a = S.lead.A || 0, b = S.lead.B || 0; tilt((b - a) * 3); }
 async function step(e, fast){
   const d = e.data || {}, sp = S.speed;
+  e = {...e, actor: d.seat || e.actor};            // the Court's turns name their seat (older cases named the office)
   if (fast) S.speed = 40;
   try {
     if (e.type === "case.filed"){ S.question = d.question; }
@@ -333,6 +335,7 @@ async function cvSide(){
       <label>Positions (optional; the Lawyer frames them if you leave these empty)</label>${[1, 2, 3, 4].map(i => `<input class="cv-p" maxlength="300" placeholder="Position ${String.fromCharCode(64 + i)}">`).join("")}
       <label>Evidence links (optional, one per line)</label><textarea id="cv-l" rows="3" placeholder="https://arxiv.org/abs/..."></textarea>
       <label>Priority</label><select id="cv-pr"><option>normal</option><option>high</option><option>low</option></select>
+      <p class="cv-bd">Every turn's prompt (the question, the exhibits, and the argument so far) goes to Anthropic, xAI, or W&amp;B Inference.</p>
       <label>Budget (tokens)</label><input id="cv-b" type="number" value="150000" min="20000" max="500000" step="10000">
       <div style="margin-top:10px"><button class="btn" id="cv-go">File the case</button></div></div>`;
   }

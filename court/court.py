@@ -47,8 +47,10 @@ def provisional():
 
 # ---------- the record ----------
 def record(cid, etype, actor, data):
-    """One court event in the Record (hash-chained, Article 12)."""
+    """One court event in the Record (hash-chained, Article 12). Turns are the Court's: the actor is "court" and the seat says
+    which chair spoke (a model seated for an office, never the office itself); the Steward and the system act as themselves."""
     payload = {"case": cid, "court": "court", **data}
+    if actor not in ("steward", "system"): payload["seat"], actor = actor, "court"
     r = subprocess.run([PY, str(ROOT / "agents/bin/eventlog.py"), "record", "--actor", actor, "--type", etype, "--data", json.dumps(payload)],
                        capture_output=True, text=True, env={**os.environ, "OBS_OPS": "0"})
     if r.returncode: raise RuntimeError(f"the Record refused {etype}: {r.stderr[-200:]}")
@@ -97,22 +99,54 @@ def as_json(text):
 def over_budget(c): return c.get("spent_tokens", 0) >= c.get("budget_tokens", 150000)
 
 # ---------- evidence ----------
+def tracked(src):
+    """A local exhibit must be a file git tracks in the public tree: resolved inside the repo, never under private/,
+    never an env file (the Lawyer's 2026-09-25 incident: prefix checks on the raw string were bypassable)."""
+    try: p = (ROOT / src).resolve()
+    except (OSError, RuntimeError): return None
+    if not p.is_relative_to(ROOT) or p.is_relative_to(ROOT / "private") or p.name.startswith(".env") or not p.is_file(): return None
+    rel = str(p.relative_to(ROOT))
+    r = subprocess.run(["git", "ls-files", "--error-unmatch", "--", rel], cwd=ROOT, capture_output=True, text=True)
+    return p if r.returncode == 0 else None
+
+def public_url(url):
+    """http(s) to a public address only: no loopback, private, link-local, or reserved hosts (checked on every redirect)."""
+    import ipaddress, socket, urllib.parse
+    u = urllib.parse.urlparse(url)
+    if u.scheme not in ("http", "https") or not u.hostname: return False
+    try: addrs = {a[4][0] for a in socket.getaddrinfo(u.hostname, u.port or (443 if u.scheme == "https" else 80))}
+    except OSError: return False
+    for a in addrs:
+        ip = ipaddress.ip_address(a.split("%")[0])
+        if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved or ip.is_multicast or ip.is_unspecified: return False
+    return True
+
+class _SafeRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        if not public_url(newurl): raise urllib.error.URLError(f"redirect to a non-public address refused: {newurl}")
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+_opener = urllib.request.build_opener(_SafeRedirect)
+
+def _get(url, limit):
+    if not public_url(url): return None
+    with _opener.open(urllib.request.Request(url, headers={"User-Agent": "collective-court/1.0"}), timeout=40) as r: return r.read(limit).decode("utf-8", "replace")
+
 def fetch(src, limit=60000):
-    """An exhibit's text: a repo file, or a web page (arXiv's full HTML when there is one)."""
-    p = ROOT / src
-    if not src.startswith("http") and p.exists() and p.is_file() and not src.startswith(("private/", "agents/.env")): return p.read_text(errors="replace")[:limit]
+    """An exhibit's text: a tracked repo file, or a public web page (arXiv's full HTML when there is one). Anything else: ""."""
+    src = str(src or "").strip()
+    if not re.match(r"^https?://", src):
+        p = tracked(src)
+        return p.read_text(errors="replace")[:limit] if p else ""
     url = src
     m = re.search(r"arxiv\.org/(?:abs|pdf|html)/(\d{4}\.\d{4,5})", src)
     if m: url = f"https://arxiv.org/html/{m.group(1)}"
-    try:
-        with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "collective-court/1.0"}), timeout=40) as r:
-            body = r.read(2_000_000).decode("utf-8", "replace")
-    except Exception as e:
+    body = None
+    try: body = _get(url, 2_000_000)
+    except Exception:
         if m:
-            try:
-                with urllib.request.urlopen(f"http://export.arxiv.org/api/query?id_list={m.group(1)}", timeout=40) as r: body = r.read().decode()
-            except Exception: return ""
-        else: return ""
+            try: body = _get(f"https://export.arxiv.org/api/query?id_list={m.group(1)}", 2_000_000)
+            except Exception: body = None
+    if not body: return ""
     text = re.sub(r"<[^>]+>", " ", re.sub(r"(?s)<(script|style).*?</\1>", " ", body))
     return re.sub(r"\s+", " ", text)[:limit]
 
@@ -127,12 +161,14 @@ def discovery(cid, c):
     ask = (f"QUESTION: {c['question']}\nPOSITIONS: {json.dumps(c['positions'])}\n\nAvailable sources (repo paths or links):\n" + "\n".join(f"- {p}" for p in catalog) +
            "\n\nYou're gathering evidence for the Court. Pick up to 6 sources that bear on the question, for EITHER side (don't take a side). For each, "
            "rate reliability 0 to 1 (peer review, replication, sample size, conflicts), and give an independence group: sources that rest on the same "
-           "underlying study or data share a group. Reply with only JSON: "
+           "underlying study or data share a group (different papers are different groups unless one reuses the other's data). Give the date only "
+           "if the source states it; otherwise \"unknown\". Reply with only JSON: "
            '{"exhibits": [{"source": "...", "title": "...", "date": "YYYY or YYYY-MM-DD", "reliability": 0.0, "independence_group": "...", "why": "one sentence"}]}')
     role = (ROOT / "agents/researcher/ROLE.md").read_text()
     if c.get("no_discovery"): out = {"text": "{}"}
     else: out = turns([{"id": "discovery", "model": ADVOCATE_MODELS[0], "system": role + "\n\nYou are serving the Court as its evidence gatherer.", "prompt": ask}], c)["discovery"]
-    picks = (as_json(out["text"]).get("exhibits") or [])[:6] if not c.get("no_discovery") else []
+    allowed = set(catalog)                       # only the catalog and the filer's own links: never a path the model made up
+    picks = [x for x in (as_json(out["text"]).get("exhibits") or []) if str(x.get("source", "")).strip() in allowed][:6] if not c.get("no_discovery") else []
     exhibits = []
     for i, x in enumerate(picks, 1):
         xid = f"{cid}-X{i:02d}"; text = fetch(str(x.get("source", "")))
@@ -386,6 +422,8 @@ The Judge held {r['holding']}, but certainty fell below {C.CFG['insufficient_bel
 
 ## Parties
 
+Seats, not offices: each seat is a model given that office's instructions for this case; its turns are the Court's, not the office's.
+
 - Advocates: {', '.join(f"{a['agent']} for {a['position_id']} ({a['model']})" for a in c['advocates'])}
 - Judge: {c['judge']['model']} ({c['judge']['family']})
 - Jury: {', '.join(f"{j['agent']} ({j['model']})" for j in c['jury'])}
@@ -393,9 +431,13 @@ The Judge held {r['holding']}, but certainty fell below {C.CFG['insufficient_bel
 """)
     file_case_law(cid, c, held)
 
+def headnote(text, n=230):
+    text = " ".join(text.split()).rstrip(".")
+    return text if len(text) <= n else text[:n].rsplit(" ", 1)[0].rstrip(",;:") + "…"
+
 def file_case_law(cid, c, held):
     """The ruling as an officer case (Article 13.1) while the Court is provisional; its number must be this case's."""
-    if c.get("case_law") or c.get("test"): return              # test cases (CT-) are never precedent
+    if c.get("case_law") or c.get("case_law_draft") or c.get("test"): return              # test cases (CT-) are never precedent
     r = c["ruling"]; cert = c["certainty"]
     draft = f"""---
 id: (assigned)
@@ -403,7 +445,7 @@ title: {c['question'][:110]}
 date: {datetime.date.today().isoformat()}
 court: officer
 labels: [research, governance]
-headnote: {("Insufficient evidence: " if r['final_holding'] == 'insufficient' else '') + (r['holding_text'] or held)[:230]} Certainty {cert['score']} ({cert['band']}).
+headnote: {headnote(("Insufficient evidence: " if r['final_holding'] == 'insufficient' else '') + (r['holding_text'] or held))} Certainty {cert['score']} ({cert['band']}).
 source: cases/{cid}/ruling.md (the Court, P-006{', provisional: filed as an officer case under Article 13.1' if provisional() else ''})
 cites: []
 review_by: {(datetime.date.today() + datetime.timedelta(days=90)).isoformat()}
@@ -439,12 +481,14 @@ This question as asked, on the evidence admitted. Reopen conditions: {'; '.join(
 
 - {datetime.date.today().isoformat()}: filed from the Court's ruling in {cid}.
 """
-    with tempfile.NamedTemporaryFile("w", suffix=".md", delete=False) as f: f.write(draft); p = f.name
-    out = subprocess.run([PY, str(ROOT / "agents/bin/case.py"), "new", "--draft", p], capture_output=True, text=True, env={**os.environ, "OBS_OPS": "0"})
-    os.unlink(p)
-    m = re.search(r"(C-\d{4})", out.stdout)
-    c["case_law"] = m.group(1) if m else None; c["case_law_note"] = (out.stdout + out.stderr).strip()[-300:]
-    save(cid, c)
+    # the Scribe is the Reporter (Article 13.1, C-0005): the Court writes the draft, and asks the Scribe to file it within 24 hours
+    d = case_dir(cid, c.get("private")); (d / "case-law-draft.md").write_text(draft)
+    c["case_law_draft"] = str((d / "case-law-draft.md").relative_to(ROOT)); save(cid, c)
+    ts = now().replace("+00:00", "Z")
+    (ROOT / "org/board" / f"{datetime.date.today().isoformat()}-ruling-{cid.lower()}.md").write_text(
+        f"#ruling\n### system · {ts}\n{cid} is ruled; @scribe please file its case-law entry from {c['case_law_draft']} within 24 hours (Article 13.1).\n\n"
+        f"Holding: {held}. Certainty {cert['score']} ({cert['band']}).\n")
+    record(cid, "case_law.drafted", "system", {"draft": c["case_law_draft"]})
 
 # ---------- filing ----------
 def file_case(question, positions=None, links=None, priority="normal", budget=150000, filer="steward", private=False, no_discovery=False, test=False):

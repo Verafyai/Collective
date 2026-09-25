@@ -132,6 +132,10 @@ def main():
     a = ap.parse_args()
     LEDGER.mkdir(exist_ok=True); BLOBS.mkdir(exist_ok=True)
     data = json.loads(a.data)
+    # one writer at a time: the lock is held until this process exits, and HEAD is loaded only after it's taken, so two runs
+    # starting in the same second can never append the same seq (the 2026-09-25 fork, found by the Auditor)
+    import fcntl
+    _lock = open(LEDGER / ".lock", "a"); fcntl.flock(_lock, fcntl.LOCK_EX)
 
     if a.cmd == "verify":
         prev, seq, man = "GENESIS", 0, {}

@@ -19,11 +19,18 @@ for c in ruled:
     assert len(set(fams)) == len(fams) and a["judge"]["family"] not in fams, "every advocate on its own family; the Judge on none of theirs"
     assert [e["seq"] for e in evs] == sorted(e["seq"] for e in evs), "the replay is the Record's order"
     assert evs[0]["type"] == "case.filed" and evs[-1]["type"] in ("case.ruled", "case.error")
-    if not c.get("test"): assert c.get("case_law"), "a real ruling is filed as case law"
+    if not c.get("test"): assert c.get("case_law") or c.get("case_law_draft"), "a real ruling becomes case law (filed, or drafted for the Scribe)"
 real = [c for c in ruled if not c.get("test")]
 assert real and any(e["type"] == "objection" and e["data"]["ruling"] == "sustained" for c in real for e in C.case_events(c["id"])), "at least one sustained objection"
 poor = [c for c in ruled if c.get("test") and c.get("no_discovery")]
 assert poor and all(c["ruling"]["final_holding"] == "insufficient" for c in poor), "an evidence-poor case is ruled insufficient"
+
+# ---- the evidence fetcher takes tracked public files and public URLs only (the Lawyer's 2026-09-25 incident) ----
+import court as CO
+for bad in ["./agents/.env", "agents//.env", "./private/ledger/events.ndjson", "research/../private/ledger/HEAD.json", "../../../etc/hosts", "/etc/hosts",
+            "agents/observability/.bridge_state", "http://127.0.0.1:4848/api/live", "http://localhost/", "http://10.0.0.1/", "file:///etc/hosts"]:
+    assert CO.fetch(bad) == "", bad
+assert CO.fetch("research/briefs/nine-judges-two-effective-votes.md"), "a tracked public file is fine"
 
 # ---- the rules, on synthetic events ----
 def ev(t, d, actor="x"): return {"type": t, "actor": actor, "data": {"case": "C-9999", "court": "court", **d}}

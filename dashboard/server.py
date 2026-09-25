@@ -918,14 +918,14 @@ def case_file(h):
     spent = sum((json.loads((d / "case.json").read_text()).get("spent_tokens") or 0) for d in case_dirs()
                 if (json.loads((d / "case.json").read_text()).get("filed_at") or "").startswith(today))
     if spent + budget > COURT_DAILY_TOKENS: return h.send(429, {"error": f"the Court's running budget for today is spent ({spent:,} of {COURT_DAILY_TOKENS:,} tokens)"})
-    run(PY, "agents/bin/edict.py", "new", "--title", f"File a case: {summary(q, 60)}", "--text", q,
-        "--restatement", "The Steward filed this question with the Court from the Decisions tab (P-006).")
     args = [PY, "court/court.py", "file", "--question", q, "--priority", priority, "--budget", str(budget)]
     for x in positions: args += ["--position", x]
     for x in links: args += ["--link", x]
     code, out = run(*args)
     m = re.search(r"(CT?-\d{4})", out)
     if code or not m: return h.send(400, {"ok": False, "error": out.replace("REFUSED: ", "")[-300:]})
+    run(PY, "agents/bin/edict.py", "new", "--title", f"File a case: {summary(q, 60)}", "--text", q,       # on the record once filed
+        "--restatement", f"The Steward filed this question with the Court from the Decisions tab (P-006) as {m.group(1)}.")
     if os.environ.get("COLLECTIVE_NO_REPLIES") != "1":            # tests file, but never start a real case
         subprocess.Popen([PY, str(ROOT / "court/court.py"), "run", m.group(1)], cwd=ROOT, start_new_session=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                          env={k: v for k, v in os.environ.items() if not re.match(r"CLAUDE(CODE|_CODE_)", k)})

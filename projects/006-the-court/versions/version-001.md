@@ -43,7 +43,7 @@ ballots, and a deterministic certainty score; the first real case run end to end
 *Does a multi-model judge panel verify real-world claims more accurately than the best single model?*
 **Held B:** the best single model verifies at least as accurately, on the evidence admitted. **Certainty 47 (Low):**
 evidence strength 46.9 (the cap), cross-family agreement 100, argument survival 83.3, jury margin 100, the Judge's
-confidence 85. 4 exhibits admitted and 2 excluded; 9 objections ruled, 2 sustained; a unanimous jury on three families;
+confidence 85. 4 exhibits admitted and 2 excluded; 9 objections, all sustained (7 struck A's claims, 2 struck B's); a unanimous jury on three families;
 138,465 tokens. Filed as case law C-0012 (officer, provisional). The evidence-poor test case CT-0001 was ruled
 insufficient evidence at certainty 0.
 
@@ -60,6 +60,14 @@ certainty chip show how sure the Court is, and hovering shows why.
 - `#decide` board posts and Sentinel `#reopen` flags don't file cases automatically yet; the Decisions tab and
   `court.py file` do.
 - E15 needs rulings with later outcomes before it can score calibration.
+- Certainty is deterministic arithmetic over inputs that models set (reliability, independence groups, and objection rulings),
+  so it is reproducible but not model-independent. C-0012's exhibit dates ("2024") came from the discovery model; from now on
+  dates come from the source or read "unknown".
+- C-0012's reasoning leans on X05 (E1) in a way the Court's own sustained objections rejected (the Lawyer's opinion); it's
+  grounds for a `#reopen`, and its holding is limited to the admitted record, not a finding about panels.
+- The Lawyer's security finding in the evidence fetcher is fixed (tracked public files and public URLs only; tests cover
+  each bypass); Court turns are now recorded as seats (actor `court`, `seat: <office>`); a ruling's case-law entry is
+  drafted for the Scribe to file (Article 13.1).
 
 ## Links
 

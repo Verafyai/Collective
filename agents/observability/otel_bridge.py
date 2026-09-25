@@ -44,7 +44,7 @@ OPEN_RUN_SECS = 6 * 3600
 BATCH = 400
 MODE = os.environ.get("OBS_PRIVATE_MODE", "metadata")
 PRIVATE_TYPES = ("edict.", "shell.", "notify.")              # sources that live only in CollectivePrivate
-SAFE_KEYS = {"agent", "amendment", "case", "court", "edict", "project", "room", "mode", "model", "run_no", "files_changed", "cols", "rows",
+SAFE_KEYS = {"agent", "amendment", "case", "court", "seat", "edict", "project", "room", "mode", "model", "run_no", "files_changed", "cols", "rows",
              "pid", "bytes", "duration_s", "hidden_lines", "kind", "via", "exhibit", "position", "round", "ruling", "family", "tokens_in", "tokens_out"}
 FULL_KEYS = {"from", "to", "cmd", "session", "theme", "redacted", "ended_by"}      # sent only in "full" mode (the Lawyer's opinion on P-005 v001)
 ID_RE = {"edict": r"\bE-\d{4}\b", "case": r"\bCT?-\d{4}\b", "project": r"\bP-\d{3}\b", "sprint": r"\bS-\d{4}\b", "amendment": r"\bA-\d{4}\b"}
@@ -215,6 +215,10 @@ def spans_for_event(e, R):
     t = ns(e["ts"]); conv = conversation_id(e, e)
     subject = (e.get("data") or {}).get("agent") if e["type"].startswith(SUBJECT_TYPES) else None
     who = subject if isinstance(subject, str) and re.fullmatch(r"[a-z][a-z0-9]{1,15}", subject) else e["actor"]
+    dd = e.get("data") or {}
+    if dd.get("court") == "court":                        # Court turns: the seat, never the office itself (the Lawyer's opinion on P-006)
+        seat = dd.get("seat") or (e["actor"] if e["actor"] not in ("court", "system", "steward") else None)
+        if seat and re.fullmatch(r"[a-z][a-z0-9]{1,15}", str(seat)): who = f"court-{seat}"
     attrs = {**base_attrs(e, R), "gen_ai.operation.name": "invoke_agent", "gen_ai.agent.name": who, "gen_ai.conversation.id": conv,
              "collective.by": e["actor"]}
     d = e.get("data") or {}
