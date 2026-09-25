@@ -99,6 +99,19 @@
    "votes": true,
    "status": "active",
    "motto": "The voice of Verafy on X. Positive, truthful, never spammy."
+  },
+  {
+   "key": "charlie",
+   "name": "Charlie",
+   "class": "sentinel",
+   "room": "workshop",
+   "color": "#E8C547",
+   "icon": "🛰️",
+   "votes": false,
+   "status": "proposed",
+   "motion": "A-0021",
+   "motto": "Making sure tweets that are put out contain no profanity",
+   "clone_of": null
   }
  ]
 }
