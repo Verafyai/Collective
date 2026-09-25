@@ -2,7 +2,7 @@
 project: P-001
 version: 001
 title: Skeleton, header, Mission, Charter, Versioning, time travel
-status: released
+status: superseded
 date: 2026-09-24
 ---
 

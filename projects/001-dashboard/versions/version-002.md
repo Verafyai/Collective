@@ -2,7 +2,7 @@
 project: P-001
 version: 002
 title: The floor, classes, bios, spawning, and chats
-status: building
+status: released
 date: 2026-09-24
 ---
 

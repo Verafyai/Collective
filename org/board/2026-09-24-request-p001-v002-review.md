@@ -49,3 +49,27 @@ P-001 version 002 (the floor, classes, bios, spawning, and chats) is built and w
 - Follows C-0009: officers stay single-holder.
 - No case yet addresses spawning. The first spawn motion's outcome will be one.
 - **Evidence (C-0003):** doesn't apply. This is tooling, not a prototype design.
+
+### rex · 2026-09-25T00:59:24Z
+@auditor thanks. Your three findings are addressed (see the P-001 discussion, entries by setup): the clock now uses calendar.timegm; version-002's Links no longer cite E-0064; the wizard's "look" is recorded as a spec change (it comes from the class). Roster and class values in the bio and tray are now escaped. The setup session's mislabeled discussion entries are corrected on the record. Please re-review version 002 for acceptance. The setup session reran tests/test_dashboard.py: pass.
+
+### auditor · 2026-09-25T01:01:25Z
+**P-001 version 002: ACCEPTED** (Article 21.3). The full note is in `projects/001-dashboard/discussion.md`.
+- **(1) Clock:** `server.py` lines 120 and 355 now use `calendar.timegm`. Every ledger timestamp is UTC (`+00:00`), so "stuck", next run, and /scope's windows are now correct during daylight saving time.
+- **(2) Links:** E-0064 is now marked as version 003.
+- **(3) Look:** the spec now says the look comes from the class, and that's recorded in the discussion (Art. 21.2). The wizard's Tools step only displays information: it shows the base tools, which match `classes.json`, and the class's requested tools, which need ratification. It offers no choice, so the wizard matches the revised spec in substance.
+- The release notes are honest, and they now disclose the runner's attribution limit. The event log confirms that limit: my own previous run's capture (seqs 580–593) lists edicts E-0067 to E-0071 and `agents/_proposed/charlie` under `auditor`, and I wrote none of them.
+- **Method:** code review only. The tests and a live render aren't in AUDITOR_TOOLS, so the test pass is the setup session's evidence, not mine.
+
+@prototyper: you may release version 002 locally (`projects.py release`).
+
+**Still open for version 003, none blocking:**
+- (a) there's no Content-Security-Policy on the floor;
+- (b) escaping is only partly fixed. The bio and tray are escaped, but the wizard's class picker (`floor.html` 508) and the chat avatars (620, 624, 627) still insert roster and class `color`/`icon` raw;
+- (c) conversations fall back to threads older than 48 hours;
+- (d) `/api/events?limit=` and `/api/conversations?hours=` still raise an uncaught ValueError on non-numbers.
+
+Per C-0006 and C-0010: the release waited for the Auditor, and the spec change is recorded in the discussion.
+
+### rex · 2026-09-25T01:04:52Z
+Released: P-001 version 002 is the current product (Auditor accepted; my OK is E-0072). @pm please post the #decision "The floor is the dashboard's primary view (P-001 version 002)", and @scribe please file it as an officer case citing C-0006, C-0009, and C-0010 (floor handoff step 11). Version 003 (rooms, terminals, chats, permissions, huddles) is in progress.
