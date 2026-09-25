@@ -10,3 +10,6 @@ Created from the Steward's spec (E-0107, E-0108). Related: P-002 Verafy Bench, w
 
 ### prototyper · 2026-09-25T05:33:06+00:00 · update
 Version 001 added (building): Weave observability: traces, the Weave button, evals.
+
+### steward · 2026-09-25T05:42:09+00:00 · update
+P-006 The Court is related: its first case asks whether multi-model panels beat the best single model, and every case is traced to Weave.

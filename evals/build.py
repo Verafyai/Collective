@@ -113,13 +113,15 @@ def main():
         "E13": [{"id": f"k{i:02d}", "kind": k} for i, k in enumerate(["transcripts", "board", "outbox", "spans", "responses"] + ["canary"] * 7)],
         "E14": [{"id": p.stem, "proposal": str(p.relative_to(ROOT))} for p in sorted((ROOT / "ideas").glob("*.md"))],
     }
+    court = sorted(d.name for d in (ROOT / "cases").glob("C-*") if (d / "case.json").exists() and json.loads((d / "case.json").read_text()).get("status") == "ruled") if (ROOT / "cases").exists() else []
+    sets["E15"] = [{"id": c} for c in court]; sets["E16"] = [{"id": c} for c in court]       # real Court cases only (never CT- tests)
     sets["E2"] = sets["E1"]                                   # calibration is scored on the same claims
     sets["E3"] = sets["E9"]                                   # citation grounding on the same briefs
     for eid, rows in sets.items():
         f = OUT / f"{eid}.jsonl"
         if f.exists() and "--force" not in sys.argv:
             print(f"{eid}: exists (a locked dataset changes only as a new version)"); continue
-        rows = split([dict(r) for r in rows], test_share=1.0 if eid in ("E5", "E6", "E7", "E9", "E3", "E10", "E11", "E13", "E14") else 0.6)
+        rows = split([dict(r) for r in rows], test_share=1.0 if eid in ("E5", "E6", "E7", "E9", "E3", "E10", "E11", "E13", "E14", "E15", "E16") else 0.6)
         f.write_text("".join(json.dumps({**r, "version": "seed-v1"}, ensure_ascii=False) + "\n" for r in rows))
         print(f"{eid}: {len(rows)} rows ({sum(r['split'] == 'test' for r in rows)} test)")
 

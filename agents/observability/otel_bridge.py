@@ -44,10 +44,10 @@ OPEN_RUN_SECS = 6 * 3600
 BATCH = 400
 MODE = os.environ.get("OBS_PRIVATE_MODE", "metadata")
 PRIVATE_TYPES = ("edict.", "shell.", "notify.")              # sources that live only in CollectivePrivate
-SAFE_KEYS = {"agent", "amendment", "case", "court", "edict", "project", "room", "from", "to", "mode", "model", "run_no",
-             "files_changed", "cmd", "cols", "rows", "pid", "bytes", "duration_s", "hidden_lines", "kind", "via", "theme",
-             "session", "redacted", "ended_by"}
-ID_RE = {"edict": r"\bE-\d{4}\b", "case": r"\bC-\d{4}\b", "project": r"\bP-\d{3}\b", "sprint": r"\bS-\d{4}\b", "amendment": r"\bA-\d{4}\b"}
+SAFE_KEYS = {"agent", "amendment", "case", "court", "edict", "project", "room", "mode", "model", "run_no", "files_changed", "cols", "rows",
+             "pid", "bytes", "duration_s", "hidden_lines", "kind", "via", "exhibit", "position", "round", "ruling", "family", "tokens_in", "tokens_out"}
+FULL_KEYS = {"from", "to", "cmd", "session", "theme", "redacted", "ended_by"}      # sent only in "full" mode (the Lawyer's opinion on P-005 v001)
+ID_RE = {"edict": r"\bE-\d{4}\b", "case": r"\bCT?-\d{4}\b", "project": r"\bP-\d{3}\b", "sprint": r"\bS-\d{4}\b", "amendment": r"\bA-\d{4}\b"}
 
 # ---------- the log ----------
 def load_events():
@@ -75,11 +75,10 @@ def safe_data(e):
     """The event's data as span attributes, per OBS_PRIVATE_MODE, always redacted."""
     d, out = e.get("data") or {}, {}
     for k, v in d.items():
-        if k in SAFE_KEYS and isinstance(v, (str, int, float, bool)): out[k] = v
+        if (k in SAFE_KEYS or (MODE == "full" and k in FULL_KEYS)) and isinstance(v, (str, int, float, bool)): out[k] = v
         elif k == "path" and isinstance(v, str): out[k] = "private/…" if private_path(v) else v
         elif k == "files" and isinstance(v, list): out["files"] = len(v)
-        elif k == "summary" and isinstance(v, str) and (MODE == "full" or not e["type"].startswith(PRIVATE_TYPES)):
-            if MODE == "full" or e["type"].startswith(("agent.", "project.", "amendment.", "huddle.", "sprint.", "case.")): out[k] = v[:300]
+        elif k == "summary" and isinstance(v, str) and MODE == "full": out[k] = v[:300]         # free text: never in metadata mode
     if e["type"] == "shell.input": out.pop("line", None)           # typed lines never leave, in any mode
     blob = str(d.get("summary", "")) + " " + str(d.get("path", ""))
     for key, rx in ID_RE.items():                                  # ids are metadata even when the text isn't
@@ -146,6 +145,7 @@ class Span(dict):
 
 def conversation_id(e, first):
     d = first.get("data") or {}
+    if d.get("court") == "court" and re.fullmatch(r"CT?-\d{4}", str(d.get("case", ""))): return d["case"]    # a Court case is one conversation
     if d.get("sprint") and d.get("meeting"): return f"sprint-{d['sprint']}-{d['meeting']}"
     if d.get("mode") == "interactive": return f"talk-{first['actor']}-{d.get('session', first['run'])}"
     if first.get("run"): return f"standup-{first['ts'][:10]}"
@@ -217,7 +217,16 @@ def spans_for_event(e, R):
     who = subject if isinstance(subject, str) and re.fullmatch(r"[a-z][a-z0-9]{1,15}", subject) else e["actor"]
     attrs = {**base_attrs(e, R), "gen_ai.operation.name": "invoke_agent", "gen_ai.agent.name": who, "gen_ai.conversation.id": conv,
              "collective.by": e["actor"]}
-    return [Span(name=f"invoke_agent {who}", trace=trace, span=root, parent=None, start=t, end=t + 2_000_000, attrs=attrs),
+    d = e.get("data") or {}
+    court_turn = d.get("court") == "court" and (d.get("model") or d.get("judge_model"))
+    extra = []
+    if court_turn:              # a Court turn: the advocate's, Judge's, or juror's model call, with its model and tokens (P-006)
+        model = str(d.get("model") or d.get("judge_model"))
+        extra = [Span(name=f"chat {model}", trace=trace, span=hid("court-chat", e.get("hash", str(e["seq"])), n=8), parent=root, start=t, end=t + 1_000_000,
+                      attrs={"gen_ai.operation.name": "chat", "gen_ai.request.model": model, "gen_ai.agent.name": who, "gen_ai.conversation.id": conv,
+                             "gen_ai.usage.input_tokens": int(d.get("tokens_in") or 0), "gen_ai.usage.output_tokens": int(d.get("tokens_out") or 0),
+                             "collective.family": str(d.get("family") or ""), "collective.event_hash": e.get("hash", "")})]
+    return extra + [Span(name=f"invoke_agent {who}", trace=trace, span=root, parent=None, start=t, end=t + 2_000_000, attrs=attrs),
             Span(name=f"execute_tool {e['type']}", trace=trace, span=hid("act", e.get("hash", str(e["seq"])), n=8), parent=root,
                  start=t, end=t + 1_000_000,
                  attrs={"gen_ai.operation.name": "execute_tool", "gen_ai.tool.name": e["type"], "gen_ai.agent.name": who,

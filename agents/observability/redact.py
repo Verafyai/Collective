@@ -5,8 +5,8 @@
     redact({"a": [..]})       -> the same, applied to every string inside
 
 It applies, in order: the event log's own secret patterns (Article 12.3), the web terminal's extra ones
-(xai-, wandb_v1_, key=value), every rule in the vendored gitleaks 8.30.1 config
-(gitleaks-rules.toml, MIT), email addresses, and phone numbers. Standard library only. Anything it can't
+(xai-, wandb_v1_, key=value), every rule in the gitleaks 8.30.1 config
+(gitleaks-rules.toml, MIT; fetched by bootstrap and pinned by SHA-256, not committed), email addresses, and phone numbers. Standard library only. Anything it can't
 parse is replaced whole, so a failure never lets text through.
 """
 import pathlib, re, sys, tomllib, warnings

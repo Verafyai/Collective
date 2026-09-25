@@ -263,8 +263,31 @@ render = function(){
   }
   const hb = $("#huddle-btn"); if(hb){ hb.classList.toggle("on", huddleOpen()); hb.textContent = huddleOpen() ? "☕ Huddle open" : "☕ Huddle"; }
   huddleBanner();
-  adoptRooms(); drawFlags(); drawSleepers(); nameRooms(); roomLines();
+  adoptRooms(); courthouse(); drawFlags(); drawSleepers(); nameRooms(); roomLines();
 };
+// the courthouse (P-006): while a case is in session its parties walk there, the way voters walk to the Council table;
+// clicking it opens the Decisions tab
+function courthouse(){
+  const R = ROOMS.courthouse; if(!R || !L) return;
+  const c = L.court || {}, live = (c.in_session || []).length > 0;
+  if(live && !huddleOpen()){
+    const ks = (c.parties || []).filter(k => AG[k]);
+    ks.forEach((k, i) => place(k, {x: R.x + 1 + (i % 4) * 1.3, y: R.y + 1.5 + Math.floor(i / 4) * 1.6}, true));
+    if(ks.length) sortDepth();
+  }
+  let g = $("#courthouse-mark");
+  if(!g){
+    g = el("g", {id: "courthouse-mark", role: "button", tabindex: 0, style: "cursor:pointer", "aria-label": "The Courthouse: open the Decisions tab"});
+    const p = iso(R.x + R.w / 2, R.y + R.d / 2, 30);
+    el("circle", {cx: p.x, cy: p.y, r: 20, fill: "#1A1530", stroke: "#CDB8FF", "stroke-width": 2}, g);
+    const t = el("text", {x: p.x, y: p.y + 7, "text-anchor": "middle", "font-size": 20}, g); t.textContent = "⚖️";
+    const tag = el("text", {x: p.x, y: p.y - 34, "text-anchor": "middle", fill: "#FFE27A", "font-family": "Barlow Semi Condensed", "font-size": 15, "font-weight": 800,
+                            stroke: "#141A3A", "stroke-width": 4, "paint-order": "stroke", class: "session-tag"}, g);
+    const go = () => window.courtView && window.courtView.open((c.in_session || [])[0]);
+    g.addEventListener("click", go); g.addEventListener("keydown", e => { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); go(); } });
+  }
+  g.querySelector(".session-tag").textContent = live ? `⚖️ In session: ${(c.in_session || []).join(", ")}` : "";
+}
 // no standing speech bubbles (E-0093): what's said shows briefly above its room's chat icon instead (whisper)
 function roomLines(){ $("#bubbles").querySelectorAll(".bubble").forEach(b => b.remove()); }
 // idle agents with no task lie down asleep, eyes shut (E-0090); a huddle wakes everyone
@@ -732,6 +755,6 @@ function projectButton(){
 
 // ---------- start ----------
 drawWhiteboards(); drawCoffee(); drawPhones(); huddleButton(); resetButton(); projectButton();
-window.floorExtras = {redraw(){ drawWhiteboards(); drawCoffee(); drawPhones(); nameRooms(); }, whisper, ring};   // after the camera turns the floor (camera.js)
+window.floorExtras = {redraw(){ drawWhiteboards(); drawCoffee(); drawPhones(); nameRooms(); courthouse(); }, whisper, ring};   // after the camera turns the floor (camera.js)
 if(typeof L !== "undefined" && L) render();
 })();

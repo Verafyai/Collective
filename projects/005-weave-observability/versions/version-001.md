@@ -10,8 +10,6 @@ date: 2026-09-24
 
 ## Plan
 
-## Plan
-
 P-005's spec (`specs/steward-2026-09-25-weave-observability.md`), edicts E-0107, E-0108, E-0113 (and E-0115,
 E-0116 from the Steward's use of the floor), under Charter Article 12.10 as rewritten by A-0047 (v6.13.0):
 trace everything to Weave, a Weave button, an eval suite, and then a blog post.
@@ -77,14 +75,3 @@ no private text leaves the machine.
 
 - Edicts E-0106 to E-0108, E-0112 to E-0116; amendment A-0047 (Charter v6.13.0); spec and INVENTORY above.
 
-## Changes
-
-(filled in as it's built)
-
-## Release notes
-
-(filled in on release: what a human will see, what's known not to work)
-
-## Links
-
-(sprint item, case, commits)

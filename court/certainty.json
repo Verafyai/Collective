@@ -1,0 +1,25 @@
+{
+  "about": "The Court's certainty score (P-006, spec section 3). Computed by court/certainty.py from the case's events alone, so anyone can recompute it. Changing these numbers needs a Charter amendment.",
+  "weights": {
+    "evidence_strength": 0.30,
+    "cross_family_agreement": 0.25,
+    "argument_survival": 0.20,
+    "jury_margin": 0.15,
+    "judge_confidence": 0.10
+  },
+  "cap": "the weighted mean is capped at the lower of evidence_strength and cross_family_agreement, so one strong signal can't hide a weak one",
+  "insufficient_below": 40,
+  "bands": [
+    {"min": 0, "max": 39, "band": "Insufficient", "color": "#8E97C4"},
+    {"min": 40, "max": 59, "band": "Low", "color": "#F2B84B"},
+    {"min": 60, "max": 79, "band": "Moderate", "color": "#4FD1C5"},
+    {"min": 80, "max": 100, "band": "High", "color": "#6CC3A0"}
+  ],
+  "inputs": {
+    "evidence_strength": "the mean reliability (0 to 1) of the admitted exhibits cited by the prevailing side's surviving claims, times the share of those exhibits that are independent of each other, times 100; 0 when no surviving claim cites an admitted exhibit",
+    "cross_family_agreement": "the share of jurors' model families whose sealed ballot matches the holding, times 100",
+    "argument_survival": "the share of the prevailing side's claims never struck by a sustained objection and not listed by the Judge as successfully rebutted, times 100",
+    "jury_margin": "(ballots for the holding minus ballots for anything else) divided by all ballots, floored at 0, times 100",
+    "judge_confidence": "the Judge's stated confidence, 0 to 100, recorded and given a low weight"
+  }
+}

@@ -13,3 +13,4 @@ How later cases treat each case. Status is derived from these treatments.
 - **C-0009** · good_law · cited by: C-0010 (follows), C-0011 (follows)
 - **C-0010** · good_law · cited by: C-0011 (follows)
 - **C-0011** · good_law · cited by: not yet cited
+- **C-0012** · good_law · cited by: not yet cited

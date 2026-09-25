@@ -44,6 +44,19 @@
    "floor": "#40302A",
    "edge": "#634A3E",
    "created": "2026-09-25T02:17:06Z"
+  },
+  "courthouse": {
+   "name": "The Courthouse",
+   "project": "P-006",
+   "kind": "court",
+   "about": "Where the Collective's cases are argued from evidence and ruled on (the Court, P-006)",
+   "x": 6,
+   "y": 24,
+   "w": 6,
+   "d": 6,
+   "floor": "#2A2138",
+   "edge": "#4A3A6A",
+   "created": "2026-09-25T06:10:00Z"
   }
  }
 }

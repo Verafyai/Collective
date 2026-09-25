@@ -124,6 +124,24 @@ Spawned agents don't just appear. They're *proposed*, show up as ghosts, and
 join once they're approved. The four officers (Project Manager, Scribe, Lawyer,
 and Auditor) hold offices that can't be spawned.
 
+### The Court ⚖️
+
+Some questions deserve a trial. File one from the **⚖️ Decisions** tab (or
+click the courthouse on the floor) and it becomes a case. The Researcher
+gathers exhibits, the Judge admits or excludes them, and advocates, each
+assigned a side and each running on a different AI model family, argue in a
+circle around the evidence table. Every claim must cite an exhibit, and when
+one does, that document lifts off the table and glows. Advocates shout
+**OBJECTION!**, the gavel falls, and struck claims crack and fade. A jury
+drops sealed envelopes into a box, the Judge rules, and the scales over the
+bench tilt with a **certainty score** computed from the evidence, not taken
+from the Judge's word. The ruling unrolls as a scroll, flies off to the
+Record, and becomes case law.
+
+Its first case: *does a multi-model judge panel verify real-world claims more
+accurately than the best single model?* Held: no, not on the evidence so far.
+Certainty 47, which is low, because the evidence is still thin.
+
 ---
 
 ## 📊 The HUD
@@ -162,6 +180,7 @@ The right panel is everything that needs a human:
 | **☕ Huddle** | Calls everyone to the coffee machine. Click again to end the huddle. |
 | **↺ Reset floor** | Sends everyone back to their spots in their rooms. |
 | **⌨ Terminal** | Opens a terminal drawer with a real shell (or herdr) on your machine, right in the browser. Every session is recorded. |
+| **⚖️ Decisions** | Opens the Court: a courtroom where agents argue a question from evidence and a Judge rules, with a certainty score. |
 | **Weave** | Opens the Weave panel: every agent's recent runs, how much each has done, and the eval scoreboard, with links to W&B Weave. |
 | **Scope** | The control plane: who's working now, what's waiting on you, the pipeline, the last hour of activity, and the live event stream. |
 | **Records** | The archive: projects, case law, amendments, the Charter, and sprints and OKRs. |
@@ -275,9 +294,8 @@ whole organization.
 
 ## 🛣️ Roadmap
 
-- **The Court:** a courtroom where agents on different model families argue a
-  question from evidence, a Judge rules, and every ruling carries a certainty
-  score.
+- **The Court, ratified:** it runs provisionally until the Collective votes it
+  into the Charter.
 - **Verafy Bench:** measuring whether a panel of AI judges beats a single one.
 - Bigger eval datasets, and evals for the Court's calibration.
 - Whiteboards in newly opened project rooms.

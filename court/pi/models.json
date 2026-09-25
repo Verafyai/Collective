@@ -1,0 +1,18 @@
+{
+  "providers": {
+    "wandb": {
+      "baseUrl": "https://api.inference.wandb.ai/v1",
+      "api": "openai-completions",
+      "apiKey": "$WANDB_API_KEY",
+      "headers": {"OpenAI-Project": "rexstjohn-verafy/The Collective", "User-Agent": "collective-court/1.0"},
+      "models": [
+        {"id": "deepseek-ai/DeepSeek-V4-Pro"},
+        {"id": "Qwen/Qwen3-235B-A22B-Instruct-2507"},
+        {"id": "moonshotai/Kimi-K2.6"},
+        {"id": "zai-org/GLM-5.2"},
+        {"id": "openai/gpt-oss-120b"},
+        {"id": "meta-llama/Llama-3.3-70B-Instruct"}
+      ]
+    }
+  }
+}

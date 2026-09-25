@@ -1,6 +1,6 @@
 # The Collective: User Guide
 
-> **Matches Charter v6.10.0.** Maintained by the Scribe, with accuracy checked
+> **Matches Charter v6.13.** (and the provisional Court, P-006). Maintained by the Scribe, with accuracy checked
 > by the Auditor (task T-0002, Charter Article 19). Updated in any sprint that
 > changes how the Collective is operated, and reviewed every week. The version
 > history of this page is its git history.
@@ -142,6 +142,9 @@ whether it's active, proposed, or retired (Charter Article 3.8).
   Collective votes (Article 3.6).
 - **Clone a maker:** the **Clone** button on its bio, or `spawn.py clone <key>`.
   Officers can't be spawned, cloned, or retired this way.
+- **Your own spawns:** as the Steward you may approve a spawned agent yourself
+  instead of waiting for the vote (Article 2.2); say so and it's recorded as a
+  Steward action, then activated.
 - **After the vote passes,** the Scribe runs `spawn.py activate <key>` and
   records it in the Charter. A new agent starts with base tools and **no
   vote**; giving it a vote or its class's requested tools is a Class B
@@ -167,6 +170,66 @@ terminals on this Mac, in the Collective folder (Charter Article 18.7(h)):
 - It refuses anything but this dashboard's own page (same origin, a one-time
   token), allows at most 4 terminals, and ends a terminal after 30 minutes
   idle. It's yours alone: no agent is given a tool that opens it.
+
+## 6d. The floor: projects, chats, and talks
+
+- **Rooms are projects.** Each room carries a codename (click it to rename).
+  **＋ New project** takes a codename, a spec, and toggles for agent types to
+  spawn with it; the project gets its own room (Article 18.7(i)).
+- **Drag an agent into a project room** and it gets a task for that project
+  and starts on it at its next run.
+- **Room chats:** each room has one chat bubble. Open it to read what the
+  agents there are saying and add a comment; up to three of them answer you at
+  once, each in a short recorded run that can edit only that thread (Article
+  18.7(d)). A comment that gives a direction can be recorded as an edict.
+- **Talk to one agent:** **⌨ Open terminal** on its profile opens a talk in the
+  terminal drawer, and the agent greets you first (Article 18.8).
+- **Reading the floor:** agents lie down asleep when they have no task at all;
+  each room's telephone is wired to Central Command (the Record); the camera
+  zooms, pans, and turns the floor (⌂ resets it).
+
+## 6e. Watching it in Weave
+
+- **Everything is traced** to your private W&B Weave project, "The
+  Collective" (Article 12.10). Every agent is in the Agents view, each run a
+  turn with its model calls and tool calls; the Collective's own scripts show
+  up as ops. The bridge runs in the `weave` herdr tab
+  (`agents/observability/otel_bridge.py follow`).
+- **What leaves the machine:** `OBS_PRIVATE_MODE=metadata` (your choice): ids,
+  types, times, counts, models, token counts, tool names, and public paths,
+  never prompt, transcript, or edict text. Set it in `agents/.env`.
+- **The Weave button** on the floor, /scope, and /records shows recent runs,
+  every agent, and the eval scoreboard; **View in Weave** on each profile
+  filters to that agent. The key stays in `agents/.env` and on the server.
+- **Evals:** `agents/bin/evals.sh [--suite E1,E4,...] [--budget USD]` runs the
+  suite pre-registered in `evals/REGISTRY.md` (16 evals). Failures open a
+  `#eval` board thread. The standing per-sprint run waits on a budget
+  `#decision` from you.
+
+## 6f. The Court (provisional)
+
+- **⚖️ Decisions** (or the courthouse on the floor) opens the Court. **File a
+  case** with a question, optional positions and evidence links, a priority,
+  and a token budget (150,000 by default); the filing is recorded as your
+  edict.
+- **How a case runs:** positions are framed, exhibits are gathered and
+  admitted or excluded by the Judge, advocates on different model families
+  argue assigned positions (every claim cites an exhibit; objections strike
+  claims), you watch it live in the courtroom, a jury casts sealed ballots,
+  and the Judge rules. Every phase is in the Record, and the case is one
+  conversation in Weave.
+- **Certainty (0 to 100)** is computed from the events, not taken from the
+  Judge: evidence strength, cross-family agreement, argument survival, jury
+  margin, and a little of the Judge's confidence, capped at the weaker of the
+  first two (`court/certainty.json`). Below 40 the ruling is "insufficient
+  evidence". Check any ruling with `python3 court/certainty.py C-NNNN`.
+- **The docket** lists every case with its certainty; **Replay** re-runs any
+  case in the courtroom from the Record. Test cases (`CT-NNNN`) are never case
+  law.
+- **Provisional:** until amendment A-0051 passes the vote, rulings are filed
+  as officer cases and the courtroom says "Provisional court".
+- From the command line: `python3 court/court.py file --question "..."
+  --position "..." --position "..."`, then `court.py run C-NNNN`.
 
 ## 7. Records, history, and rewinding
 

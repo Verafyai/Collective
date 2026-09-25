@@ -172,3 +172,33 @@ license, no stars: don't install).
 - **gitleaks 8.30.1** (MIT): second layer of the public-commit redaction gate
   (A-0016). Local only.
 - **age 1.3.2** (BSD-3-Clause): seals `agents/.env`. Local only.
+
+## fusion-harness in the Court (P-006)
+
+- **What the Court uses:** fusion-harness's own child runner, `runChild` in
+  `extensions/fusion-harness/modules/child-runner.ts` (pinned 01a3482). It spawns a
+  clean-room `pi --mode json -p` child per turn (`--no-skills --no-extensions
+  --no-context-files`, `--no-tools` for court turns) and streams its JSON events
+  into an `AgentRun` (text, tokens, cost, timing). `court/fh_court.ts` builds one
+  `AgentRun` per turn and runs a batch in parallel, the way `/fh-opinion` and
+  `/fh-debate` fan out their slots. The court procedure (rounds, objections,
+  ballots) is in `court/court.py`.
+- **The one extension (no fusion-harness file is modified):** `piInvocation`
+  finds pi by re-running the current process's entry script (`process.argv[1]`).
+  A headless driver isn't pi, so `fh_court.ts` points `argv[1]` at pi's real
+  entry script before calling `runChild`.
+- **Run it:** `node court/fh_court.ts < jobs.json` (Node 22+ strips the types),
+  with `PI_CODING_AGENT_DIR` pointing at a throwaway directory holding
+  `court/pi/models.json`. Children need stdin closed, or pi waits for input;
+  `runChild` already does this.
+- **Model families:** Anthropic (`ANTHROPIC_API_KEY`) and xAI (`XAI_API_KEY`) are
+  pi built-ins. Every other family comes from **W&B Inference**, an
+  OpenAI-compatible endpoint (`https://api.inference.wandb.ai/v1`, `api:
+  openai-completions`) using `WANDB_API_KEY`, declared in `court/pi/models.json`
+  with the headers `OpenAI-Project: rexstjohn-verafy/The Collective` and a
+  `User-Agent` (Cloudflare rejects the default one with error 1010). It serves
+  DeepSeek, Qwen, Moonshot (Kimi), Z.ai (GLM), OpenAI's open models, Meta's
+  Llama, and others; pi reports their cost as 0, so the Court budgets by tokens.
+- **Off-machine:** the prompts of Court turns go to Anthropic, xAI, and W&B
+  Inference. A case filed from a private source is kept in `private/cases/`.
+

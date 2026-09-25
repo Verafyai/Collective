@@ -1,0 +1,22 @@
+{
+ "id": "E15",
+ "name": "Court calibration",
+ "target": "the-court",
+ "metric": "Brier score",
+ "value": null,
+ "ci": null,
+ "threshold": "<= 0.25",
+ "passed": false,
+ "pending": true,
+ "n": 1,
+ "errors": 0,
+ "extra": {
+  "rulings": 1,
+  "with_outcomes": 0,
+  "pending": true
+ },
+ "dataset": "seed-v1 \u00b7 test sha256 b34029e07e8d",
+ "cost_usd": 0.0,
+ "ran_at": "2026-09-25T06:01:15+00:00",
+ "weave": "https://wandb.ai/rexstjohn-verafy/The%20Collective/weave/evaluations"
+}

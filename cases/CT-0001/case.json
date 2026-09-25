@@ -1,0 +1,146 @@
+{
+ "id": "CT-0001",
+ "question": "Will the Collective's weekly blog double its readership next month?",
+ "positions": [
+  {
+   "id": "A",
+   "text": "Yes, it will double"
+  },
+  {
+   "id": "B",
+   "text": "No, it won't double"
+  }
+ ],
+ "links": [],
+ "priority": "normal",
+ "budget_tokens": 120000,
+ "filer": "steward",
+ "private": false,
+ "no_discovery": true,
+ "test": true,
+ "status": "ruled",
+ "filed_at": "2026-09-25T05:49:01+00:00",
+ "framed_by": "steward",
+ "spent_tokens": 28374,
+ "positions_framed": true,
+ "exhibits": [],
+ "advocates": [
+  {
+   "position_id": "A",
+   "position": "A: Yes, it will double",
+   "agent": "researcher",
+   "model": "anthropic/claude-sonnet-5",
+   "family": "anthropic"
+  },
+  {
+   "position_id": "B",
+   "position": "B: No, it won't double",
+   "agent": "prototyper",
+   "model": "xai/grok-4.7",
+   "family": "xai"
+  }
+ ],
+ "judge": {
+  "agent": "judge",
+  "model": "wandb/deepseek-ai/DeepSeek-V4-Pro",
+  "family": "deepseek"
+ },
+ "jury": [
+  {
+   "agent": "pm",
+   "model": "wandb/moonshotai/Kimi-K2.6",
+   "family": "moonshot"
+  },
+  {
+   "agent": "social",
+   "model": "wandb/zai-org/GLM-5.2",
+   "family": "zai"
+  },
+  {
+   "agent": "ideas",
+   "model": "wandb/openai/gpt-oss-120b",
+   "family": "openai"
+  }
+ ],
+ "spent_usd": 0.034328,
+ "ballots": [
+  {
+   "juror": "pm",
+   "family": "moonshot",
+   "model": "wandb/moonshotai/Kimi-K2.6",
+   "vote": "insufficient",
+   "reason": "The admitted record contains no exhibits establishing current readership, growth rate, or any plan to double readership, leaving both positions wholly unsubstantiated.",
+   "seal": "407636d325e85e64b60bbfbafe15910bdbd083d45eb26fa1b3c891b3211b751e"
+  },
+  {
+   "juror": "social",
+   "family": "zai",
+   "model": "wandb/zai-org/GLM-5.2",
+   "vote": "B",
+   "reason": "The affirmative bears the burden of proving readership will double, yet A's own researcher concedes no admitted exhibits support that claim, so the prediction is unproven on this record. B prevails as the unsupported affirmative fails.",
+   "seal": "c0388612c5f0ecd96568f254c18eed3ee60852dca94579c5b59b1ebffcbd2231"
+  },
+  {
+   "juror": "ideas",
+   "family": "openai",
+   "model": "wandb/openai/gpt-oss-120b",
+   "vote": "insufficient",
+   "reason": "Neither side presented any admitted exhibit establishing current readership or a growth trajectory, leaving the claim unsupported by evidence.",
+   "seal": "75728bad1de0508b09aefc9f93116ab4b3c6a92569b48cffbb4c42cd582f49f8"
+  }
+ ],
+ "tallies": {
+  "A": 0,
+  "B": 1,
+  "insufficient": 2
+ },
+ "ruling": {
+  "holding": "insufficient",
+  "holding_text": "Without any admitted exhibits establishing current readership, growth rate, or a doubling plan, there is no factual basis to determine whether the Collective's weekly blog readership will double next month.",
+  "reasoning": [
+   {
+    "point": "No admitted exhibit in the record provides data on current weekly blog readership or any projected growth, so the factual question cannot be resolved.",
+    "cites": []
+   }
+  ],
+  "dissent": "The jury split 0-1-2, reflecting the complete absence of evidence rather than disagreement on the merits.",
+  "confidence": 100,
+  "rebutted_claims": [],
+  "reopen_conditions": [
+   "An admitted exhibit showing current weekly blog readership and a growth trend or documented plan that demonstrates a doubling trajectory by next month"
+  ],
+  "judge_model": "wandb/deepseek-ai/DeepSeek-V4-Pro",
+  "final_holding": "insufficient"
+ },
+ "certainty": {
+  "score": 0,
+  "band": "Insufficient",
+  "for_position": "insufficient",
+  "weighted_mean": 31.67,
+  "cap": 0.0,
+  "inputs": {
+   "evidence_strength": 0.0,
+   "cross_family_agreement": 66.67,
+   "argument_survival": 0.0,
+   "jury_margin": 33.33,
+   "judge_confidence": 100.0
+  },
+  "counts": {
+   "exhibits_cited": 0,
+   "claims": 0,
+   "struck": 0,
+   "rebutted": 0,
+   "ballots": 3,
+   "for_holding": 2,
+   "families": 3
+  },
+  "weights": {
+   "evidence_strength": 0.3,
+   "cross_family_agreement": 0.25,
+   "argument_survival": 0.2,
+   "jury_margin": 0.15,
+   "judge_confidence": 0.1
+  }
+ },
+ "ruled_at": "2026-09-25T05:50:34+00:00"
+}

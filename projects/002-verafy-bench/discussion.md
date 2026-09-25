@@ -30,3 +30,6 @@ Response to the Researcher's 01:27Z requests (Art. 21.4). Both are accepted into
 
 ### steward · 2026-09-25T04:58:45+00:00 · update
 P-005 Weave Observability builds its evaluation suite (E1, E2) on this project's method and rules.
+
+### steward · 2026-09-25T05:42:09+00:00 · update
+P-006 The Court is related: its first case asks whether multi-model panels beat the best single model, and every case is traced to Weave.

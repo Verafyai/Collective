@@ -96,7 +96,8 @@ def run_cli(main, name, only=None, rename=None, keep_flags=()):
     sub = argv[0] if argv and not argv[0].startswith("-") else ""
     if only is not None and sub not in only: return main()
     opname = (rename or {}).get(sub) or (f"{name}.{sub}" if sub else name)
-    ids = [x for x in argv[1:] if not x.startswith("-") and _ID.match(x)]
+    ids = [x for i, x in enumerate(argv[1:], 1) if not x.startswith("-") and _ID.match(x)
+           and not (argv[i - 1].startswith("-") and argv[i - 1] not in keep_flags and i - 1 > 0)]   # a flag's value is text, not an id
     flags = {}
     for i, x in enumerate(argv):
         if x in keep_flags and i + 1 < len(argv): flags[x.lstrip("-")] = argv[i + 1]

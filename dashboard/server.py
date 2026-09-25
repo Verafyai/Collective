@@ -598,7 +598,15 @@ def live():
             if w.get("last_export"):
                 weave = {"url": WEAVE_URL, "seq": w.get("last_seq", -1), "open": len(w.get("open", {})), "last_sync": w.get("last_export")}
         except ValueError: pass
-    return {"offices": list(offices.values()), "roster": R, "rooms": room_names(), "huddle": huddle(), "weave": weave, "activity": buckets, "incidents_24h": incidents_24h, "pipeline": pipeline,
+    live_cases = [c for c in docket()["cases"] if c["status"] in ("in discovery", "in session")]
+    parties = []
+    for c in live_cases:
+        try:
+            cj = json.loads(read(next(d for d in case_dirs() if d.name == c["id"]) / "case.json"))
+            parties += [a["agent"] for a in cj.get("advocates", [])] + [j["agent"] for j in cj.get("jury", [])]
+        except (StopIteration, ValueError): pass
+    court = {"provisional": court_provisional(), "in_session": [c["id"] for c in live_cases], "parties": sorted(set(parties))}
+    return {"offices": list(offices.values()), "roster": R, "rooms": room_names(), "huddle": huddle(), "weave": weave, "court": court, "activity": buckets, "incidents_24h": incidents_24h, "pipeline": pipeline,
             "schedule": sched, "waiting": ov["waiting"], "sprint": ov["sprint"], "stopped": ov["stopped"],
             "setup_complete": ov["setup_complete"], "charter_version": ov["charter_version"], "last_event": ov["last_event"],
             "public_head": ov["public_head"], "mode": ov["mode"], "counts": ov["counts"]}
@@ -675,6 +683,7 @@ class H(BaseHTTPRequestHandler):
             if not re.fullmatch(r"[\w.-]+\.(js|css)", name) or not f.is_file(): return self.send(404, {"error": "not found"})
             return self.send(200, f.read_bytes(), "text/javascript" if name.endswith(".js") else "text/css")
         if path.startswith("/api/weave/"): return weave_route(self, path)                     # P-005: read-only
+        if path == "/api/cases" or path.startswith("/api/cases/"): return cases_route(self, path)  # P-006: the Court
         if history_route(self): return
         u = urllib.parse.urlparse(self.path); q = urllib.parse.parse_qs(u.query)
         m = re.match(r"^/api/agents/([a-z][a-z0-9]{1,15})/permissions$", u.path)
@@ -713,6 +722,7 @@ class H(BaseHTTPRequestHandler):
         if self.path == "/api/agents/propose": return self.propose_agent()
         m = re.match(r"^/api/agents/([a-z][a-z0-9]{1,15})/(move|terminal|permissions|fire)$", self.path)
         if m: return agent_write(self, m.group(1), m.group(2))
+        if self.path == "/api/cases": return case_file(self)                                  # P-006: file a case
         if self.path == "/api/projects/new": return project_new(self)
         m = re.match(r"^/api/rooms/([a-z][a-z0-9]{1,15})/rename$", self.path)
         if m: return room_rename(self, m.group(1))
@@ -847,6 +857,79 @@ def chat_repliers(thread_id, room=None):
         REPLY_GAP[(k, thread_id)] = time.time(); out.append(k)
         if len(out) == 3: break
     return out
+
+# ---------- the Court (P-006) ----------
+COURT_DAILY_TOKENS = int(os.environ.get("COURT_DAILY_TOKENS", "1500000"))   # the running cap across today's cases
+def court_provisional():
+    s = read(ROOT / "CHARTER.md"); log = s[[m.start() for m in re.finditer(r"\n---\n\n# PART VI — ", s)][-1]:] if "# PART VI" in s else ""
+    return not re.search(r"^### A-\d{4} · v[\d.]+ · \S+ · Class \w · The Court\b.*?\nratified_by: \S", log, re.S | re.M)
+
+def case_dirs():
+    bases = [ROOT / "cases"] + ([] if PUBLIC else [ROOT / "private/cases"])
+    return [d for b in bases if b.exists() for d in sorted(b.glob("C*-*")) if (d / "case.json").exists()]
+
+def docket():
+    out = []
+    for d in case_dirs():
+        try: c = json.loads((d / "case.json").read_text())
+        except ValueError: continue
+        cert = c.get("certainty") or {}
+        out.append({"id": c["id"], "question": c["question"], "status": c.get("status"), "priority": c.get("priority"), "filed": c.get("filed_at"),
+                    "ruled": c.get("ruled_at"), "certainty": cert.get("score"), "band": cert.get("band"), "holding": (c.get("ruling") or {}).get("final_holding"),
+                    "test": bool(c.get("test")), "private": bool(c.get("private")), "spent_tokens": c.get("spent_tokens"), "budget_tokens": c.get("budget_tokens"),
+                    "case_law": c.get("case_law")})
+    return {"provisional": court_provisional(), "cases": sorted(out, key=lambda x: x["filed"] or "", reverse=True)}
+
+def case_events_for(cid):
+    if PUBLIC: return []
+    out = []
+    try:
+        with open(ROOT / "private/ledger/events.ndjson") as f:
+            for line in f:
+                if f'"{cid}"' not in line: continue
+                e = json.loads(line); d = e.get("data") or {}
+                if d.get("case") == cid and d.get("court") == "court": out.append({k: e[k] for k in ("seq", "ts", "actor", "type", "data", "hash")})
+    except OSError: pass
+    return out
+
+def cases_route(h, path):
+    if path == "/api/cases": return h.send(200, docket())
+    m = re.fullmatch(r"/api/cases/(CT?-\d{4})(/replay)?", path)
+    if not m: return h.send(404, {"error": "not found"})
+    d = next((x for x in case_dirs() if x.name == m.group(1)), None)
+    if not d: return h.send(404, {"error": "no such case"})
+    if m.group(2): return h.send(200, {"id": m.group(1), "events": case_events_for(m.group(1))})
+    c = json.loads((d / "case.json").read_text())
+    ex = json.loads(read(d / "exhibits/exhibits.json") or "[]")
+    return h.send(200, {**c, "exhibits": ex, "transcript": read(d / "transcript.md"), "ruling_md": read(d / "ruling.md"),
+                        "provisional": court_provisional(), "weave": WEAVE_URL + "/agents"})
+
+def case_file(h):
+    """POST /api/cases: the Steward files a case (P-006). Recorded as an edict; runs in the background."""
+    p = guarded(h, "case filing", 10)
+    if p is None: return
+    q = " ".join(str(p.get("question", "")).split())
+    if not (10 <= len(q) <= 500): return h.send(400, {"error": "a question is 10 to 500 characters"})
+    positions = [str(x)[:300] for x in (p.get("positions") or []) if str(x).strip()][:4]
+    links = [str(x)[:500] for x in (p.get("links") or []) if re.match(r"^(https?://|[\w./-]+$)", str(x))][:10]
+    budget = qint({"b": [p.get("budget", 150000)]}, "b", 150000, 20000, 500000)
+    priority = p.get("priority") if p.get("priority") in ("low", "normal", "high") else "normal"
+    today = time.strftime("%Y-%m-%d", time.gmtime())
+    spent = sum((json.loads((d / "case.json").read_text()).get("spent_tokens") or 0) for d in case_dirs()
+                if (json.loads((d / "case.json").read_text()).get("filed_at") or "").startswith(today))
+    if spent + budget > COURT_DAILY_TOKENS: return h.send(429, {"error": f"the Court's running budget for today is spent ({spent:,} of {COURT_DAILY_TOKENS:,} tokens)"})
+    run(PY, "agents/bin/edict.py", "new", "--title", f"File a case: {summary(q, 60)}", "--text", q,
+        "--restatement", "The Steward filed this question with the Court from the Decisions tab (P-006).")
+    args = [PY, "court/court.py", "file", "--question", q, "--priority", priority, "--budget", str(budget)]
+    for x in positions: args += ["--position", x]
+    for x in links: args += ["--link", x]
+    code, out = run(*args)
+    m = re.search(r"(CT?-\d{4})", out)
+    if code or not m: return h.send(400, {"ok": False, "error": out.replace("REFUSED: ", "")[-300:]})
+    if os.environ.get("COLLECTIVE_NO_REPLIES") != "1":            # tests file, but never start a real case
+        subprocess.Popen([PY, str(ROOT / "court/court.py"), "run", m.group(1)], cwd=ROOT, start_new_session=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                         env={k: v for k, v in os.environ.items() if not re.match(r"CLAUDE(CODE|_CODE_)", k)})
+    h.send(200, {"ok": True, "id": m.group(1), "message": f"{m.group(1)} filed; the Court is gathering evidence."})
 
 def chat_comment(h, cid):
     """/api/conversations/<id>/comment: the Steward's comment in a floor chat (Article 18.7(d))."""
