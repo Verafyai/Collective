@@ -473,6 +473,8 @@ def flags(offices):
         if not f and not o["asleep"] and o["status"] in ("idle", "never"): f.append({"kind": "scheduled", "note": "Awaiting its next scheduled run"})
         o["flags"] = f
 
+WEAVE_URL = "https://wandb.ai/rexstjohn-verafy/The%20Collective/weave"   # the Steward's Weave project (P-005)
+
 def live():
     """The control plane's single live feed: every office's state right now, activity, pipeline, schedule."""
     ev = events(limit=5000)
@@ -529,7 +531,14 @@ def live():
     sched = dict(re.findall(r"^(SPRINT_[A-Z]+)='([^']*)'", cfg, re.M))
     ov = overview()
     flags(offices)
-    return {"offices": list(offices.values()), "roster": R, "rooms": room_names(), "huddle": huddle(), "activity": buckets, "incidents_24h": incidents_24h, "pipeline": pipeline,
+    weave = None
+    if not PUBLIC:                     # the Weave bridge's progress (Article 12.10, P-005); private view only
+        try:
+            w = json.loads(read(ROOT / "agents/observability/.bridge_state") or "{}")
+            if w.get("last_export"):
+                weave = {"url": WEAVE_URL, "seq": w.get("last_seq", -1), "open": len(w.get("open", {})), "last_sync": w.get("last_export")}
+        except ValueError: pass
+    return {"offices": list(offices.values()), "roster": R, "rooms": room_names(), "huddle": huddle(), "weave": weave, "activity": buckets, "incidents_24h": incidents_24h, "pipeline": pipeline,
             "schedule": sched, "waiting": ov["waiting"], "sprint": ov["sprint"], "stopped": ov["stopped"],
             "setup_complete": ov["setup_complete"], "charter_version": ov["charter_version"], "last_event": ov["last_event"],
             "public_head": ov["public_head"], "mode": ov["mode"], "counts": ov["counts"]}

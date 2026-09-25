@@ -19,6 +19,7 @@ additions are part of the work that uses them.
 | age | Filippo Valsorda and contributors | BSD-3-Clause | Sealing auth |
 | Claude Code | Anthropic | commercial terms | Agent runtime |
 | Grok CLI | xAI | commercial terms | Social agent |
+| W&B Weave (weave 0.53.10) | Weights & Biases | Apache-2.0 | Tracing the Collective's runs and events to the Steward's private Weave project (Article 12.10) |
 | gitleaks | Zachary Rice and contributors | MIT | Public-commit redaction gate |
 | Barlow, Barlow Semi Condensed (fonts) | Jeremy Tribby (The Barlow Project Authors) | SIL Open Font License 1.1 | Dashboard floor and scope; served locally from `dashboard/fonts/` |
 | Public Sans (font) | USWDS (The Public Sans Project Authors) | SIL Open Font License 1.1 | Dashboard records; served locally |

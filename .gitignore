@@ -15,3 +15,9 @@ org/STOP
 org/PAUSE-*
 org/tasks/*.lock
 org/tasks/tsk.json.1
+
+# observability (P-005): local state, never committed
+agents/observability/.bridge_state
+agents/observability/.bridge_state.*
+.env
+agents/observability/.ops_spool.ndjson*

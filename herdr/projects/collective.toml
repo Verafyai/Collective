@@ -111,3 +111,7 @@ command = "agents/bin/run-role.sh pizzainventor --loop"
 [[tabs]]
 name = "pizzaherald"
 command = "agents/bin/run-role.sh pizzaherald --loop"
+
+[[tabs]]
+name = "weave"
+command = "agents/.venv/bin/python agents/bin/weave_sync.py follow --every 60"

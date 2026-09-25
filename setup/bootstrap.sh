@@ -58,6 +58,10 @@ echo "6) Event log (replayability)"
 if [ -s private/ledger/events.ndjson ]; then ok "event log exists ($(wc -l < private/ledger/events.ndjson) events)"
 else run "python3 agents/bin/eventlog.py init --actor steward" && ok "event log initialized (genesis snapshot)"; fi
 
+echo "6b) Weave mirror (Article 12.10)"
+if [ -x agents/.venv/bin/python ] && agents/.venv/bin/python -c "import weave" 2>/dev/null; then ok "weave installed in agents/.venv"
+else run "python3 -m venv agents/.venv && agents/.venv/bin/pip install -q 'weave==0.53.10'" && ok "weave 0.53.10 installed in agents/.venv (set WANDB_API_KEY in agents/.env to turn the mirror on)"; fi
+
 echo "7) Runtime folders"
 run "mkdir -p research/briefs ideas prototypes media/exports private/outbox/{pending,approved,posted,rejected} org/board org/tasks"
 ok "folders ready"
