@@ -20,8 +20,15 @@ import argparse, datetime, hashlib, json, pathlib, re, statistics, subprocess, s
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 SPRINTS = ROOT / "sprints"
-MEMBERS = ["pm", "researcher", "ideas", "prototyper", "media", "social"]   # voting offices (org/OFFICERS.md)
-PROPOSERS = MEMBERS + ["scribe", "lawyer", "auditor"]                     # non-voting officers propose, never vote
+def _roster():
+    """Active agents from agents/roster.json (Article 3.6); falls back to the founding nine."""
+    try:
+        ags = [a for a in json.loads((ROOT / "agents/roster.json").read_text())["agents"] if a["status"] == "active"]
+        return [a["key"] for a in ags if a["votes"]], [a["key"] for a in ags]
+    except Exception:
+        v = ["pm", "researcher", "ideas", "prototyper", "media", "social"]
+        return v, v + ["scribe", "lawyer", "auditor"]
+MEMBERS, PROPOSERS = _roster()   # voters; everyone who proposes (non-voting agents propose but never vote)
 HEADINGS = ["Objective", "Work items", "Success criteria", "Justification", "Budget", "Risks", "Dependencies"]
 DIMENSIONS = ["criteria", "quality", "mission", "charter", "cost"]
 PHASES = ["proposing", "deliberating", "voting", "steward", "executing", "postmortem", "review", "closed"]

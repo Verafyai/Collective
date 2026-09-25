@@ -1,6 +1,6 @@
 # The Collective: User Guide
 
-> **Matches Charter v6.2.0.** Maintained by the Scribe, with accuracy checked
+> **Matches Charter v6.4.0.** Maintained by the Scribe, with accuracy checked
 > by the Auditor (task T-0002, Charter Article 19). Updated in any sprint that
 > changes how the Collective is operated, and reviewed every week. The version
 > history of this page is its git history.
@@ -125,6 +125,30 @@ the private repo.
     agents/bin/projects.py comment 1 --author human:rex --kind suggestion
     --text "..."`
   - Candidate projects waiting for a spec: `projects/PROPOSED.md`.
+
+## 6b. Agents: classes, bios, and spawning
+
+Every agent has a **character class** (`agents/classes.json`) and a place in
+the **roster** (`agents/roster.json`): its room, look, whether it votes, and
+whether it's active, proposed, or retired (Charter Article 3.8).
+
+- **Read a bio:** click any agent on the dashboard's floor
+  (`agents/bin/dashboard.sh`), or run `python3 agents/bin/spawn.py bio <key>`.
+  It shows the class, vote, room, model, schedule, installed and requested
+  modules, and the full prompt.
+- **Spawn an agent:** pick a class in the floor's tray and follow the
+  five-step wizard, or run `python3 agents/bin/spawn.py propose ...`. This
+  **drafts a membership motion**; the agent appears as a ghost until the
+  Collective votes (Article 3.6).
+- **Clone a maker:** the **Clone** button on its bio, or `spawn.py clone <key>`.
+  Officers can't be spawned, cloned, or retired this way.
+- **After the vote passes,** the Scribe runs `spawn.py activate <key>` and
+  records it in the Charter. A new agent starts with base tools and **no
+  vote**; giving it a vote or its class's requested tools is a Class B
+  amendment you ratify.
+- **Retire an agent:** `spawn.py retire <key>` drafts its own motion; after
+  it passes, the Scribe runs `spawn.py retire-apply <key>`, which pauses it
+  and keeps its history.
 
 ## 7. Records, history, and rewinding
 

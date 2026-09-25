@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Collective · control plane</title>
+<link rel="stylesheet" href="/fonts/fonts.css">
+<style>
+:root{
+  --night:#0E1330; --panel:#151C3D; --panel-2:#1B2450; --line:#2A3463; --text:#E7EAF8; --muted:#8C95C2; --faint:#566093;
+  --work:#4FD1C5; --work-soft:rgba(79,209,197,.14); --wait:#F2B84B; --wait-soft:rgba(242,184,75,.14);
+  --fail:#F07167; --fail-soft:rgba(240,113,103,.16); --gov:#A78BFA; --gov-soft:rgba(167,139,250,.16);
+  --ui:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif; --gauge:"Barlow Semi Condensed","Barlow",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--night);color:var(--text);font:15px/1.45 var(--ui);font-variant-numeric:tabular-nums;height:100%}
+a{color:var(--text)}
+:focus-visible{outline:2px solid var(--work);outline-offset:2px;border-radius:4px}
+header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px 22px;border-bottom:1px solid var(--line)}
+.mark{font:700 20px var(--gauge);letter-spacing:.2px;margin-right:6px}
+.mark small{display:block;font:500 12px var(--ui);color:var(--muted);letter-spacing:0}
+.chip{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:8px;background:var(--panel);font:600 14px var(--gauge);color:var(--text);border:1px solid var(--line);text-decoration:none}
+.chip .sub{font:500 13px var(--ui);color:var(--muted)}
+.chip.state-run{background:var(--work-soft);border-color:transparent;color:var(--work)}
+.chip.state-setup{background:var(--gov-soft);border-color:transparent;color:var(--gov)}
+.chip.state-stop{background:var(--fail-soft);border-color:transparent;color:var(--fail)}
+.chip.ok{color:var(--work)} .chip.bad{color:var(--fail);background:var(--fail-soft);border-color:transparent}
+.light{width:9px;height:9px;border-radius:50%;background:currentColor}
+.spacer{flex:1}
+.grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(360px,.75fr);gap:0;min-height:calc(100vh - 68px)}
+.scope-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 10px 18px;border-right:1px solid var(--line);position:relative}
+svg.scope{width:100%;max-width:min(80vh,780px);height:auto;display:block}
+.legend{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;color:var(--muted);font-size:13px;margin-top:4px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.side{display:flex;flex-direction:column;min-width:0}
+section{padding:16px 22px;border-bottom:1px solid var(--line)}
+section h2{font:600 15px var(--gauge);margin:0 0 10px;color:var(--muted);display:flex;justify-content:space-between;align-items:baseline}
+section h2 b{color:var(--text);font-size:15px}
+.now-row{display:grid;grid-template-columns:120px 1fr auto;gap:10px;padding:7px 0;border-top:1px solid var(--line);align-items:baseline}
+.now-row:first-of-type{border-top:0}
+.now-row .who{font:600 15px var(--gauge);color:var(--work)} .now-row .who.stuck{color:var(--fail)}
+.now-row .what{color:var(--text);font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.now-row .dur{color:var(--muted);font-size:13px}
+.empty{color:var(--muted);font-size:14px}
+.wait-item{padding:8px 10px;border-radius:8px;background:var(--wait-soft);margin-bottom:6px}
+.wait-item .t{font-weight:600;color:var(--wait)}
+.wait-item code{font-size:12.5px;color:var(--text);opacity:.85;word-break:break-all}
+.pipe{display:flex;align-items:stretch;gap:0}
+.stage{flex:1;text-align:center;padding:4px 2px;position:relative}
+.stage .n{font:700 30px/1 var(--gauge)} .stage .l{font:600 13px var(--gauge);margin-top:4px} .stage .h{font-size:12px;color:var(--muted)}
+.stage + .stage:before{content:"";position:absolute;left:-5px;top:12px;border:6px solid transparent;border-left-color:var(--faint)}
+.bars{display:flex;align-items:flex-end;gap:2px;height:46px}
+.bars div{flex:1;background:var(--work);opacity:.75;border-radius:1px;min-height:1px}
+.bars div.zero{background:var(--line);opacity:1}
+.meta{display:flex;justify-content:space-between;color:var(--muted);font-size:12.5px;margin-top:6px}
+.stream{list-style:none;margin:0;padding:0;font-size:13.5px;max-height:calc(100vh - 640px);min-height:140px;overflow:auto}
+.stream li{display:grid;grid-template-columns:48px 96px 1fr;gap:8px;padding:4px 0;border-top:1px solid var(--line)}
+.stream .s{color:var(--faint);font:600 13px var(--gauge)} .stream .a{font:600 13.5px var(--gauge)} .stream .w{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stream li.inc .a,.stream li.inc .w{color:var(--fail)}
+.stopbar{display:none;background:var(--fail);color:#fff;font:700 15px var(--gauge);padding:8px 22px;text-align:center}
+/* scope */
+.node circle.body{transition:fill .4s,stroke .4s}
+@media (prefers-reduced-motion:no-preference){
+  .node.working .halo{animation:halo 2.4s ease-out infinite}
+  .needle{transition:transform 1s linear}
+}
+@keyframes halo{0%{r:30;opacity:.55}100%{r:52;opacity:0}}
+@media (max-width:1050px){.grid{grid-template-columns:1fr}.scope-wrap{border-right:0;border-bottom:1px solid var(--line)}.stream{max-height:360px}}
+</style>
+</head>
+<body>
+<div class="stopbar" id="stopbar" role="alert">The Collective is stopped (org/STOP). No office will run until the Steward removes it.</div>
+<header>
+  <div class="mark">The Collective<small>Control plane</small></div>
+  <span class="chip" id="state"><span class="light"></span><span>Connecting</span></span>
+  <a class="chip" id="seal" href="/records#health" title="Open verification">Checking records</a>
+  <span class="chip" id="sprint">No sprint yet</span>
+  <span class="chip" id="week"><span class="sub">This week</span><span>…</span></span>
+  <span class="chip"><span class="sub">Charter</span><span id="charter">…</span></span>
+  <span class="spacer"></span>
+  <span class="chip"><span id="clock">…</span></span>
+  <a class="chip" href="/">Floor</a>
+  <a class="chip" href="/records">Records</a>
+  <a class="chip" href="/history">History</a>
+</header>
+<div class="grid">
+  <div class="scope-wrap">
+    <svg class="scope" id="scope" viewBox="-40 -40 800 800" role="img" aria-labelledby="scope-t scope-d">
+      <title id="scope-t">The Collective, live</title>
+      <desc id="scope-d">The record at the center, the four officers on the inner ring, the five makers on the outer ring, and the sprint week as a clock around the edge. Pulses travel from an office to the center each time it records an action.</desc>
+    </svg>
+    <div class="legend">
+      <span><i style="background:var(--work)"></i>Working</span><span><i style="background:#2B3566"></i>Idle</span>
+      <span><i style="background:var(--wait)"></i>Paused</span><span><i style="background:var(--fail)"></i>Stuck or incident</span>
+      <span><i style="background:var(--gov)"></i>Governance phase</span>
+    </div>
+  </div>
+  <div class="side">
+    <section aria-live="polite"><h2>Working now <b id="now-count"></b></h2><div id="now"></div></section>
+    <section><h2>Waiting on you <b id="wait-count"></b></h2><div id="wait"></div></section>
+    <section><h2>Pipeline</h2><div class="pipe" id="pipe"></div></section>
+    <section><h2>Activity, last hour <b id="rate"></b></h2><div class="bars" id="bars"></div><div class="meta"><span>60 min ago</span><span id="inc"></span><span>now</span></div></section>
+    <section style="border-bottom:0;flex:1"><h2>Event stream <b id="evn"></b></h2><ol class="stream" id="stream"></ol></section>
+  </div>
+</div>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const api = p => fetch(p, {cache:"no-store"}).then(r => r.json());
+const NS = "http://www.w3.org/2000/svg";
+const NAMES = {pm:"Project Manager", scribe:"Scribe", lawyer:"Lawyer", auditor:"Auditor", researcher:"Researcher",
+  ideas:"Ideas", prototyper:"Prototyper", media:"Media", social:"Social", steward:"You", system:"System", human:"A human", external:"Outside change"};
+const SHORT = {pm:"PM", scribe:"Scribe", lawyer:"Lawyer", auditor:"Auditor", researcher:"Research", ideas:"Ideas", prototyper:"Proto", media:"Media", social:"Social"};
+const C = 360, R_OFF = 150, R_MAKE = 240, R_IN = 318, R_OUT = 346;
+const pos = {};
+[["pm",-135],["scribe",-45],["auditor",45],["lawyer",135]].forEach(([k,a]) => pos[k] = polar(R_OFF, a));
+[["researcher",-90],["ideas",-18],["prototyper",54],["media",126],["social",198]].forEach(([k,a]) => pos[k] = polar(R_MAKE, a));
+function polar(r, deg){ const a = deg*Math.PI/180; return {x: C + r*Math.cos(a), y: C + r*Math.sin(a)}; }
+function el(tag, attrs, parent){ const e = document.createElementNS(NS, tag); for(const k in attrs) e.setAttribute(k, attrs[k]); (parent||svg).appendChild(e); return e; }
+const svg = $("#scope");
+const ago = ts => { if(!ts) return "never"; const s=(Date.now()-new Date(ts))/1000;
+  return s<60?"just now":s<3600?Math.round(s/60)+" min":s<86400?Math.round(s/3600)+" h":Math.round(s/86400)+" d"; };
+
+// ---------- the week clock ----------
+const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+function whenToHours(s, fallback){ const m = /^(\w{3})\s+(\d{1,2}):(\d{2})$/.exec(s||""); if(!m) return fallback;
+  const d = DAYS.indexOf(m[1]); return d < 0 ? fallback : d*24 + (+m[2]) + (+m[3])/60; }
+function weekAngle(h){ return -90 + 360*h/168; }
+function arcPath(r1, r2, a1, a2){
+  if(a2 < a1) a2 += 360; const large = (a2-a1) > 180 ? 1 : 0;
+  const p1=polar(r2,a1), p2=polar(r2,a2), p3=polar(r1,a2), p4=polar(r1,a1);
+  return `M${p1.x},${p1.y} A${r2},${r2} 0 ${large} 1 ${p2.x},${p2.y} L${p3.x},${p3.y} A${r1},${r1} 0 ${large} 0 ${p4.x},${p4.y} Z`;
+}
+let PHASES = [];
+function buildWeek(sched){
+  const open = whenToHours(sched.SPRINT_OPEN, 18), delib = whenToHours(sched.SPRINT_DELIBERATE, 24+11), vote = whenToHours(sched.SPRINT_VOTE, 24+16),
+        pm = whenToHours(sched.SPRINT_POSTMORTEM, 10), grade = whenToHours(sched.SPRINT_GRADE, 14);
+  PHASES = [
+    {name:"proposing", from:open, to:delib, color:"var(--gov)", o:.55},
+    {name:"deliberating", from:delib, to:vote, color:"var(--gov)", o:.85},
+    {name:"voting", from:vote, to:vote+4, color:"var(--gov)", o:1},
+    {name:"your sign-off", from:vote+4, to:48+9, color:"var(--wait)", o:.8},
+    {name:"executing", from:48+9, to:168+pm, color:"var(--work)", o:.28},
+    {name:"post-mortem", from:pm, to:grade, color:"var(--work)", o:.7},
+    {name:"your review", from:grade, to:open, color:"var(--wait)", o:.8},
+  ];
+  const g = el("g", {"aria-hidden":"true"});
+  el("circle", {cx:C, cy:C, r:(R_IN+R_OUT)/2, fill:"none", stroke:"var(--panel-2)", "stroke-width":R_OUT-R_IN}, g);
+  for(const p of PHASES){ const a1 = weekAngle(p.from % 168), a2 = weekAngle(p.to % 168 || 168);
+    el("path", {d:arcPath(R_IN+3, R_OUT-3, a1, a2), fill:p.color, opacity:p.o}, g); }
+  DAYS.forEach((d,i) => { const a = weekAngle(i*24); const p1 = polar(R_IN-2,a), p2 = polar(R_OUT+6,a);
+    el("line", {x1:p1.x, y1:p1.y, x2:p2.x, y2:p2.y, stroke:"var(--night)", "stroke-width":2}, g);
+    const lp = polar(R_OUT+22, weekAngle(i*24+12));
+    const t = el("text", {x:lp.x, y:lp.y, "text-anchor":"middle", "dominant-baseline":"central", fill:"var(--muted)", "font-family":"Barlow Semi Condensed", "font-size":15, "font-weight":600}, g); t.textContent = d; });
+  const needle = el("g", {class:"needle", id:"needle"}, g);
+  el("line", {x1:C, y1:C, x2:C, y2:C-R_OUT-4, stroke:"var(--text)", "stroke-width":1.2, opacity:.35}, needle);
+  el("path", {d:`M${C-7},${C-R_OUT-14} L${C+7},${C-R_OUT-14} L${C},${C-R_OUT+2} Z`, fill:"var(--text)"}, needle);
+}
+function nowHours(){ const d = new Date(); return d.getDay()*24 + d.getHours() + d.getMinutes()/60; }
+function phaseAt(h){ for(const p of PHASES){ let f=p.from, t=p.to; if(t<f) t+=168; let x=h; if(x<f) x+=168; if(x>=f && x<t) return {p, left:t-x}; } return null; }
+
+// ---------- structure ----------
+function buildStructure(){
+  const g = el("g", {"aria-hidden":"true"});
+  el("circle", {cx:C, cy:C, r:R_OFF, fill:"none", stroke:"var(--line)", "stroke-dasharray":"2 6"}, g);
+  el("circle", {cx:C, cy:C, r:R_MAKE, fill:"none", stroke:"var(--line)", "stroke-dasharray":"2 6"}, g);
+  for(const k in pos) el("line", {x1:C, y1:C, x2:pos[k].x, y2:pos[k].y, stroke:"var(--line)", "stroke-width":1}, g);
+  el("circle", {cx:C, cy:C, r:70, fill:"var(--panel)", stroke:"var(--gov)", "stroke-width":1.5, id:"core"}, g);
+  const t1 = el("text", {x:C, y:C-16, "text-anchor":"middle", fill:"var(--muted)", "font-size":14, "font-family":"Barlow"}, g); t1.textContent = "The record";
+  const t2 = el("text", {x:C, y:C+14, "text-anchor":"middle", fill:"var(--text)", "font-size":30, "font-weight":700, "font-family":"Barlow Semi Condensed", id:"core-n"}, g); t2.textContent = "…";
+  const t3 = el("text", {x:C, y:C+36, "text-anchor":"middle", fill:"var(--muted)", "font-size":12.5, "font-family":"Barlow"}, g); t3.textContent = "events";
+  for(const k in pos){
+    const n = el("g", {class:"node", id:"node-"+k, tabindex:0, role:"img", "aria-label":NAMES[k]});
+    el("circle", {cx:pos[k].x, cy:pos[k].y, r:30, fill:"none", stroke:"var(--work)", "stroke-width":2, class:"halo", opacity:0}, n);
+    el("circle", {cx:pos[k].x, cy:pos[k].y, r:30, class:"body", fill:"#1E2750", stroke:"#3B4677", "stroke-width":2}, n);
+    const a = el("text", {x:pos[k].x, y:pos[k].y+1, "text-anchor":"middle", "dominant-baseline":"central", fill:"var(--text)", "font-size":14, "font-weight":700, "font-family":"Barlow Semi Condensed", class:"lbl"}, n);
+    a.textContent = SHORT[k];
+    const s = el("text", {x:pos[k].x, y:pos[k].y+48, "text-anchor":"middle", fill:"var(--muted)", "font-size":13, "font-family":"Barlow", class:"st"}, n); s.textContent = "";
+    const rt = el("title", {}, n); rt.textContent = NAMES[k];
+  }
+  el("g", {id:"pulses"});
+}
+
+// ---------- live state ----------
+const STYLE = {working:["var(--work)","var(--work)"], idle:["#1E2750","#3B4677"], never:["transparent","#3B4677"],
+               paused:["var(--wait)","var(--wait)"], stuck:["var(--fail)","var(--fail)"]};
+function drawOffices(offices){
+  for(const o of offices){
+    const n = $("#node-"+o.key); if(!n) continue;
+    const [fill, stroke] = STYLE[o.status] || STYLE.idle;
+    const b = n.querySelector(".body"); b.setAttribute("fill", fill); b.setAttribute("stroke", stroke);
+    b.setAttribute("stroke-dasharray", o.status==="never" ? "4 4" : "none");
+    n.querySelector(".lbl").setAttribute("fill", ["working","paused","stuck"].includes(o.status) ? "var(--night)" : "var(--text)");
+    n.classList.toggle("working", o.status==="working");
+    n.querySelector(".halo").setAttribute("opacity", o.status==="working" ? .55 : 0);
+    n.querySelector(".st").textContent = o.status==="working" ? `working ${ago(o.since)}` : o.status==="stuck" ? `stuck ${ago(o.since)}`
+      : o.status==="paused" ? "paused" : o.status==="never" ? "not started" : `idle ${ago(o.last_ts)}`;
+    n.setAttribute("aria-label", `${NAMES[o.key]}: ${n.querySelector(".st").textContent}`);
+  }
+  const working = offices.filter(o => o.status==="working" || o.status==="stuck");
+  $("#now-count").textContent = working.length ? `${working.length} of 9` : "";
+  $("#now").innerHTML = working.length ? working.map(o => `<div class="now-row"><span class="who ${o.status==="stuck"?"stuck":""}">${esc(NAMES[o.key])}</span>
+      <span class="what" title="${esc(o.last||"")}">${esc(o.last || "starting its run")}</span><span class="dur">${o.status==="stuck"?"stuck ":""}${ago(o.since)}</span></div>`).join("")
+    : `<div class="empty">No office is working this minute. ${offices.some(o=>o.last_ts)?`Last activity ${ago(offices.map(o=>o.last_ts).filter(Boolean).sort().pop())} ago.`:"None has run yet."}</div>`;
+}
+function drawHeader(L){
+  document.body.dataset.stopped = L.stopped; $("#stopbar").style.display = L.stopped ? "block" : "none";
+  const working = L.offices.filter(o=>o.status==="working").length;
+  const st = $("#state");
+  st.className = "chip " + (L.stopped ? "state-stop" : L.setup_complete ? "state-run" : "state-setup");
+  st.innerHTML = `<span class="light"></span><span>${L.stopped ? "Stopped" : L.setup_complete ? "Running" : "Setting up"}</span><span class="sub">${working} working</span>`;
+  $("#charter").textContent = "v" + L.charter_version;
+  const ph = phaseAt(nowHours());
+  $("#sprint").innerHTML = L.sprint ? `<span>Sprint ${esc(L.sprint.id)}</span><span class="sub">in ${esc(L.sprint.phase)}</span>` : `<span>No sprint yet</span>`;
+  $("#week").innerHTML = ph ? `<span class="sub">This week</span><span>${esc(ph.p.name)}</span><span class="sub">${Math.floor(ph.left)}h ${Math.round((ph.left%1)*60)}m left</span>` : "";
+  $("#core-n").textContent = L.last_event;
+}
+function drawSide(L){
+  $("#wait-count").textContent = L.waiting.length || "";
+  $("#wait").innerHTML = L.waiting.length ? L.waiting.map(w => `<div class="wait-item"><div class="t">${esc(w.what)}</div>
+      ${w.detail.length?`<div style="font-size:13px">${w.detail.map(esc).join("<br>")}</div>`:""}<code>${esc(w.how)}</code></div>`).join("")
+    : `<div class="empty">Nothing needs you right now.</div>`;
+  $("#pipe").innerHTML = L.pipeline.map(s => `<div class="stage"><div class="n">${s.n}</div><div class="l">${esc(s.stage)}</div><div class="h">${esc(s.hint)}</div></div>`).join("");
+  const max = Math.max(1, ...L.activity);
+  $("#bars").innerHTML = L.activity.map(n => `<div class="${n?"":"zero"}" style="height:${n?Math.max(6,100*n/max):2}%" title="${n} events"></div>`).join("");
+  const total = L.activity.reduce((a,b)=>a+b,0);
+  $("#rate").textContent = `${total} events`;
+  $("#inc").innerHTML = L.incidents_24h ? `<span style="color:var(--fail)">${L.incidents_24h} incident${L.incidents_24h>1?"s":""} in 24 h</span>` : "No incidents in 24 h";
+}
+function moveNeedle(){ const a = weekAngle(nowHours()) + 90; $("#needle").setAttribute("transform", `rotate(${a} ${C} ${C})`);
+  $("#clock").textContent = new Date().toLocaleString([], {weekday:"short", hour:"2-digit", minute:"2-digit"}); }
+
+// ---------- pulses and the stream ----------
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function pulse(actor, incident){
+  const from = pos[actor]; if(!from || reduce) { if(incident) flashCore(); return; }
+  const dot = el("circle", {r:6, fill: incident ? "var(--fail)" : "var(--work)", cx:from.x, cy:from.y}, $("#pulses"));
+  const t0 = performance.now(), dur = 900;
+  (function step(t){ const k = Math.min(1,(t-t0)/dur), e = 1-Math.pow(1-k,3);
+    dot.setAttribute("cx", from.x + (C-from.x)*e); dot.setAttribute("cy", from.y + (C-from.y)*e); dot.setAttribute("opacity", 1-.6*k);
+    if(k<1) requestAnimationFrame(step); else { dot.remove(); if(incident) flashCore(); } })(t0);
+}
+function flashCore(){ const c = $("#core"); c.setAttribute("stroke","var(--fail)"); c.setAttribute("stroke-width",4);
+  setTimeout(()=>{ c.setAttribute("stroke","var(--gov)"); c.setAttribute("stroke-width",1.5); }, 1600); }
+let lastSeq = null, stream = [];
+function drawStream(){
+  $("#evn").textContent = stream.length ? `#${stream[stream.length-1].seq}` : "";
+  $("#stream").innerHTML = stream.slice(-40).reverse().map(e => `<li class="${e.type==="incident"?"inc":""}"><span class="s">${e.seq}</span>
+    <span class="a">${esc(NAMES[e.actor]||e.actor)}</span><span class="w" title="${esc(e.type)}">${esc(e.type.replace("."," "))}${(e.data.summary||e.data.path)?": "+esc(e.data.summary||e.data.path):""}</span></li>`).join("")
+    || `<li><span></span><span></span><span class="w">No events yet. They appear here as the Collective works.</span></li>`;
+}
+async function pollEvents(){
+  const ev = await api("/api/events?after=" + (lastSeq ?? 0) + (lastSeq===null ? "&limit=40" : ""));
+  if(ev.hidden){ $("#stream").innerHTML = `<li><span></span><span></span><span class="w">The event log is private and hidden in public view.</span></li>`; return; }
+  if(!ev.length) return;
+  if(lastSeq !== null){ let i = 0; for(const e of ev.slice(-12)) setTimeout(() => pulse(e.actor, e.type==="incident"), 140*i++); }
+  stream = stream.concat(ev).slice(-200); lastSeq = ev[ev.length-1].seq; drawStream();
+}
+async function pollLive(){
+  const L = await api("/api/live");
+  if(!PHASES.length){ buildWeek(L.schedule || {}); moveNeedle(); }
+  drawHeader(L); drawOffices(L.offices); drawSide(L);
+}
+async function pollVerify(){
+  const v = await api("/api/verify"); const bad = v.filter(c=>!c.ok);
+  const s = $("#seal"); s.className = "chip " + (bad.length ? "bad" : "ok");
+  s.innerHTML = bad.length ? `<span class="light"></span>${bad.length} check${bad.length>1?"s":""} failing` : `<span class="light"></span>Verified, ${v.length} of ${v.length}`;
+}
+buildStructure();
+(async () => {
+  try { await pollLive(); await pollEvents(); } catch(e) { $("#state").innerHTML = `<span class="light"></span>Dashboard server not reachable`; }
+  pollVerify().catch(()=>{}); setInterval(()=>pollVerify().catch(()=>{}), 60000);
+  setInterval(()=>{ pollLive().catch(()=>{}); pollEvents().catch(()=>{}); }, 2000);
+  setInterval(moveNeedle, 30000);
+})();
+</script>
+</body>
+</html>

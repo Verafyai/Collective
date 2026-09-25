@@ -1,0 +1,102 @@
+"""Tests for the Collective Dashboard, P-001 (Charter Articles 18 and 21).
+Run: python3 tests/test_dashboard.py
+
+Works on a scratch copy of the repo and starts the server on a free port.
+Checks: every page and API endpoint, the floor's live feed, board posts showing
+as speech, and the one allowed write (project comments) with its refusals.
+"""
+import json, pathlib, shutil, socket, subprocess, sys, tempfile, time, urllib.request, urllib.error
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+t = pathlib.Path(tempfile.mkdtemp()) / "c"
+import atexit, os
+atexit.register(shutil.rmtree, t.parent, True)   # leave nothing behind
+os.environ["GIT_CONFIG_GLOBAL"] = str(t.parent / "gitconfig")   # never touch the Steward's ~/.gitconfig
+shutil.copytree(ROOT, t, ignore=shutil.ignore_patterns(".git", "ledger", "logs", "pdfs", "__pycache__", "node_modules", ".env", "secrets", "*.key"))
+if not (t / "agents/config.env").exists() and (t / "agents/config.example.env").exists():
+    shutil.copy(t / "agents/config.example.env", t / "agents/config.env")
+subprocess.run([sys.executable, "agents/bin/eventlog.py", "init", "--actor", "steward"], cwd=t, capture_output=True)
+rid = subprocess.run([sys.executable, "agents/bin/eventlog.py", "run-start", "--actor", "researcher"], cwd=t, capture_output=True, text=True).stdout.strip()
+(t / "org/board").mkdir(parents=True, exist_ok=True)
+now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+(t / "org/board" / f"{now[:10]}-standup.md").write_text(f"### researcher · {now}\nBriefing library paper 07 on weak judges.\n")
+(t / "org/board" / f"{now[:10]}-selective-debate.md").write_text(
+    f"#proposal\n### ideas · {now}\nDebate only where judges disagree.\n\n### lawyer · {now}\nCompliant; name the cheap baseline.\n\n### rex · {now}\nKeep the first run small.\n")
+(t / "org/board" / f"{now[:10]}-note-to-self.md").write_text(f"### scribe · {now}\nA one-person thread is not a conversation.\n")
+
+with socket.socket() as s:
+    s.bind(("127.0.0.1", 0)); port = s.getsockname()[1]
+srv = subprocess.Popen([sys.executable, "dashboard/server.py", "--port", str(port)], cwd=t, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+base = f"http://127.0.0.1:{port}"
+def get(path):
+    with urllib.request.urlopen(base + path, timeout=90) as r: return r.status, r.read().decode()
+def post(path, body, headers=None):
+    req = urllib.request.Request(base + path, data=json.dumps(body).encode(), method="POST",
+                                 headers={"Content-Type": "application/json", **(headers or {})})
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r: return r.status, json.loads(r.read())
+    except urllib.error.HTTPError as e: return e.code, json.loads(e.read())
+try:
+    for _ in range(50):
+        try: get("/api/overview"); break
+        except Exception: time.sleep(0.2)
+    # pages: the floor is the primary view
+    code, html = get("/"); assert code == 200 and "The Collective's floor" in html, "the floor must be the home page"
+    assert "The Collective" in get("/scope")[1] and "control plane" in get("/scope")[1].lower()
+    assert "Case law" in get("/records")[1]
+    # every API endpoint answers with JSON
+    for ep in ["overview", "live", "charter", "amendments", "cases", "projects", "sprints", "edicts", "events?after=0"]:
+        code, body = get("/api/" + ep); assert code == 200, ep; json.loads(body)
+    live = json.loads(get("/api/live")[1])
+    assert {o["key"] for o in live["offices"]} == {"pm","scribe","lawyer","auditor","researcher","ideas","prototyper","media","social"}
+    r = next(o for o in live["offices"] if o["key"] == "researcher")
+    assert r["status"] == "working", r
+    assert r["last"].startswith("Briefing library paper 07"), "the latest board post is what the agent 'says'"
+    assert [s["stage"] for s in live["pipeline"]] == ["Papers", "Proposals", "Projects", "Demos", "Posts"]
+    # the one write: a human comment on a project
+    code, body = post("/api/projects/1/comment", {"author": "Test", "kind": "shout", "text": "hello there"})
+    assert code == 400 and "kind" in body["error"], body
+    code, body = post("/api/projects/1/comment", {"author": "Test", "kind": "input", "text": "hello there"}, {"Origin": "http://evil.example"})
+    assert code == 403, body
+    time.sleep(5.2)   # every attempt counts toward the one-per-5-seconds limit, refused ones included
+    code, body = post("/api/projects/1/comment", {"author": "Test", "kind": "suggestion", "text": "Make the Record glow brighter."})
+    assert code == 200 and body.get("ok"), body
+    assert "### human:Test" in next((t / "projects").glob("001-*/discussion.md")).read_text()
+    code, body = post("/api/projects/1/comment", {"author": "Test", "kind": "input", "text": "a second one, too fast"})
+    assert code == 429, body
+    # conversations: board threads with two or more participants, as group chats
+    convs = json.loads(get("/api/conversations")[1])
+    sd = next(c for c in convs if c["title"] == "Selective debate")
+    assert sd["participants"] == ["ideas", "lawyer", "steward"] and sd["tag"] == "proposal" and sd["count"] == 3, sd
+    assert not any(c["title"] == "Note to self" for c in convs), "one-person threads aren't conversations"
+    chat = json.loads(get(f"/api/conversations/{sd['id']}")[1])
+    assert [p["who"] for p in chat["posts"]] == ["ideas", "lawyer", "steward"]
+    assert not any("genesis" in d["what"] for d in chat["doing"]), "bookkeeping stays out of chats"
+    try: get("/api/conversations/..%2Fsecrets"); raise AssertionError("expected refusal")
+    except urllib.error.HTTPError as e: assert e.code in (400, 404)
+    # agent bios, and the wizard's one action: drafting a membership motion
+    code, body = get("/api/agents/lawyer/bio"); b = json.loads(body)
+    assert code == 200 and b["class"] == "officer" and "Reads files" in b["modules"] and b["schedule"]["every_minutes"], b
+    assert json.loads(get("/api/classes")[1])["classes"]["verifier"]["spawnable"] is True
+    time.sleep(5.2)
+    code, body = post("/api/agents/propose", {"class": "officer", "name": "Lawyer Two", "focus": "a second legal opinion"})
+    assert code == 400 and "can't be spawned" in body["error"], body
+    time.sleep(5.2)
+    code, body = post("/api/agents/propose", {"class": "sentinel", "name": "Watch", "focus": "Re-check sources behind published verdicts daily"})
+    assert code == 200 and "proposed Watch as A-" in body["message"], body
+    ghost = next(a for a in json.loads(get("/api/live")[1])["roster"] if a["key"] == "watch")
+    assert ghost["status"] == "proposed" and ghost["votes"] is False
+    # unknown paths and writes are refused
+    try: get("/api/nothing-here"); raise AssertionError("expected 404")
+    except urllib.error.HTTPError as e: assert e.code == 404
+    # fold-ins: local only (no DNS rebinding), the History view, and fonts served locally
+    req = urllib.request.Request(base + "/api/live", headers={"Host": "evil.example"})
+    try: urllib.request.urlopen(req, timeout=10); raise AssertionError("expected 403 for a foreign Host")
+    except urllib.error.HTTPError as e: assert e.code == 403
+    assert get("/history")[0] == 200 and get("/api/state?at=live")[0] == 200
+    for page in ("/", "/scope", "/records"):
+        assert "googleapis" not in get(page)[1], page + " must not load fonts from Google"
+    assert get("/fonts/fonts.css")[0] == 200
+    print("dashboard tests passed")
+finally:
+    srv.terminate(); srv.wait(timeout=5)

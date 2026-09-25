@@ -67,7 +67,7 @@ def event(etype, data):
                     "--type", etype, "--data", json.dumps(data)], capture_output=True)
 
 # Live records: seeded once on a fresh start, never overwritten by materialize.
-LIVE = ("org/LEARNINGS.md", "org/board/", "org/cases/", "private/", "research/papers.md", "sprints/", "projects/", "amendments/")
+LIVE = ("org/LEARNINGS.md", "org/board/", "org/cases/", "private/", "research/papers.md", "sprints/", "projects/", "amendments/", "agents/roster.json")
 
 def materialize(text, dry=False, include_live=False):
     body = split(text)[0]

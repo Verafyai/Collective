@@ -5,7 +5,8 @@ powers, and limits, held by one agent. This file is the reference for who does
 what. Each office's full working instructions are in `agents/<office>/ROLE.md`.
 Created by edict E-0034 (Charter Article 3.7, case C-0009). Offices change
 through Charter amendments, and membership through majority vote (Article
-3.6).
+3.6). **Any office may propose a new agent** (`spawn.py propose` or `clone`),
+which drafts a membership motion (Article 3.8).
 
 ## Separation of powers
 
@@ -94,6 +95,9 @@ offices (Charter Article 2).
   - `org/LEARNINGS.md` (monthly consolidation, append-only);
   - edict outcome notes (`edict.py note`);
   - sprint deliberation exports.
+- **Applies passed membership motions** (Article 3.8): runs `spawn.py
+  activate` or `retire-apply` only after the motion has passed, then records
+  the change in the Charter (Article 7.7).
 - **May:** write the records listed above and file cases.
 - **May not:** vote, argue for outcomes, change a record's substance, rule
   on precedent, or post publicly.

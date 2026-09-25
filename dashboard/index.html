@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Collective</title>
+<link rel="stylesheet" href="/fonts/fonts.css">
+<style>
+:root{
+  --paper:#EDF0F5; --sheet:#F8F9FB; --ink:#1E2350; --ink-2:#4A5078; --rule:#CBD1DE;
+  --seal:#1C6E58; --seal-soft:#DDEFE8; --warn:#8A5A00; --warn-soft:#F7ECD3; --fail:#A12A2A; --fail-soft:#F6DEDE;
+  --link:#2A3FA8; --focus:#2A3FA8;
+  --ui:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --record:"Source Serif 4",Georgia,"Times New Roman",serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{--paper:#161A2E; --sheet:#1D2238; --ink:#E4E7F5; --ink-2:#A9AFCC; --rule:#343A58;
+    --seal:#57C29C; --seal-soft:#173A31; --warn:#E3B45A; --warn-soft:#3A2F17; --fail:#EB7B7B; --fail-soft:#3D1F24; --link:#9DB0FF; --focus:#9DB0FF;}
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 var(--ui);font-variant-numeric:tabular-nums}
+a{color:var(--link)}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:3px}
+.app{display:grid;grid-template-columns:200px minmax(0,1fr) 300px;min-height:100vh}
+nav{padding:20px 14px;border-right:1px solid var(--rule);position:sticky;top:0;height:100vh;overflow:auto}
+.brand{font-weight:700;font-size:17px;margin:0 0 2px}
+.brand-sub{color:var(--ink-2);font-size:12.5px;margin:0 0 18px}
+nav button{display:block;width:100%;text-align:left;background:none;border:0;padding:7px 10px;border-radius:6px;
+  font:500 14px var(--ui);color:var(--ink);cursor:pointer}
+nav button[aria-current="page"]{background:var(--sheet);box-shadow:inset 3px 0 0 var(--ink)}
+nav button:hover{background:var(--sheet)}
+main{padding:22px 32px 60px;min-width:0}
+header.top{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:22px}
+.seal{display:flex;align-items:center;gap:10px;padding:6px 14px 6px 6px;border-radius:999px;background:var(--seal-soft);color:var(--seal);font-weight:600;font-size:13.5px;border:0;cursor:pointer}
+.seal .ring{width:30px;height:30px;border-radius:50%;border:2px solid currentColor;display:grid;place-items:center;font-size:13px}
+.seal.bad{background:var(--fail-soft);color:var(--fail)} .seal.wait{background:var(--sheet);color:var(--ink-2)}
+.facts{display:flex;gap:18px;flex-wrap:wrap;color:var(--ink-2);font-size:13.5px}
+.facts b{color:var(--ink);font-weight:600}
+.stop{background:var(--fail-soft);color:var(--fail);font-weight:600;padding:4px 10px;border-radius:6px;font-size:13px}
+h1{font-size:26px;line-height:1.2;margin:0 0 6px;font-weight:700}
+h2{font-size:17px;margin:30px 0 10px;font-weight:600}
+h3{font-size:15px;margin:18px 0 6px;font-weight:600}
+.lede{color:var(--ink-2);margin:0 0 18px;max-width:70ch}
+.record{font-family:var(--record);font-size:16px;line-height:1.62;max-width:72ch}
+.record h1,.record h2,.record h3{font-family:var(--ui)}
+.record table{font-family:var(--ui);font-size:13.5px}
+.muted{color:var(--ink-2)}
+.registry{display:flex;flex-wrap:wrap;gap:6px 26px;margin:6px 0 4px;padding:14px 0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.registry div{min-width:90px}.registry .n{font-size:24px;font-weight:700;line-height:1}.registry .l{color:var(--ink-2);font-size:13px}
+table{border-collapse:collapse;width:100%;margin:6px 0 10px}
+th,td{text-align:left;padding:7px 10px 7px 0;border-bottom:1px solid var(--rule);vertical-align:top;font-size:14px}
+th{font-weight:600;color:var(--ink-2);font-size:13px}
+.tag{display:inline-block;padding:1px 8px;border-radius:5px;font-size:12.5px;font-weight:600;background:var(--sheet);color:var(--ink-2);border:1px solid var(--rule)}
+.tag.ok{background:var(--seal-soft);color:var(--seal);border-color:transparent}
+.tag.warn{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.tag.fail{background:var(--fail-soft);color:var(--fail);border-color:transparent}
+.item{padding:14px 0;border-bottom:1px solid var(--rule)}
+.item > summary{cursor:pointer;list-style:none;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+.item > summary::-webkit-details-marker{display:none}
+.item > summary .id{font-weight:700;min-width:62px}
+.item > summary .t{font-weight:600}
+.item .body{padding:8px 0 0 74px}
+.offices{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:0 28px}
+.office{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--rule)}
+.office .nm{font-weight:600}.office .when{color:var(--ink-2);font-size:13px;text-align:right}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;background:var(--rule)}
+.dot.live{background:var(--seal)}.dot.recent{background:var(--warn)}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--rule);margin:8px 0 14px;flex-wrap:wrap}
+.tabs button{background:none;border:0;padding:8px 12px;font:500 14px var(--ui);color:var(--ink-2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+pre,code{font-size:13px}
+pre{background:var(--sheet);padding:10px 12px;border-radius:6px;overflow:auto;border:1px solid var(--rule)}
+blockquote{margin:8px 0;padding:2px 0 2px 14px;border-left:3px solid var(--rule);color:var(--ink-2)}
+form.comment{margin:10px 0 4px;display:grid;gap:8px;max-width:640px}
+form.comment textarea,form.comment input,form.comment select{font:14px var(--ui);padding:8px 10px;border:1px solid var(--rule);border-radius:6px;background:var(--sheet);color:var(--ink)}
+form.comment textarea{min-height:88px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{font:600 14px var(--ui);padding:8px 14px;border-radius:6px;border:0;background:var(--ink);color:var(--paper);cursor:pointer}
+.note{font-size:13px;color:var(--ink-2)}
+/* the event chain */
+aside.chain{border-left:1px solid var(--rule);position:sticky;top:0;height:100vh;overflow:auto;padding:20px 16px 40px}
+aside.chain h2{margin:0 0 4px;font-size:15px}
+.links{list-style:none;margin:10px 0 0;padding:0;position:relative}
+.links:before{content:"";position:absolute;left:23px;top:4px;bottom:4px;width:2px;background:var(--rule)}
+.links li{position:relative;padding:6px 0 10px 54px;font-size:13px;line-height:1.35}
+.links li .seq{position:absolute;left:0;top:5px;width:48px;text-align:center;font-weight:700;font-size:11.5px;color:var(--ink-2);background:var(--paper);padding:1px 0;border:1.5px solid var(--rule);border-radius:10px}
+.links li.fresh .seq{border-color:var(--seal);color:var(--seal)}
+.links li.incident .seq{border-color:var(--fail);color:var(--fail)}
+.links .who{font-weight:600}.links .what{color:var(--ink-2);word-break:break-word}
+.filter{width:100%;font:13px var(--ui);padding:6px 8px;border:1px solid var(--rule);border-radius:6px;background:var(--sheet);color:var(--ink);margin-top:8px}
+@media (max-width:1180px){.app{grid-template-columns:190px minmax(0,1fr)} aside.chain{display:none}}
+@media (max-width:760px){.app{grid-template-columns:1fr} nav{position:static;height:auto;border-right:0;border-bottom:1px solid var(--rule);display:flex;flex-wrap:wrap;gap:2px}
+  nav .brand,nav .brand-sub{width:100%} #nav{display:flex;flex-wrap:wrap;gap:2px} nav button{width:auto} main{padding:18px} .item .body{padding-left:0}}
+@media (prefers-reduced-motion:no-preference){.links li.fresh{animation:land .6s ease-out}}
+@keyframes land{from{background:var(--seal-soft)}to{background:transparent}}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav aria-label="Sections">
+    <p class="brand">The Collective</p>
+    <p class="brand-sub">Verafy's autonomous organization</p>
+    <p><a href="/" style="font-weight:600">Back to the floor</a> · <a href="/history">History (time travel)</a></p>
+    <div id="nav"></div>
+  </nav>
+  <main id="main" tabindex="-1">
+    <header class="top" id="top"></header>
+    <div id="view" aria-live="polite"></div>
+  </main>
+  <aside class="chain" aria-label="Live event chain">
+    <h2>Event chain</h2>
+    <div class="note" id="chain-note">Every action, as it's recorded.</div>
+    <input class="filter" id="chain-filter" placeholder="Filter by office or type" aria-label="Filter events">
+    <ol class="links" id="links"></ol>
+  </aside>
+</div>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const api = p => fetch(p, {cache:"no-store"}).then(r => r.json());
+const NAMES = {pm:"Project Manager", scribe:"Scribe", lawyer:"Lawyer", auditor:"Auditor", researcher:"Researcher",
+  ideas:"Ideas", prototyper:"Prototyper", media:"Media", social:"Social", steward:"You (Steward)", system:"System",
+  human:"A human", external:"Outside change"};
+
+// Markdown → HTML, safely: everything is escaped first, then a small set of formats applied.
+function md(src){
+  const lines = esc(src || "").split("\n"); let out = [], list = null, table = [], code = false, buf = [], para = [];
+  const inline = t => t.replace(/`([^`]+)`/g,"<code>$1</code>").replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>")
+    .replace(/(^|\W)\*([^*\n]+)\*(?=\W|$)/g,"$1<em>$2</em>")
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>')
+    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g,'<span title="$2">$1</span>');
+  const flushPara = () => { if(para.length){ out.push(`<p>${inline(para.join(" "))}</p>`); para = []; } };
+  const flushList = () => { if(list){ out.push(`<${list.t}>${list.items.map(i=>`<li>${inline(i)}</li>`).join("")}</${list.t}>`); list=null; } };
+  const flushTable = () => { if(table.length){ const rows = table.filter(r=>!/^\|?\s*:?-{2,}/.test(r)).map(r=>r.replace(/^\||\|$/g,"").split("|").map(c=>inline(c.trim())));
+      out.push("<table><thead><tr>"+rows[0].map(c=>`<th>${c}</th>`).join("")+"</tr></thead><tbody>"+rows.slice(1).map(r=>"<tr>"+r.map(c=>`<td>${c}</td>`).join("")+"</tr>").join("")+"</tbody></table>"); table=[]; } };
+  const flushAll = () => { flushPara(); flushList(); flushTable(); };
+  for(const l of lines){
+    if(l.startsWith("```")){ if(code){ out.push(`<pre><code>${buf.join("\n")}</code></pre>`); buf=[]; } else flushAll(); code=!code; continue; }
+    if(code){ buf.push(l); continue; }
+    if(/^\s*\|/.test(l)){ flushPara(); flushList(); table.push(l.trim()); continue; } else flushTable();
+    let m;
+    if((m = l.match(/^(#{1,4}) (.*)$/))){ flushAll(); const n=Math.min(m[1].length+1,4); out.push(`<h${n}>${inline(m[2])}</h${n}>`); continue; }
+    if((m = l.match(/^\s*[-*] (.*)$/))){ flushPara(); if(!list||list.t!=="ul"){ flushList(); list={t:"ul",items:[]}; } list.items.push(m[1]); continue; }
+    if((m = l.match(/^\s*\d+[.)] (.*)$/))){ flushPara(); if(!list||list.t!=="ol"){ flushList(); list={t:"ol",items:[]}; } list.items.push(m[1]); continue; }
+    if((m = l.match(/^&gt; ?(.*)$/))){ flushAll(); out.push(`<blockquote>${inline(m[1])}</blockquote>`); continue; }
+    if(/^---+$/.test(l.trim()) || !l.trim()){ flushAll(); continue; }
+    if(list && /^\s+\S/.test(l)){ list.items[list.items.length-1] += " " + l.trim(); continue; }   // wrapped list item
+    flushList(); para.push(l.trim());                                                             // wrapped paragraph
+  }
+  flushAll(); if(code) out.push(`<pre><code>${buf.join("\n")}</code></pre>`);
+  return out.join("\n");
+}
+const ago = ts => { if(!ts) return "never"; const s=(Date.now()-new Date(ts))/1000;
+  return s<60?"just now":s<3600?Math.round(s/60)+" min ago":s<86400?Math.round(s/3600)+" h ago":Math.round(s/86400)+" d ago"; };
+const statusTag = s => { const k = {good_law:"ok",ratified:"ok",released:"ok",approved:"ok",limited:"warn",voting:"warn",deliberating:"warn",proposed:"warn",building:"warn",planned:"",overruled:"fail",rejected:"fail",vetoed:"fail",withdrawn:""}[s] ?? "";
+  return `<span class="tag ${k}">${esc((s||"").replace("_"," "))}</span>`; };
+
+let OV = null, VERIFY = null;
+const VIEWS = {
+  overview: {label:"Overview", render: async () => {
+    const o = OV || await api("/api/overview"); const c = o.counts;
+    const running = o.offices.filter(f => f.last && (Date.now()-new Date(f.last.ts))/1000 < 3600).length;
+    const sprint = o.sprint ? `Sprint ${esc(o.sprint.id)} is in <b>${esc(o.sprint.phase)}</b>${o.sprint.theme?`: “${esc(o.sprint.theme)}”`:""}.` : "No sprint has opened yet.";
+    return `<h1>${o.stopped?"The Collective is stopped.":o.setup_complete?"The Collective is running.":"The Collective is being set up."}</h1>
+      <p class="lede">${sprint} ${running} of 9 offices ran in the last hour.</p>
+      <div class="registry">
+        ${[["events","events recorded"],["edicts","edicts"],["amendments","amendments"],["cases","cases"],["projects","projects"],["sprints","sprints"],["library","library documents"]]
+          .map(([k,l])=>`<div><div class="n">${c[k]}</div><div class="l">${l}</div></div>`).join("")}
+      </div>
+      <h2>Waiting on you</h2>
+      ${o.waiting.length ? o.waiting.map(w=>`<div class="item"><div class="t" style="font-weight:600">${esc(w.what)}</div>
+          ${w.detail.length?`<div class="note">${w.detail.map(esc).join("<br>")}</div>`:""}<div class="note">How: <code>${esc(w.how)}</code></div></div>`).join("")
+        : `<p class="muted">Nothing needs you right now.</p>`}
+      <h2>Offices</h2>
+      <div class="offices">${o.offices.map(f => { const s = f.last ? (Date.now()-new Date(f.last.ts))/1000 : 1e9;
+        const cls = s<600?"live":s<3600?"recent":""; const paused = o.paused.includes(f.key);
+        return `<div class="office"><span class="nm"><span class="dot ${cls}"></span>${esc(NAMES[f.key])}</span>
+          <span class="when">${paused?'<span class="tag warn">paused</span>':f.last?(f.last.type==="run.start"&&s<600?"working now":"ran "+ago(f.last.ts)):"not started"}</span></div>`; }).join("")}</div>
+      <p class="note">Green: active in the last 10 minutes. Amber: the last hour.</p>
+      <div class="offices" style="margin-top:24px">
+        <div><h2 style="margin-top:0">Latest decisions</h2>${o.latest_cases.map(c=>`<div class="office"><span class="nm">${esc(c.id)} <span class="muted" style="font-weight:400">${esc(c.title)}</span></span><span class="when">${esc(c.court)}</span></div>`).join("")}
+          <p class="note"><a href="#decisions" onclick="go('decisions');return false">All case law</a></p></div>
+        <div><h2 style="margin-top:0">Projects</h2>${o.projects.map(p=>`<div class="office"><span class="nm">${esc(p.id)} <span class="muted" style="font-weight:400">${esc(p.name)}</span></span><span class="when">${p.current?"v"+esc(p.current):esc(p.status)} · ${p.versions} version${p.versions===1?"":"s"}</span></div>`).join("")}
+          <p class="note"><a href="#projects" onclick="go('projects');return false">All projects</a></p></div>
+      </div>`; }},
+  projects: {label:"Projects", render: async () => {
+    const d = await api("/api/projects");
+    return `<h1>Projects</h1><p class="lede">Every prototype, from its spec through each numbered version. Try the current version, read how it evolved, and leave a suggestion.</p>
+      ${d.projects.map((p,i) => `<details class="item" ${i===0?"open":""}><summary><span class="id">${esc(p.id)}</span><span class="t">${esc(p.name)}</span>
+        ${statusTag(p.status)}<span class="muted">${p.current_version?"current version "+esc(p.current_version):"no version released yet"} · owner ${esc(NAMES[p.owner]||p.owner)}</span></summary>
+        <div class="body">
+          <div class="tabs" role="tablist">${["Versions","Discussion","Spec"].map((t,j)=>`<button role="tab" aria-selected="${j===0}" data-p="${i}" data-t="${t}">${t}</button>`).join("")}</div>
+          <div id="pt-${i}">${versionsHtml(p)}</div>
+          <h3>Comment or suggest</h3>
+          <form class="comment" data-n="${parseInt(p.id.slice(2))}">
+            <div class="row"><input name="author" placeholder="Your name" required maxlength="40" aria-label="Your name">
+              <select name="kind" aria-label="Kind"><option value="suggestion">Suggestion</option><option value="input">Input</option></select></div>
+            <textarea name="text" placeholder="What should this project do next, or do differently?" required minlength="3" maxlength="4000" aria-label="Comment"></textarea>
+            <div class="row"><button class="btn" type="submit">Add to the discussion</button><span class="note" role="status"></span></div>
+          </form>
+        </div></details>`).join("")}
+      <h2>Proposed projects</h2><div class="record">${md(d.proposed.replace(/^# .*\n/,""))}</div>`; },
+    after: async () => {
+      const d = await api("/api/projects");
+      document.querySelectorAll("[data-t]").forEach(b => b.onclick = () => {
+        const p = d.projects[b.dataset.p]; b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-selected", x===b));
+        $("#pt-"+b.dataset.p).innerHTML = b.dataset.t==="Versions" ? versionsHtml(p) : `<div class="record">${md(b.dataset.t==="Spec"?p.spec:p.discussion)}</div>`; });
+      document.querySelectorAll("form.comment").forEach(f => f.onsubmit = async e => {
+        e.preventDefault(); const st = f.querySelector("[role=status]"); st.textContent = "Adding…";
+        const r = await fetch(`/api/projects/${f.dataset.n}/comment`, {method:"POST", headers:{"Content-Type":"application/json"},
+          body: JSON.stringify({author:f.author.value, kind:f.kind.value, text:f.text.value})}).then(r=>r.json()).catch(()=>({error:"The dashboard server didn't respond."}));
+        st.textContent = r.ok ? "Added to the discussion." : (r.error || "Couldn't add it."); if(r.ok) f.text.value = ""; });
+    }},
+  decisions: {label:"Case law", render: async () => {
+    const cs = await api("/api/cases");
+    return `<h1>Case law</h1><p class="lede">Every significant decision, numbered, with its holding, the precedents it relies on, and how later cases have treated it.</p>
+      ${cs.slice().reverse().map(c => `<details class="item"><summary><span class="id">${esc(c.id)}</span><span class="t">${esc(c.title)}</span>
+        ${statusTag(c.status)}<span class="tag">${esc(c.court)}</span><span class="muted">${esc(c.date)}</span></summary>
+        <div class="body"><p class="record"><strong>Holding.</strong> ${esc(c.holding)}</p>
+          <p class="muted">${esc(c.headnote)}</p>
+          ${c.cites.length?`<p>Relies on: ${c.cites.map(([id,t])=>`${esc(id)} (${esc(t)})`).join(", ")}</p>`:""}
+          <p>Cited by: ${esc(c.cited_by)}</p>
+          <details><summary class="muted">Question, facts, reasoning, and history</summary><div class="record">
+            <h3>Question</h3><p>${esc(c.question)}</p><h3>Facts</h3><p>${esc(c.facts)}</p><h3>Reasoning</h3><p>${esc(c.reasoning)}</p>
+            <h3>Dissent</h3><p>${esc(c.dissent)}</p><h3>Source</h3><p>${esc(c.source)}</p><h3>History</h3>${md(c.history)}</div></details>
+        </div></details>`).join("")}`; }},
+  amendments: {label:"Amendments", render: async () => {
+    const a = await api("/api/amendments");
+    return `<h1>Amendments</h1><p class="lede">Every change to the Charter, from proposal to vote to ratification. Numbers never skip; rejected proposals keep theirs.</p>
+      ${a.slice().reverse().map(x => `<details class="item"><summary><span class="id">${esc(x.id)}</span><span class="t">${esc(x.title)}</span>
+        ${statusTag(x.status)}<span class="tag">Class ${esc(x.class)}</span><span class="muted">${esc(x.charter_version)}</span></summary>
+        <div class="body record">${md(x.reason)}<h3>Vote</h3>${md(x.vote)}<h3>Outcome</h3>${md(x.outcome)}<h3>Discussion</h3>${md(x.discussion)}</div></details>`).join("")}`; }},
+  charter: {label:"Charter", render: async () => {
+    const ch = await api("/api/charter");
+    return `<h1>Charter v${esc(ch.version)}</h1><p class="lede">The Constitution the Collective runs on, and how its structure has changed over time.</p>
+      <div class="tabs" role="tablist">${["Constitution","Structure over time","Mission","Offices","Agent permissions"].map((t,j)=>`<button role="tab" aria-selected="${j===0}" data-c="${t}">${t}</button>`).join("")}</div>
+      <div id="ctab">${constitutionHtml(ch)}</div>`; },
+    after: async () => { const ch = await api("/api/charter");
+      document.querySelectorAll("[data-c]").forEach(b => b.onclick = () => { b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-selected", x===b));
+        const t=b.dataset.c; $("#ctab").innerHTML = t==="Constitution"?constitutionHtml(ch): t==="Structure over time"?timelineHtml(ch)
+          : `<div class="record">${md({Mission:ch.mission, Offices:ch.officers, "Agent permissions":ch.permissions}[t].replace(/^<!--.*-->\n/,""))}</div>`; }); }},
+  sprints: {label:"Sprints and OKRs", render: async () => {
+    const d = await api("/api/sprints"); const s = d.sprints.slice().reverse();
+    return `<h1>Sprints and OKRs</h1><p class="lede">The weekly plan each office proposed and the Collective voted on, and the objectives it's measured against.</p>
+      ${s.length? s.map((x,i)=>`<details class="item" ${i===0?"open":""}><summary><span class="id">${esc(x.id)}</span><span class="t">${esc(x.theme||"(no theme)")}</span>${statusTag(x.phase)}</summary>
+        <div class="body">${Object.keys(x.items||{}).length?`<table><thead><tr><th>Item</th><th>Owner</th><th>Vote</th><th>Outcome</th><th>Grade</th></tr></thead><tbody>
+          ${Object.entries(x.items).map(([k,v])=>`<tr><td>${esc(k)}</td><td>${esc(NAMES[v.owner]||v.owner)}</td><td>${v.yes} yes · ${v.no} no · ${v.abstain} abstain</td><td>${statusTag(v.outcome)}</td><td>${esc(v.grade||"")}</td></tr>`).join("")}</tbody></table>`
+          : `<p class="muted">${Object.keys(x.proposals).length} of 9 proposals in so far.</p>`}
+          ${x.plan?`<div class="record">${md(x.plan)}</div>`:""}${x.report?`<div class="record">${md(x.report)}</div>`:""}</div></details>`).join("")
+        : `<p class="muted">No sprint yet. The Project Manager opens the first one with <code>python3 agents/bin/sprint.py open</code>.</p>`}
+      <h2>OKRs</h2><div class="record">${md(d.okrs.replace(/^# .*\n/,""))}</div>`; }},
+  edicts: {label:"Edicts", render: async () => {
+    const d = await api("/api/edicts");
+    if(d.hidden) return `<h1>Edicts</h1><p class="lede">${d.count} edicts. Their text is private; public mode shows the count only.</p>`;
+    return `<h1>Edicts</h1><p class="lede">Your instructions, in your words, in order. Each one's outcome shows what it became.</p>
+      ${d.edicts.slice().reverse().map(e=>`<details class="item"><summary><span class="id">${esc(e.id)}</span><span class="t">${esc(e.title)}</span>${statusTag(e.status)}<span class="muted">${esc(e.issued)}</span></summary>
+        <div class="body record"><blockquote>${esc(e.words.replace(/^> ?/gm,"")).replace(/\n/g,"<br>")}</blockquote>${md(e.edict)}${md(e.history)}</div></details>`).join("")}`; }},
+  health: {label:"Verification", render: async () => {
+    const v = await api("/api/verify"); VERIFY = v; drawTop();
+    return `<h1>Verification</h1><p class="lede">Every integrity check the Auditor runs, run live. Refreshes at most once a minute.</p>
+      ${v.map(c=>`<details class="item" ${c.ok?"":"open"}><summary><span class="t">${esc(c.name)}</span>${c.ok?'<span class="tag ok">passing</span>':'<span class="tag fail">failing</span>'}</summary>
+        <div class="body"><pre>${esc(c.output)}</pre></div></details>`).join("")}`; }},
+};
+function versionsHtml(p){
+  if(!p.versions.length) return `<p class="muted">No versions yet. The owner adds the first with <code>projects.py version</code>.</p>`;
+  return p.versions.slice().reverse().map(v=>`<details class="item"><summary><span class="id">v${esc(v.version)}</span><span class="t">${esc(v.title)}</span>${statusTag(v.status)}<span class="muted">${esc(v.date)}</span></summary>
+    <div class="body record">${md(v.body.replace(/^# .*\n/m,""))}</div></details>`).join("");
+}
+function constitutionHtml(ch){ return ch.articles.map(a=>`<details class="item" ${a.title.startsWith("Article 0 ")?"open":""}><summary><span class="t">${esc(a.title)}</span></summary><div class="body record">${md(a.text)}</div></details>`).join(""); }
+function timelineHtml(ch){ return `<table><thead><tr><th>Version</th><th>Amendment</th><th>Class</th><th>Change</th><th>Articles</th><th>Members</th><th>Files</th></tr></thead><tbody>
+  ${ch.timeline.slice().reverse().map(t=>`<tr><td>${esc(t.version)}</td><td>${esc(t.amendment)}</td><td>${esc(t.class)}</td><td>${esc(t.title)}</td><td>${esc(t.articles)}</td><td>${esc(t.members)}</td><td>${esc(t.files)}</td></tr>`).join("")}</tbody></table>`; }
+
+function drawTop(){
+  if(!OV) return; const ok = VERIFY ? VERIFY.every(c=>c.ok) : null;
+  $("#top").innerHTML = `<button class="seal ${ok===null?"wait":ok?"":"bad"}" onclick="go('health')" title="Open verification">
+      <span class="ring">${ok===null?"…":ok?"✓":"!"}</span>${ok===null?"Checking records":ok?`Verified: ${VERIFY.length} of ${VERIFY.length} checks`:`${VERIFY.filter(c=>!c.ok).length} check${VERIFY.filter(c=>!c.ok).length>1?"s":""} failing`}</button>
+    <div class="facts"><span>Charter <b>v${esc(OV.charter_version)}</b></span>${OV.sprint?`<span>Sprint <b>${esc(OV.sprint.id)}</b>, ${esc(OV.sprint.phase)}</span>`:""}
+      <span>As of ${OV.public_head?`commit <b>${esc(OV.public_head)}</b>, `:""}event <b>${OV.last_event}</b></span><span>${OV.mode==="public"?"Public view":"Private view"}</span></div>
+    ${OV.stopped?'<span class="stop">Stopped (org/STOP)</span>':""}`;
+}
+let current = "overview";
+async function go(v){
+  current = v; document.querySelectorAll("#nav button").forEach(b=>b.setAttribute("aria-current", b.dataset.v===v?"page":"false"));
+  $("#view").innerHTML = `<p class="muted">Loading…</p>`;
+  try { $("#view").innerHTML = await VIEWS[v].render(); if(VIEWS[v].after) await VIEWS[v].after(); }
+  catch(e){ $("#view").innerHTML = `<h1>This section couldn't load.</h1><p class="lede">${esc(e.message)}. Check that the dashboard server is still running in its herdr tab.</p>`; }
+  history.replaceState(null,"","#"+v);
+}
+$("#nav").innerHTML = Object.entries(VIEWS).map(([k,v])=>`<button data-v="${k}">${v.label}</button>`).join("");
+$("#nav").onclick = e => { const b = e.target.closest("button"); if(b) go(b.dataset.v); };
+window.addEventListener("hashchange", () => { const v = location.hash.slice(1); if(v in VIEWS && v !== current) go(v); });
+
+// the live event chain
+let lastSeq = 0, chain = [];
+const ICON_TYPES = {incident:"incident"};
+function drawChain(freshFrom){
+  const f = $("#chain-filter").value.toLowerCase();
+  $("#links").innerHTML = chain.slice(-120).reverse().filter(e => !f || (e.actor+" "+e.type+" "+(e.data.summary||e.data.path||"")).toLowerCase().includes(f))
+    .map(e => `<li class="${e.seq>freshFrom?"fresh":""} ${ICON_TYPES[e.type]||""}"><span class="seq">${e.seq}</span>
+      <span class="who">${esc(NAMES[e.actor]||e.actor)}</span> <span class="what">${esc(e.type.replace("."," "))}${(e.data.summary||e.data.path)?": "+esc(e.data.summary||e.data.path):""}</span>
+      <div class="note">${ago(e.ts)}</div></li>`).join("") || `<li class="note">No events yet. They appear here as the Collective works.</li>`;
+}
+$("#chain-filter").oninput = () => drawChain(1e12);
+async function tick(){
+  try{
+    const ev = await api("/api/events?after="+lastSeq);
+    if(ev.hidden){ $("#chain-note").textContent = "The event log is private; hidden in public view."; return; }
+    if(ev.length){ const from = lastSeq; chain = chain.concat(ev); lastSeq = ev[ev.length-1].seq; drawChain(from && from); }
+    OV = await api("/api/overview"); drawTop(); if(current==="overview" && document.activeElement?.tagName!=="INPUT") $("#view").innerHTML = await VIEWS.overview.render();
+  }catch(e){ $("#chain-note").textContent = "Lost contact with the dashboard server. Retrying…"; }
+}
+(async () => {
+  OV = await api("/api/overview"); drawTop();
+  await go((location.hash||"#overview").slice(1) in VIEWS ? location.hash.slice(1) : "overview");
+  const ev = await api("/api/events?after=0&limit=120"); if(!ev.hidden){ chain = ev; lastSeq = ev.length?ev[ev.length-1].seq:0; drawChain(1e12); } else $("#chain-note").textContent = "The event log is private; hidden in public view.";
+  api("/api/verify").then(v => { VERIFY = v; drawTop(); });
+  setInterval(tick, 3000);
+})();
+</script>
+</body>
+</html>

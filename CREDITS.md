@@ -20,6 +20,9 @@ additions are part of the work that uses them.
 | Claude Code | Anthropic | commercial terms | Agent runtime |
 | Grok CLI | xAI | commercial terms | Social agent |
 | gitleaks | Zachary Rice and contributors | MIT | Public-commit redaction gate |
+| Barlow, Barlow Semi Condensed (fonts) | Jeremy Tribby (The Barlow Project Authors) | SIL Open Font License 1.1 | Dashboard floor and scope; served locally from `dashboard/fonts/` |
+| Public Sans (font) | USWDS (The Public Sans Project Authors) | SIL Open Font License 1.1 | Dashboard records; served locally |
+| Source Serif 4 (font) | Adobe (The Source Serif 4 Project Authors) | SIL Open Font License 1.1 | Dashboard records; served locally |
 
 Licenses confirmed against each project's repository during setup (2026-09-24).
 

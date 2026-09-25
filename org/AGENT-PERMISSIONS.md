@@ -22,6 +22,9 @@ office `ROLE.md` files at each daily digest, and flags any mismatch.
 
 **Always allowed, no approval needed:**
 - Propose an amendment (`amendment.py new`); any office may.
+- Propose a new agent or a clone of a maker (`spawn.py propose` / `clone`),
+  or an agent's retirement (`spawn.py retire`). These draft membership
+  motions only; nothing is created until the motion passes (Article 3.8).
 - Add a comment, update, or suggestion to any project's `discussion.md`
   (`projects.py comment`).
 - Read any file in either repository, the event log, and the board.
@@ -74,6 +77,7 @@ writing in the amendment log:
 | Removing the kill switch or a pause | N/A — Steward-only | `rm org/STOP` / `rm org/PAUSE-<office>` |
 | Deploying a prototype publicly, spending money, or signing up for a paid service | Prototyper proposes | Board `#decision` with `@rex`, before any of it happens |
 | Publishing the dashboard's public release (GitHub Pages) | Prototyper builds; the Auditor accepts | Steward approval, then the Steward pushes |
+| Giving a spawned agent a vote, or granting it the tools its class requests | Any office proposes | A Class B amendment the Steward ratifies (Articles 3.8, 7.6) |
 
 ## 3. What each office may do
 
@@ -83,7 +87,7 @@ The full duties and limits of every office are in `org/OFFICERS.md`
 | Office | May | May not |
 |---|---|---|
 | **Project Manager** | Convene the weekly meeting; triage the board; turn agreed proposals into `#decision` threads; create tasks with one owner each; route edicts to the right channel; pause a looping agent (`org/PAUSE-<office>`); create `org/STOP` in an emergency; vote | Record cases or amendments; rule on precedent; audit; approve outbox items; post publicly; spend money |
-| **Scribe** | Create and advance amendment files (`amendment.py`); keep project discussions, including importing human comments; run governance and sprint voting mechanics (never tally by judgment — always `gov-tally.py` or `sprint.py tally`); file case law; edit `CHARTER.md` **only** to record a change exactly as passed and ratified; write the User Guide, the weekly blog draft, and `org/LEARNINGS.md`; publish governance records and the blog once approved | Vote; argue for an outcome; change a record's substance after freezing; rule on precedent; approve outbox items; post publicly |
+| **Scribe** | Create and advance amendment files (`amendment.py`); keep project discussions, including importing human comments; run governance and sprint voting mechanics (never tally by judgment — always `gov-tally.py` or `sprint.py tally`); file case law; edit `CHARTER.md` **only** to record a change exactly as passed and ratified; activate a spawned agent or retire one (`spawn.py activate` / `retire-apply`) **only** after its membership motion has passed; write the User Guide, the weekly blog draft, and `org/LEARNINGS.md`; publish governance records and the blog once approved | Vote; argue for an outcome; change a record's substance after freezing; rule on precedent; approve outbox items; post publicly |
 | **Lawyer** | Write an `#opinion` on any proposal or significant edit; rule on `#overrule` and `#reopen` requests against officer-level cases; hold an outbox draft pending review; draft permission requests | Vote; set the week's work; record cases; audit; approve outbox items (holding one is not approving it); post publicly |
 | **Auditor** | Run every verifier (`charter-verify.py`, `eventlog.py verify`, `edict.py check`, `case.py check`, `seed-check.sh`); commit and back up both repos (public commit only if the redaction scan passes); compute and commit metrics; block that day's public commit on an integrity failure; accept the dashboard against its spec | Vote; edit a record to make a check pass; set work; rule on precedent; approve outbox items; post publicly |
 | **Researcher** | Search the web and fetch pages; write briefs and maintain the Research Library; propose additions to the library (Class C amendment draft) | Post publicly; approve anything; spend money |

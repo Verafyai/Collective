@@ -1,0 +1,104 @@
+{
+ "_about": "Every agent in the Collective: its office or class, look, room, and whether it votes. Read by sprints, the dashboard, and agents/bin/spawn.py. Status: active, proposed (awaiting a membership vote), or retired. Changes happen only through membership motions (Charter Article 3.6).",
+ "agents": [
+  {
+   "key": "pm",
+   "name": "Project Manager",
+   "class": "officer",
+   "room": "council",
+   "color": "#E9B949",
+   "icon": "📋",
+   "votes": true,
+   "status": "active",
+   "motto": "Keeps the week moving. Chairs the meeting, holds the plan."
+  },
+  {
+   "key": "scribe",
+   "name": "Scribe",
+   "class": "officer",
+   "room": "council",
+   "color": "#EFE6CF",
+   "icon": "📜",
+   "votes": false,
+   "status": "active",
+   "motto": "Writes everything down. Files the case law, writes the blog."
+  },
+  {
+   "key": "lawyer",
+   "name": "Lawyer",
+   "class": "officer",
+   "room": "council",
+   "color": "#C0506A",
+   "icon": "⚖️",
+   "votes": false,
+   "status": "active",
+   "motto": "Checks every proposal against the Charter and precedent."
+  },
+  {
+   "key": "auditor",
+   "name": "Auditor",
+   "class": "officer",
+   "room": "council",
+   "color": "#6CC3A0",
+   "icon": "🔍",
+   "votes": false,
+   "status": "active",
+   "motto": "Trusts nothing unverified. Runs every integrity check."
+  },
+  {
+   "key": "researcher",
+   "name": "Researcher",
+   "class": "scholar",
+   "room": "lab",
+   "color": "#5AA9E6",
+   "icon": "📚",
+   "votes": true,
+   "status": "active",
+   "motto": "Reads the papers so the Collective doesn't guess."
+  },
+  {
+   "key": "ideas",
+   "name": "Ideas",
+   "class": "inventor",
+   "room": "lab",
+   "color": "#A7D65A",
+   "icon": "💡",
+   "votes": true,
+   "status": "active",
+   "motto": "Turns research into things worth building."
+  },
+  {
+   "key": "prototyper",
+   "name": "Prototyper",
+   "class": "artisan",
+   "room": "workshop",
+   "color": "#9B7BF2",
+   "icon": "🔧",
+   "votes": true,
+   "status": "active",
+   "motto": "Builds it, one version at a time."
+  },
+  {
+   "key": "media",
+   "name": "Media",
+   "class": "bard",
+   "room": "studio",
+   "color": "#F28C4B",
+   "icon": "🎥",
+   "votes": true,
+   "status": "active",
+   "motto": "Shows the work: demos, voice, video."
+  },
+  {
+   "key": "social",
+   "name": "Social",
+   "class": "herald",
+   "room": "studio",
+   "color": "#F271B0",
+   "icon": "📣",
+   "votes": true,
+   "status": "active",
+   "motto": "The voice of Verafy on X. Positive, truthful, never spammy."
+  }
+ ]
+}

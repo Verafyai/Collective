@@ -16,7 +16,7 @@ PY
 n=0; bad=0
 while IFS= read -r f; do
   n=$((n+1))
-  case "$f" in org/LEARNINGS.md|org/board/*|org/cases/*|research/papers.md|sprints/*|projects/*|amendments/*) continue;; esac  # live records evolve
+  case "$f" in org/LEARNINGS.md|org/board/*|org/cases/*|research/papers.md|sprints/*|projects/*|amendments/*|agents/roster.json) continue;; esac  # live records evolve
   cmp -s "$tmp/$f" "$f" || { echo "DRIFT: $f"; bad=$((bad+1)); }
 done < <(cd "$tmp" && find . -type f ! -name CHARTER.md | sed 's|^\./||')
 if [ "$bad" -eq 0 ]; then echo "seed ok: $n files rebuilt from the Charter"; else echo "SEED FAILED: $bad files drift from the Charter"; exit 1; fi
