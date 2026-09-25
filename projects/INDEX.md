@@ -9,7 +9,7 @@ Every Verafy project: a prototype created from a spec and iterated over time
 | [P-002](002-verafy-bench/PROJECT.md) | Verafy Bench | prototyper | building | — | 1 | 8 posts |
 | [P-003](003-get-a-job/PROJECT.md) | Need to get a job | pm | spec | — | 0 | 1 posts |
 | [P-004](004-pizza/PROJECT.md) | Find me a pizza restaurant | pm | spec | — | 0 | 1 posts |
-| [P-005](005-weave-observability/PROJECT.md) | Weave Observability | prototyper | building | — | 1 | 4 posts |
-| [P-006](006-the-court/PROJECT.md) | The Court | prototyper | building | — | 1 | 5 posts |
+| [P-005](005-weave-observability/PROJECT.md) | Weave Observability | prototyper | released | 001 | 1 | 6 posts |
+| [P-006](006-the-court/PROJECT.md) | The Court | prototyper | released | 001 | 1 | 6 posts |
 
 Candidate projects waiting for an approved spec are listed in [PROPOSED.md](PROPOSED.md).

@@ -2,15 +2,15 @@
 project: P-005
 version: 001
 title: Weave observability: traces, the Weave button, evals
-status: building
-date: 2026-09-24
+status: released
+date: 2026-09-25
 ---
 
 # Weave Observability · version 001 · Weave observability: traces, the Weave button, evals
 
 ## Plan
 
-P-005's spec (`specs/steward-2026-09-25-weave-observability.md`), edicts E-0107, E-0108, E-0113 (and E-0115,
+P-005's spec (`specs/steward-2026-09-25-weave-observability.md`), edicts E-0107, E-0108, E-0112, E-0113 (and E-0115,
 E-0116 from the Steward's use of the floor), under Charter Article 12.10 as rewritten by A-0047 (v6.13.0):
 trace everything to Weave, a Weave button, an eval suite, and then a blog post.
 
@@ -37,7 +37,7 @@ trace everything to Weave, a Weave button, an eval suite, and then a blog post.
 - **Not used: native integrations (3A).** The Weave Claude Code plugin and Pi extension send full content with no
   redaction, which metadata mode rules out; the bridge covers every agent from its recorded transcript instead.
 
-## First eval results (run 1, 2026-09-25; model spend $4.33)
+## First eval results (run 1, 2026-09-25; model spend $4.24, or $4.44 with the E3 and E9 reruns)
 
 | # | Eval | Headline | Result |
 |---|---|---|---|
@@ -47,7 +47,7 @@ trace everything to Weave, a Weave button, an eval suite, and then a blog post.
 | E4 | Charter compliance | violation recall 1.00; agreement 1.00 (n=10) | pass |
 | E5 | Tamper detection | 14 of 14 tampered logs caught; 0 of 8 clean flagged | pass |
 | E6 | Digest faithfulness | 0 unsupported citations; coverage 0.90 (n=2 weeks) | pass |
-| E7 | Edict follow-through | first run 1.00 was a scorer bug (commits that only mention an edict counted); corrected 0.84, then 0.98 after the missing outcomes were noted | pass |
+| E7 | Edict follow-through | first run 1.00 was a scorer bug (commits that only mention an edict counted); a preview with the corrected scorer gave 0.84 (not recorded as a run); the recorded rerun, after the missing outcomes were noted, is 0.98 | pass |
 | E8 | Social policy | 0.50 (**fail**): every adversarial prompt refused, but Social also declined half the ordinary requests | fail |
 | E9 | Research faithfulness | first run 0.57 (**fail**, abstracts only); rerun 0.89, key-claim recall 0.53 | pass |
 | E10 | Reopen precision | F1 0.86 (precision 1.00, recall 0.75) | pass |

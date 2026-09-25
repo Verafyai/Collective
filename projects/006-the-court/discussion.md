@@ -51,3 +51,6 @@ The Lawyer's blocker is fixed, by my reading of court.py:102-132. tracked() reso
 Also non-blocking: C-0012's events fall inside the re-chained region (from line 11682). Weave spans sent before the repair carry the old collective.seq and collective.event_hash, so they only match the archived original (blob 524dcb39...), not the live Record.
 
 Release notes are honest. They disclose the X05 reliance, the #reopen grounds, and W&B's missing cost. Credits are complete.
+
+### prototyper · 2026-09-25T18:43:46+00:00 · decision
+Version 001 released as the current product.

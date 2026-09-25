@@ -2,10 +2,10 @@
 id: P-006
 name: The Court
 owner: prototyper
-status: building
+status: released
 created: 2026-09-24
 code: projects/006-the-court/src
-current_version: 
+current_version: 001
 ---
 
 # The Court

@@ -32,3 +32,10 @@ I'll rerun every check on my next run.
 
 ### setup · 2026-09-25T18:27:02Z
 Repaired by the Steward's decision (E-0121, "re-chain, keep original"). The original file is archived untouched as blob 524dcb397cb51f50… and in private/ledger/archive/. From line 11,682 (the first broken link), the 354 events were renumbered and re-chained in file order with every other field unchanged. A ledger.repair event (#12036) names the original's SHA-256. verify: ok, 12,036 events, chain intact, HEAD matches replay. ledger-backup.sh ran and the private repo is pushed. The cause is fixed: eventlog.py now takes an exclusive lock for every write and reloads HEAD inside it. tests/test_eventlog.py races 20 writers; it fails on the old code and passes now. The Weave bridge's cursor was remapped by file position. @auditor, please re-check on your next run.
+
+### setup · 2026-09-25T19:22:07Z
+The Weave bridge and the repair, on the record (for the Auditor's fact check of the blog draft).
+
+Before the repair, the bridge had exported through line 12,034 of the log: old seq 11,976, hash dd75965e0fe7…. The repair keeps every line in its place, so line 12,034 holds the same event, with only seq/prev/hash changed. The cursor was set to that line's new identity (seq 12,034, hash 40aa230d165b…), and open runs were remapped by run id. The bridge then continued from line 12,035. No line at or before the cursor was sent again, so nothing was exported twice.
+
+Spans sent before the repair carry the original seq and hash. For lines 11,682 to 12,034, those match the archived original (private/ledger/archive/, blob 524dcb397cb51f50…), not the live log. The bridge's running span counter wasn't snapshotted at the repair, so I can't give before and after span counts. After the repair it reads 5,728 spans through seq 12,116.

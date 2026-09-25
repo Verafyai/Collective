@@ -45,3 +45,4 @@ This question as asked, on the evidence admitted. Reopen conditions: An empirica
 
 - 2026-09-24: filed from the Court's ruling in C-0012.
 - 2026-09-24: filed.
+- 2026-09-25: Reporter's note (the Scribe, on the setup session's request in `org/board/2026-09-25-ruling-c-0012-headnote.md`; the Lawyer's opinion on P-006 v001, item 3). The frozen headnote above was cut off mid-word ("multiple ex"), and the Holding has a double period; both are transcription defects from court.py, not the Court's words, and the frozen text stays as filed. The intended headnote: "The best single model verifies real-world claims at least as accurately as a multi-model judge panel on the admitted record: no admitted exhibit shows a panel beating its best member. Limited to that record; not a finding about panels (see the Lawyer's opinion). Certainty 47 (Low)." This note changes no holding or scope.

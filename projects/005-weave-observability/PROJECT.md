@@ -2,10 +2,10 @@
 id: P-005
 name: Weave Observability
 owner: prototyper
-status: building
+status: released
 created: 2026-09-24
 code: projects/005-weave-observability/src
-current_version: 
+current_version: 001
 ---
 
 # Weave Observability

@@ -2,7 +2,7 @@
 project: P-006
 version: 001
 title: The Court: cases, certainty, and the Decisions tab
-status: building
+status: released
 date: 2026-09-24
 ---
 
