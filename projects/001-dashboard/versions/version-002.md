@@ -75,6 +75,10 @@ or date, and compare Charter versions.
 
 ## Links
 
-- Edicts E-0056, E-0058, E-0060–E-0064; amendment A-0020 (Charter v6.4.0).
+- Edicts E-0056, E-0058, E-0060–E-0063; amendment A-0020 (Charter v6.4.0). (E-0064, the terminal button, is version 003.)
 - Tests at build: test_dashboard, test_spawn, test_sprint pass (see the
   discussion for the full check list).
+- Fixed after the Auditor's review (2026-09-24): UTC timestamps now use
+  `calendar.timegm` (were an hour off in daylight saving time); roster and
+  class values escaped in the bio and tray; the spec's wizard "look" step
+  recorded as a spec change (the look comes from the class).

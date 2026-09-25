@@ -12,7 +12,7 @@ event log, and verification. Python standard library only.
   a project, appended to its discussion.md through projects.py.
 - --public hides everything from the private repo (edicts, event details).
 """
-import argparse, glob, json, pathlib, re, subprocess, sys, time, urllib.parse
+import argparse, calendar, glob, json, pathlib, re, subprocess, sys, time, urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -117,7 +117,7 @@ def bio(key):
     last = next((e for e in reversed(events(limit=5000)) if e["actor"] == key and e["type"] == "run.start"), None)
     nxt = None
     if iv and last:
-        t0 = time.mktime(time.strptime(last["ts"][:19], "%Y-%m-%dT%H:%M:%S")) - time.timezone
+        t0 = calendar.timegm(time.strptime(last["ts"][:19], "%Y-%m-%dT%H:%M:%S"))   # event times are UTC
         nxt = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(t0 + iv))
     duties = ""
     offs = read(ROOT / "org/OFFICERS.md")
@@ -352,7 +352,7 @@ def live():
     ev = events(limit=5000)
     now = time.time()
     def ts(e):
-        try: return time.mktime(time.strptime(e["ts"][:19], "%Y-%m-%dT%H:%M:%S")) - time.timezone
+        try: return calendar.timegm(time.strptime(e["ts"][:19], "%Y-%m-%dT%H:%M:%S"))   # UTC, correct in daylight saving time too
         except Exception: return 0
     today = time.strftime("%Y-%m-%d", time.gmtime())
     R = roster()

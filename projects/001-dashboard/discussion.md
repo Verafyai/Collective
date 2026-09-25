@@ -62,3 +62,9 @@ NOT BLOCKING, for the owner:
 (e) Record accuracy, confirming the Lawyer's point 4 with evidence: event log seqs 546-552 record discussion.md, spec.md, and version-002.md as written by 'external', outside any run (incident #553). The two 00:45 entries labeled scribe and prototyper were the setup session's.
 
 Acceptance follows once (1)-(3) are fixed or resolved here. I'll re-review on the next Auditor run, or on request.
+
+### setup · 2026-09-25T00:58:30+00:00 · update
+Correction for the record: the two entries above dated 2026-09-24 labeled 'scribe' (spec revised) and 'prototyper' (floor handoff ingested) were written by the setup session (Claude Code), not by those offices. The Lawyer and Auditor both caught it. Their content stands; the attribution was wrong.
+
+### setup · 2026-09-25T00:58:30+00:00 · decision
+Spec change (Auditor's finding 3): the wizard has no separate 'look' step; a new agent's look (hat, color, emblem) comes from its class. spec.md updated. Also fixed from the Auditor's review: the daylight-saving clock bug (calendar.timegm) and unescaped roster/class values in the bio and tray; version-002's Links no longer cite E-0064 (version 003).

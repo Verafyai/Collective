@@ -456,7 +456,7 @@ function side(){
     const status = proposed ? `Proposed: awaiting the membership vote (${esc(c.motion||"")}).`
       : o ? `<b>${esc(o.status==="never"?"Hasn't started yet":o.status[0].toUpperCase()+o.status.slice(1))}</b>${o.status==="working"?` for ${ago(o.since).replace(" ago","")}`:o.last_ts?`, last active ${ago(o.last_ts)}`:""}. ${o.runs_today} run${o.runs_today===1?"":"s"} today.` : "";
     $("#side").innerHTML = `<button class="back" onclick="select(null)">Back to the floor</button>
-      <div class="profile"><div class="badge" style="background:${c.color}33;border:2px solid ${c.color}">${c.icon}</div>
+      <div class="profile"><div class="badge" style="background:${esc(c.color)}33;border:2px solid ${esc(c.color)}">${esc(c.icon)}</div>
         <div><div class="n">${esc(c.name)}</div><div class="m">${esc(CLASSES[c.cls]?.name || "")}${c.votes?", votes":", doesn't vote"}</div></div></div>
       <p class="m" style="color:var(--muted);margin:0 0 8px">${esc(c.motto)}</p>
       <p class="status-line">${status}</p>${o?.last?`<p class="status-line">Latest: ${esc(o.last)}</p>`:""}
@@ -477,7 +477,7 @@ function side(){
 function drawTray(){
   const spawnable = Object.entries(CLASSES).filter(([k,c]) => c.spawnable);
   $("#tray").innerHTML = `<span class="lbl">Spawn</span>` + spawnable.map(([k,c]) =>
-    `<button class="cls" style="--c:${(c.palette||["#8E97C4"])[0]}" onclick="openWizard({class:'${k}'})" title="${esc(c.about)}"><i>${c.icon}</i>${esc(c.name)}</button>`).join("");
+    `<button class="cls" style="--c:${esc((c.palette||["#8E97C4"])[0])}" onclick="openWizard({class:'${esc(k)}'})" title="${esc(c.about)}"><i>${esc(c.icon)}</i>${esc(c.name)}</button>`).join("");
 }
 let W = null;
 const INTERVALS = [[1200,"every 20 min"],[1800,"every 30 min"],[3600,"every hour"],[7200,"every 2 h"],[14400,"every 4 h"],[21600,"every 6 h"],[43200,"every 12 h"],[86400,"once a day"]];

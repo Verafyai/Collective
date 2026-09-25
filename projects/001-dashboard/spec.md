@@ -178,7 +178,8 @@ charting library from a CDN. Live updates use Server-Sent Events.
   tool grants), requested modules, duties, and full prompt (hidden in public
   view).
 - **Tray and wizard:** a tray of spawnable classes below the floor; a
-  five-step wizard (class, name and focus, room and look, schedule, review)
+  five-step wizard (class, name and focus, room, schedule, review; the new
+  agent's look, its hat, color, and emblem, comes from its class)
   that **drafts a membership motion** through `spawn.py`. It creates nothing:
   the proposed agent shows as a translucent **ghost** until the motion passes.
   Private view only (Article 18.7(b)).
