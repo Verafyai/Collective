@@ -244,7 +244,7 @@ render = function(){
   }
   const hb = $("#huddle-btn"); if(hb){ hb.classList.toggle("on", huddleOpen()); hb.textContent = huddleOpen() ? "☕ Huddle open" : "☕ Huddle"; }
   huddleBanner();
-  drawFlags(); drawSleepers(); nameRooms(); roomLines();
+  adoptRooms(); drawFlags(); drawSleepers(); nameRooms(); roomLines();
 };
 // no standing speech bubbles (E-0093): what's said shows briefly above its room's chat icon instead (whisper)
 function roomLines(){ $("#bubbles").querySelectorAll(".bubble").forEach(b => b.remove()); }
@@ -439,6 +439,21 @@ drawChat = function(){
 
 // ---------- projects: room names, one chat per room, a telephone to central command (E-0088, E-0091) ----------
 const PHONE_AT = {council:{x:5.5, y:3.1}, lab:{x:5.5, y:13.1}, studio:{x:12.5, y:4.6}, workshop:{x:12.6, y:12.6}};
+// project rooms opened from the floor (rooms.py new) join ROOMS, and the floor is redrawn with them (E-0089)
+function adoptRooms(){
+  let added = false;
+  for(const [k, r] of Object.entries(L?.rooms || {})){
+    if(ROOMS[k] || !Number.isFinite(r.x) || !Number.isFinite(r.y)) continue;
+    ROOMS[k] = {x:r.x, y:r.y, w:r.w || 6, d:r.d || 6, floor:r.floor || "#26334F", edge:r.edge || "#3A4C73", label:r.name || k};
+    added = true;
+  }
+  if(added) (function redraw(){ window.floorCamera ? window.floorCamera.rebuild() : setTimeout(redraw, 50); })();
+}
+function phoneAt(room){   // the telephone sits in the room's corner nearest central command
+  if(PHONE_AT[room]) return PHONE_AT[room];
+  const R = ROOMS[room], cx = R.x + R.w/2 < RECORD.x, cy = R.y + R.d/2 < RECORD.y;
+  return {x: cx ? R.x + R.w - .6 : R.x + .6, y: cy ? R.y + R.d - .6 : R.y + .6};
+}
 function nameRooms(){
   const names = L?.rooms || {};
   document.querySelectorAll("#world text").forEach(t => {
@@ -450,14 +465,17 @@ function nameRooms(){
     const t = document.querySelector(`#world text[data-room="${k}"]`);
     if(t && t.dataset.named !== n.name){ t.dataset.named = n.name; t.textContent = "";
       t.textContent = n.name + (n.project ? ` · ${n.project}` : "");
-      const ti = document.createElementNS(NS, "title"); ti.textContent = `${n.name}${n.project ? " (" + n.project + ")" : ""}: ${n.about || ""}`; t.appendChild(ti); }
+      const ti = document.createElementNS(NS, "title"); ti.textContent = `${n.name}${n.project ? " (" + n.project + ")" : ""}: ${n.about || ""}. Click to rename.`; t.appendChild(ti);
+      t.style.cursor = "pointer"; t.style.pointerEvents = "all"; t.setAttribute("role", "button"); t.setAttribute("tabindex", "0");
+      t.onclick = () => projectForm(k); t.onkeydown = e => { if(e.key === "Enter"){ e.preventDefault(); projectForm(k); } }; }
   }
 }
 function drawPhones(){
   if(document.querySelector("#phones")) return;
   const g = el("g", {id:"phones"}); svg.insertBefore(g, $("#links"));
   const hub = iso(RECORD.x, RECORD.y, 6);
-  for(const [room, p] of Object.entries(PHONE_AT)){
+  for(const room of Object.keys(ROOMS)){
+    const p = phoneAt(room);
     const at = iso(p.x, p.y, 14), col = ROOMS[room].edge;
     const mx = (at.x + hub.x) / 2, my = (at.y + hub.y) / 2 + 40;
     el("path", {d:`M${at.x},${at.y + 8} Q${mx},${my} ${hub.x},${hub.y}`, fill:"none", stroke:"#0B0F24", "stroke-width":5, opacity:.55, "stroke-linecap":"round"}, g);
@@ -638,8 +656,56 @@ side = function(){
   if(focus){ const f = document.getElementById(focus); if(f) f.focus({preventScroll:true}); }
   box.scrollTop = top;
 };
+// ---------- New project: a spec, a codename, a room (E-0089) ----------
+const SPEC_PROMPT = `What is it? (one or two sentences)
+
+Who is it for, and what problem does it solve for them?
+
+What does version 001 do? (the smallest thing a person can try)
+
+How will we know it works? (a number or a test)
+
+What's out of scope for now?
+
+Budget and limits (money, time, anything it must never do):`;
+function projectForm(renameRoom){
+  document.querySelector(".pform")?.remove();
+  const f = document.createElement("div"); f.className = "kanban pform"; f.setAttribute("role", "dialog"); f.setAttribute("aria-modal", "true");
+  const R = renameRoom ? (L?.rooms || {})[renameRoom] || {} : null;
+  f.innerHTML = `<div class="kb" style="max-width:640px"><button class="x" aria-label="Close">×</button>
+    <h3>${renameRoom ? `Rename ${esc(R.name || ROOMS[renameRoom]?.label || renameRoom)}` : "New project"}</h3>
+    <div class="sub">${renameRoom ? "A new codename for this room's project." : "Write the spec: it becomes the project's spec.md and an edict. The project gets its own room; drag agents into it and they get a task for it and start talking in its chat on their next run."}</div>
+    <label style="display:block;font:600 14px var(--display);margin:8px 0 4px">Codename</label>
+    <input id="pf-code" value="${esc(R?.name || "Project ")}" maxlength="40" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid #C9C3B0;font:600 15px var(--display)">
+    ${renameRoom ? "" : `<label style="display:block;font:600 14px var(--display);margin:10px 0 4px">What it is (a plain name)</label>
+    <input id="pf-name" maxlength="80" placeholder="e.g. Verafy Claims Tracker" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid #C9C3B0;font:15px var(--ui)">
+    <label style="display:block;font:600 14px var(--display);margin:10px 0 4px">Spec</label>
+    <textarea id="pf-spec" rows="14" style="width:100%;padding:10px;border-radius:8px;border:1px solid #C9C3B0;font:14px/1.45 var(--ui);box-sizing:border-box">${esc(SPEC_PROMPT)}</textarea>
+    <div id="pf-count" class="sub" style="margin-top:4px"></div>`}
+    <div style="display:flex;gap:8px;margin-top:12px"><button class="btn" id="pf-go">${renameRoom ? "Rename" : "Create project"}</button><button class="btn ghost" id="pf-no" style="color:#1B2046">Cancel</button></div></div>`;
+  document.body.appendChild(f); f.addEventListener("keydown", e => { e.stopPropagation(); if(e.key === "Escape") f.remove(); });
+  const close = () => f.remove(); f.querySelector(".x").onclick = close; f.querySelector("#pf-no").onclick = close;
+  f.addEventListener("click", e => { if(e.target === f) close(); });
+  const spec = f.querySelector("#pf-spec"), cnt = f.querySelector("#pf-count");
+  const count = () => { if(!spec) return; const n = spec.value.trim().length; cnt.textContent = n < 200 ? `${200 - n} more characters needed` : `${n} characters`; };
+  spec?.addEventListener("input", count); count(); f.querySelector("#pf-code").focus();
+  f.querySelector("#pf-go").onclick = async () => {
+    const codename = f.querySelector("#pf-code").value.trim();
+    const r = renameRoom ? await post(`/api/rooms/${renameRoom}/rename`, {codename})
+      : await post("/api/projects/new", {codename, name: f.querySelector("#pf-name").value.trim(), spec: spec.value.trim()});
+    toast(r.message || r.error || (r.ok ? "Done." : "Refused."), !r.ok);
+    if(r.ok){ close(); pollLive(); }
+  };
+}
+function projectButton(){
+  const hud = document.querySelector(".hud"); if(!hud || $("#project-btn")) return;
+  const b = document.createElement("button"); b.className = "hbtn"; b.id = "project-btn"; b.style.background = "#1F3A36"; b.style.color = "#BFF3EA";
+  b.textContent = "＋ New project"; b.title = "Start a project from a spec, in a new room"; b.onclick = () => projectForm(null);
+  const at = $("#huddle-btn"); at ? at.before(b) : hud.appendChild(b);
+}
+
 // ---------- start ----------
-drawWhiteboards(); drawCoffee(); drawPhones(); huddleButton(); resetButton();
+drawWhiteboards(); drawCoffee(); drawPhones(); huddleButton(); resetButton(); projectButton();
 window.floorExtras = {redraw(){ drawWhiteboards(); drawCoffee(); drawPhones(); nameRooms(); }, whisper, ring};   // after the camera turns the floor (camera.js)
 if(typeof L !== "undefined" && L) render();
 })();

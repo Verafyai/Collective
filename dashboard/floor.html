@@ -285,8 +285,10 @@ function build(){
   const defs = el("defs", {}); const flt = el("filter", {id:"blur", x:"-50%", y:"-50%", width:"200%", height:"200%"}, defs); el("feGaussianBlur", {stdDeviation:10}, flt);
   el("g", {id:"links"}); el("g", {id:"agents"}); el("g", {id:"chats"}); el("g", {id:"bubbles"}); el("g", {id:"tokens"});
   // frame the view on the world
-  const tl = iso(0,N), tr = iso(N,0), bt = iso(N,N);
-  svg.setAttribute("viewBox", `${tl.x-40} ${-150} ${tr.x-tl.x+80} ${bt.y+175}`);
+  // (project rooms added from the floor can sit outside the first N×N square: frame them all)
+  const cs = [[0,0],[N,0],[0,N],[N,N]]; for(const r of Object.values(ROOMS)) cs.push([r.x,r.y],[r.x+r.w,r.y],[r.x,r.y+r.d],[r.x+r.w,r.y+r.d]);
+  const ps = cs.map(([x,y]) => iso(x,y)), x0 = Math.min(...ps.map(p=>p.x)), x1 = Math.max(...ps.map(p=>p.x)), y0 = Math.min(...ps.map(p=>p.y)), y1 = Math.max(...ps.map(p=>p.y));
+  svg.setAttribute("viewBox", `${x0-40} ${y0-150} ${x1-x0+80} ${y1-y0+175}`);
 }
 // ---------- characters ----------
 const AG = {};

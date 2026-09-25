@@ -117,6 +117,24 @@ try:
     code, body = post("/api/huddle", {"topic": "test"})
     assert (code == 403 and "A-0024" in body["error"]) or code == 200, body          # gated until the Charter allows huddles
     assert "summary" in json.loads(get(f"/api/conversations/{conv[0]['id']}")[1])["posts"][0]
+    # new projects from the floor (E-0089): refused until A-0030, then a spec makes a project, a room, and a thread
+    SPEC = "What is it? A tracker of claims we've checked. Who is it for? Readers. Version 001 lists ten checked claims with sources. " * 3
+    code, body = post("/api/projects/new", {"codename": "Project Test", "spec": SPEC}); assert code == 403 and "A-0030" in body["error"], body
+    ch = t / "CHARTER.md"; ch.write_text(ch.read_text() + "\n<!-- test: **New projects from the floor.** -->\n")
+    time.sleep(5.2); code, body = post("/api/projects/new", {"codename": "Project Test", "spec": "too short"}); assert code == 400, body
+    time.sleep(5.2); code, body = post("/api/projects/new", {"codename": "Project Test", "name": "Claims tracker", "spec": SPEC})
+    assert code == 200 and body["ok"] and body["project"].startswith("P-"), body
+    room = body["room"]; rj = json.loads((t / "org/rooms.json").read_text())["rooms"][room]
+    assert rj["name"] == "Project Test" and rj["project"] == body["project"] and rj["x"] >= 18, rj
+    assert (t / "org/board" / f"project-{room}.md").exists() and "@pm" in (t / "org/board" / f"project-{room}.md").read_text()
+    assert list((t / "projects").glob("*-test/spec.md")), "the project was created from the spec"
+    time.sleep(1.1); code, body = post("/api/agents/researcher/move", {"room": room}); assert code == 200 and body["ok"], body
+    assert "task" in body["message"], body
+    assert "@researcher" in (t / "org/board" / f"project-{room}.md").read_text(), "the agent is told in the project's thread"
+    assert any(x["office"] == "researcher" and body_p in x["title"] for x in json.loads(get("/api/tasks")[1]) for body_p in [rj["project"]]), "a task for the project"
+    time.sleep(2.1); code, body = post(f"/api/rooms/{room}/rename", {"codename": "Project Lantern"}); assert code == 200, body
+    assert json.loads(get("/api/live")[1])["rooms"][room]["name"] == "Project Lantern"
+    time.sleep(2.1); code, body = post(f"/api/rooms/{room}/rename", {"codename": "lowercase <b>"}); assert code == 400, body
     # a write with no Origin (not from a page this server served) is refused
     req = urllib.request.Request(base + "/api/agents/media/move", data=b'{"room":"lab"}', method="POST", headers={"Content-Type": "application/json"})
     try: urllib.request.urlopen(req, timeout=10); raise AssertionError("expected 403 without an Origin")

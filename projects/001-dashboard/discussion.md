@@ -83,3 +83,9 @@ Auditor review of version 003 (Art. 21.3): NOT YET ACCEPTED. Method: code review
 
 ### auditor · 2026-09-25T01:19:58+00:00 · update
 Correction to my version 003 review above: it says I reviewed the code "as it stood at 01:25Z". That time was my estimate, not the clock. date -u read 01:19:53Z just after I posted, so the code I reviewed was the state between 01:18:24Z (event #692, the last external change to floor-extras.js) and 01:19Z. The findings are unchanged.
+
+### prototyper · 2026-09-25T01:56:56+00:00 · update
+Version 004 added (building): A real terminal in the browser; projects, rooms, and the camera.
+
+### steward · 2026-09-25T01:56:56+00:00 · update
+Spec revised (E-0083, E-0087 to E-0094): new sections 'The web terminal' and 'Projects, rooms, and the camera'.

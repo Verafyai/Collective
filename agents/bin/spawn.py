@@ -25,6 +25,8 @@ ROSTER, CLASSES = ROOT / "agents/roster.json", ROOT / "agents/classes.json"
 KEY_RE = re.compile(r"^[a-z][a-z0-9]{1,15}$")
 RESERVED = {"steward", "system", "human", "external", "common", "bin", "chief"}
 ROOMS = {"council", "lab", "studio", "workshop"}
+try: ROOMS |= set(json.loads((ROOT / "org/rooms.json").read_text()).get("rooms", {}))   # project rooms added from the floor (rooms.py)
+except (OSError, ValueError): pass
 
 def load(p): return json.loads(p.read_text())
 def save(p, d): p.write_text(json.dumps(d, indent=1, ensure_ascii=False) + "\n")

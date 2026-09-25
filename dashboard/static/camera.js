@@ -14,7 +14,7 @@ svg.world .agent,svg.world [role=button]{cursor:pointer}
 `;
 document.head.appendChild(css);
 
-const base = svg.getAttribute("viewBox").split(/\s+/).map(Number);     // the whole floor, as build() framed it
+let base = svg.getAttribute("viewBox").split(/\s+/).map(Number);       // the whole floor, as build() framed it
 const MIN = .6, MAX = 4;
 let cam = {z:1, x:0, y:0};                                               // zoom, and the pan in world units
 try { const c = JSON.parse(localStorage.getItem("collective.camera") || "null"); if(c && isFinite(c.z)){ cam = {z:c.z, x:c.x, y:c.y}; ROT = (c.r|0) % 4; } } catch(e) {}
@@ -36,7 +36,7 @@ function zoomAt(f, clientX, clientY){       // keep the point under the pointer 
 function rebuild(){
   const agents = [...$("#agents").children];
   [...svg.children].forEach(c => { if(c.tagName !== "title" && c.tagName !== "desc") c.remove(); });
-  build(); agents.forEach(a => $("#agents").appendChild(a));
+  build(); base = svg.getAttribute("viewBox").split(/\s+/).map(Number); agents.forEach(a => $("#agents").appendChild(a));
   window.floorExtras?.redraw();
   if(typeof L !== "undefined" && L) render();
   if(typeof drawChats === "function") drawChats();
@@ -75,5 +75,6 @@ document.addEventListener("keydown", e => {
   if(e.target.closest("input,textarea,select,[contenteditable],.tdrawer") || e.metaKey || e.ctrlKey || e.altKey) return;
   const a = {"+":"in", "=":"in", "-":"out", "[":"left", "]":"right", "0":"home"}[e.key]; if(a){ e.preventDefault(); act(a); }
 });
+window.floorCamera = {rebuild};     // floor-extras.js redraws the floor when a project room is added
 if(ROT) rebuild(); else apply();
 })();

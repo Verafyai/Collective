@@ -643,6 +643,9 @@ class H(BaseHTTPRequestHandler):
         if self.path == "/api/agents/propose": return self.propose_agent()
         m = re.match(r"^/api/agents/([a-z][a-z0-9]{1,15})/(move|terminal|permissions|fire)$", self.path)
         if m: return agent_write(self, m.group(1), m.group(2))
+        if self.path == "/api/projects/new": return project_new(self)
+        m = re.match(r"^/api/rooms/([a-z][a-z0-9]{1,15})/rename$", self.path)
+        if m: return room_rename(self, m.group(1))
         if self.path in ("/api/huddle", "/api/huddle/close"): return huddle_write(self, "close" if self.path.endswith("close") else "start")
         m = re.match(r"^/api/conversations/([\w.-]+)/comment$", self.path)
         if m: return chat_comment(self, m.group(1))
@@ -677,6 +680,9 @@ def agent_write(h, key, action):
         p = guarded(h, "move", 1)
         if p is None: return
         code, out = run(PY, "agents/bin/spawn.py", "move", key, "--room", str(p.get("room", "")))
+        if code == 0 and PROJECT_MARK in read(ROOT / "CHARTER.md"):   # seated in a project room: it works on that project (E-0089)
+            c2, o2 = run(PY, "agents/bin/rooms.py", "assign", key, str(p.get("room", "")))
+            out = out.strip() + ("; " + o2.strip() if o2.strip() else "")
     elif action == "terminal":
         p = guarded(h, "terminal", 3)
         if p is None: return
@@ -706,6 +712,37 @@ def agent_write(h, key, action):
     else:
         return h.send(404, {"error": "not found"})
     h.send(200 if code == 0 else 400, {"ok": code == 0, "message": out.replace("REFUSED: ", "")})
+
+PROJECT_MARK = "**New projects from the floor.**"    # Article 18.7's wording once A-0030 is ratified (E-0089)
+
+def project_new(h):
+    """/api/projects/new: the Steward starts a project from a spec, in a new room on the floor (E-0089)."""
+    if PROJECT_MARK not in read(ROOT / "CHARTER.md"):
+        return h.send(403, {"error": "New projects from the floor wait for the Steward's approval of amendment A-0030."})
+    p = guarded(h, "new project", 5)
+    if p is None: return
+    code_name, name, spec = (str(p.get(k, "")).strip() for k in ("codename", "name", "spec"))
+    if not (200 <= len(spec) <= 7000): return h.send(400, {"error": "the spec is 200 to 7000 characters: say what it is, who it's for, and what version 001 does"})
+    if not (2 <= len(code_name) <= 40): return h.send(400, {"error": "give it a codename, like Project Valkyrie"})
+    slug = re.sub(r"[^a-z0-9]+", "-", code_name.lower()).strip("-")[:40] or "project"
+    f = ROOT / "specs" / f"steward-{time.strftime('%Y-%m-%d', time.gmtime())}-{slug}.md"
+    if f.exists(): return h.send(400, {"error": "a spec by that name already exists today"})
+    f.write_text(f"# {name or code_name}\n\nThe Steward's spec, written on the floor ({code_name}).\n\n{spec}\n")
+    code, out = run(PY, "agents/bin/rooms.py", "new", "--codename", code_name, "--name", name or code_name, "--spec", str(f), "--steward")
+    if code:
+        f.unlink(missing_ok=True); return h.send(400, {"ok": False, "error": out.replace("REFUSED: ", "").strip()[-300:]})
+    info = json.loads(out.strip().splitlines()[-1])
+    run(PY, "agents/bin/edict.py", "new", "--title", f"New project: {info['codename']}", "--text", spec,
+        "--restatement", f"The Steward started {info['codename']} ({info['project']}) from the floor with this spec ({f.relative_to(ROOT)}).")
+    h.send(200, {"ok": True, "message": f"{info['codename']} ({info['project']}) is open. Drag agents into its room to start them on it.", **info})
+
+def room_rename(h, room):
+    if PROJECT_MARK not in read(ROOT / "CHARTER.md"):
+        return h.send(403, {"error": "Renaming rooms waits for the Steward's approval of amendment A-0030."})
+    p = guarded(h, "rename", 2)
+    if p is None: return
+    code, out = run(PY, "agents/bin/rooms.py", "rename", room, "--codename", str(p.get("codename", "")), "--steward")
+    h.send(200 if code == 0 else 400, {"ok": code == 0, "message": out.replace("REFUSED: ", "").strip()})
 
 def chat_comment(h, cid):
     """/api/conversations/<id>/comment: the Steward's comment in a floor chat (Article 18.7(d))."""

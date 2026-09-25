@@ -201,6 +201,40 @@ charting library from a CDN. Live updates use Server-Sent Events.
   in public view); a typing indicator for anyone working now.
 - Read-only: replies go on the board or as a `#ruling`.
 
+## The web terminal
+
+(Added 2026-09-25, edicts E-0083, E-0092; Charter Article 18.7(h), 18.8.)
+
+- A drawer at the bottom of the floor, opened by **⌨ Terminal** in the top bar, holds
+  real terminals in xterm.js (vendored, checksummed): a login shell, herdr, or a talk
+  with one agent (**Open terminal** on its bio, which runs `run-role.sh <key>
+  --interactive` with that office's tools only).
+- Private view only; same origin; a one-time token valid 30 seconds; at most four at
+  once; killed on disconnect or 30 minutes idle. A closed session is never resumed.
+- Everything is recorded: start, every typed line (passwords, typed without echo, are
+  counted and never recorded), end, and the output as a blob; all of it redacted.
+
+## Projects, rooms, and the camera
+
+(Added 2026-09-25, edicts E-0087 to E-0094.)
+
+- Every room is a project with a codename (`org/rooms.json`); its label shows the
+  codename and project id, and clicking it renames it.
+- **＋ New project** takes a codename and a spec (a prompt says what to cover). It makes
+  the project (`projects.py new --spec`, owned by the Project Manager), a new room, and a
+  `#project` thread. Dragging an agent into a project room gives it a task there and a note
+  in the thread; it works and talks there from its next run.
+- One chat per room: the posts of the agents seated there, with dotted lines to them only.
+  The Collective-wide chat appears only during a huddle, at the coffee machine. When
+  someone speaks, a ghosted summary shows above the room's chat icon for a few seconds;
+  there are no standing speech bubbles.
+- Each room has a telephone wired to central command (the Record); it opens the room's
+  chat, and a new line runs down its cord.
+- Idle agents with no task lie down asleep, eyes shut, with Zs; clicking one says it has no
+  task.
+- The camera: zoom (wheel, pinch, ＋/−), pan (drag empty floor), and turn the floor a
+  quarter at a time (⟲ ⟳); ⌂ resets. The view is remembered in this browser only.
+
 ## Security (applies to every view)
 
 - Binds 127.0.0.1 and answers only `Host: 127.0.0.1` or `localhost` (no DNS
