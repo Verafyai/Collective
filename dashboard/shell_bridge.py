@@ -1,8 +1,9 @@
 """A real terminal in the browser (Charter Article 18.7(c)(iii); P-001): a pseudo-terminal on the
 Steward's machine streamed to xterm.js over a WebSocket. Python standard library only.
 
-Two commands, and nothing else: `shell` ($SHELL -l, falling back to /bin/bash) and `herdr` (the full
-herdr UI). Refused unless ALL hold: private view; Host is 127.0.0.1:<port> or localhost:<port>; an
+Three commands, and nothing else: `shell` ($SHELL -l, falling back to /bin/bash), `herdr` (the full
+herdr UI), and `agent` (agents/bin/run-role.sh <key> --interactive: a recorded talk with one active agent,
+Article 18.8; available once the Charter names the web terminal drawer there). Refused unless ALL hold: private view; Host is 127.0.0.1:<port> or localhost:<port>; an
 Origin header equal to the dashboard's own origin (WebSockets skip same-origin rules); and a one-time
 token from GET /api/shell/token, valid for 30 seconds. At most 4 shells at once; each process group is
 killed on disconnect or after 30 minutes idle.
@@ -97,6 +98,17 @@ class Frames:
 def refuse(h, code, why):
     h.send(code, {"error": why})
 
+AGENT_TALK_MARK = "the web terminal drawer"   # Article 18.8's wording once talking to agents in the drawer is ratified (E-0092)
+
+def agent_talk_ok():
+    try: return AGENT_TALK_MARK in (ROOT / "CHARTER.md").read_text()
+    except OSError: return False
+
+def active_agent(key):
+    if not re.fullmatch(r"[a-z][a-z0-9]{1,15}", key or ""): return False
+    try: return any(a["key"] == key and a["status"] == "active" for a in json.loads((ROOT / "agents/roster.json").read_text())["agents"])
+    except (OSError, ValueError, KeyError): return False
+
 def handle(h, public, port):
     """Serve GET /ws/shell?cmd=shell|herdr&token=...&cols=N&rows=N on handler h."""
     if public: return refuse(h, 403, "the terminal is off in public view")
@@ -106,7 +118,11 @@ def handle(h, public, port):
     q = dict(urllib.parse.parse_qsl(urllib.parse.urlparse(h.path).query))
     if not take_token(q.get("token")): return refuse(h, 403, "a fresh one-time token is required")
     cmd = q.get("cmd")
-    if cmd not in ("shell", "herdr"): return refuse(h, 400, "cmd must be shell or herdr")
+    if cmd not in ("shell", "herdr", "agent"): return refuse(h, 400, "cmd must be shell, herdr, or agent")
+    agent = q.get("agent") if cmd == "agent" else None
+    if cmd == "agent":
+        if not agent_talk_ok(): return refuse(h, 403, "talking to agents in the browser waits for the Steward's approval of amendment A-0030")
+        if not active_agent(agent): return refuse(h, 400, "no active agent by that key")
     if (h.headers.get("Upgrade") or "").lower() != "websocket" or not h.headers.get("Sec-WebSocket-Key"):
         return refuse(h, 400, "a WebSocket upgrade is required")
     with TLOCK:
@@ -119,13 +135,15 @@ def handle(h, public, port):
         h.send_header("Upgrade", "websocket"); h.send_header("Connection", "Upgrade"); h.send_header("Sec-WebSocket-Accept", accept)
         h.end_headers(); h.wfile.flush()
         h.close_connection = True
-        Session(h.connection, cmd, int(q.get("cols") or 80), int(q.get("rows") or 24), slot).run()
+        Session(h.connection, cmd, int(q.get("cols") or 80), int(q.get("rows") or 24), slot, agent).run()
     finally:
         with TLOCK: LIVE.pop(slot, None)
 
 class Session:
-    def __init__(self, sock, cmd, cols, rows, slot):
+    def __init__(self, sock, cmd, cols, rows, slot, agent=None):
         self.sock, self.cmd, self.slot, self.t0, self.last = sock, cmd, slot, time.time(), time.time()
+        self.agent = agent
+        self.label = f"talk with {agent}" if cmd == "agent" else cmd
         self.cols, self.rows = max(10, min(cols, 500)), max(3, min(rows, 300))
         self.out, self.out_bytes, self.line, self.line_t, self.hidden = bytearray(), 0, "", 0.0, 0
         self.tail, self.pending = bytearray(), []
@@ -134,7 +152,8 @@ class Session:
     def spawn(self):
         master, slave = os.openpty()
         self.set_size(master)
-        argv = [os.environ.get("SHELL") or "/bin/bash", "-l"] if self.cmd == "shell" else ["herdr"]
+        argv = ([os.environ.get("SHELL") or "/bin/bash", "-l"] if self.cmd == "shell" else ["herdr"] if self.cmd == "herdr"
+                else [str(ROOT / "agents/bin/run-role.sh"), self.agent, "--interactive"])
         if self.cmd == "shell" and not os.path.exists(argv[0]): argv = ["/bin/bash", "-l"]
         env = {**os.environ, "TERM": "xterm-256color", "COLLECTIVE_WEB_TERMINAL": "1"}
         def ctty():   # make the pty this session's controlling terminal, so Ctrl-C reaches the foreground job
@@ -175,12 +194,12 @@ class Session:
         while self.pending and (force or time.time() - self.pending[0][0] > 0.6):
             _, line, why = self.pending.pop(0)
             if not self.echoed(line): self.hidden += 1; continue
-            record("shell.input", {"summary": f"typed in the web {self.cmd}: {redact(line)[:120]}", "cmd": self.cmd,
+            record("shell.input", {"summary": f"typed in the web {self.label}: {redact(line)[:120]}", "cmd": self.cmd, "agent": self.agent,
                                    "pid": self.proc.pid, "line": redact(line)[:2000], "ended_by": why})
 
     def run(self):
         self.spawn()
-        record("shell.start", {"summary": f"web {self.cmd} started (pid {self.proc.pid})", "cmd": self.cmd, "pid": self.proc.pid,
+        record("shell.start", {"summary": f"web {self.label} started (pid {self.proc.pid})", "cmd": self.cmd, "agent": self.agent, "pid": self.proc.pid,
                                "cols": self.cols, "rows": self.rows})
         reader = threading.Thread(target=self.pump_out, daemon=True); reader.start()
         frames = Frames(self.sock); why = "closed"
@@ -244,7 +263,7 @@ class Session:
         with self.lock: text = redact(bytes(self.out).decode("utf-8", "replace"))   # decoded, so redaction always applies
         with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False) as f:
             f.write(text); blob = f.name
-        record("shell.end", {"summary": f"web {self.cmd} ended ({why}) after {int(time.time() - self.t0)} s", "cmd": self.cmd,
+        record("shell.end", {"summary": f"web {self.label} ended ({why}) after {int(time.time() - self.t0)} s", "cmd": self.cmd, "agent": self.agent,
                              "pid": self.proc.pid, "duration_s": int(time.time() - self.t0), "bytes": self.out_bytes,
                              "cols": self.cols, "rows": self.rows, "reason": why, "hidden_lines": self.hidden}, blob=blob)
         os.unlink(blob)

@@ -102,6 +102,14 @@ try:
     try: urllib.request.urlopen(f"http://127.0.0.1:{PP}/api/shell/token", timeout=10); raise AssertionError("public view gives no token")
     except urllib.error.HTTPError as e: assert e.code == 403
     assert WS("x", p=PP, origin=f"http://127.0.0.1:{PP}").status == 403, "public view"
+    # talking to an agent in the drawer (E-0092): refused until the Charter names it, then only for active agents
+    assert WS(token(), cmd="agent&agent=scribe").status == 403, "agent talk waits for A-0030"
+    ch = t / "CHARTER.md"; ch.write_text(ch.read_text() + "\n<!-- test: the web terminal drawer -->\n")
+    rr = t / "agents/bin/run-role.sh"; rr.write_text('#!/bin/bash\necho "talking-to-$1 $2"\nsleep 5\n'); rr.chmod(0o755)   # a stand-in: no model is called
+    assert WS(token(), cmd="agent&agent=nobody").status == 400, "unknown agent"
+    assert WS(token(), cmd="agent&agent=../x").status == 400, "not a key"
+    a = WS(token(), cmd="agent&agent=scribe"); assert a.status == 101; assert a.until("talking-to-scribe --interactive"), "runs run-role.sh KEY --interactive"; a.close()
+    time.sleep(1.5); assert any(e["type"] == "shell.start" and e["data"].get("agent") == "scribe" for e in events()), "recorded with the agent"
     four = [WS(token()) for _ in range(4)]; assert all(x.status == 101 for x in four)
     assert WS(token()).status == 429, "at most four shells"
     for x in four: x.close()

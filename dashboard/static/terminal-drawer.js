@@ -49,7 +49,7 @@ const TABS = []; let active = null, n = 0;
 function tabBar(){
   const bar = D.querySelector("#ttabs"); bar.innerHTML = "";
   for(const t of TABS){ const s = document.createElement("span"); s.className = "tab" + (t === active ? " on" : "");
-    s.textContent = `${t.cmd} ${t.n}${t.dead ? " (ended)" : ""}`; const x = document.createElement("span"); x.className = "x"; x.textContent = "×"; x.title = "Close this terminal";
+    s.textContent = `${t.title || t.cmd + " " + t.n}${t.dead ? " (ended)" : ""}`; const x = document.createElement("span"); x.className = "x"; x.textContent = "×"; x.title = "Close this terminal";
     x.onclick = e => { e.stopPropagation(); closeTab(t); }; s.appendChild(x); s.onclick = () => show(t); bar.appendChild(s); }
 }
 function show(t){ active = t; TABS.forEach(x => x.pane.classList.toggle("on", x === t)); tabBar(); if(t){ fit(t); t.term.focus(); } }
@@ -58,9 +58,11 @@ function fit(t){
   try { t.fitter.fit(); } catch(e) { return; }
   if(t.ws && t.ws.readyState === 1) t.ws.send(JSON.stringify({type:"resize", cols:t.term.cols, rows:t.term.rows}));
 }
-async function open(cmd){
+async function open(cmd, agent, title){
+  const same = agent && TABS.find(t => t.agent === agent && !t.dead);           // one live talk per agent: show it again
+  if(same){ D.classList.add("open"); show(same); return; }
   D.classList.add("open"); await loadXterm();
-  const t = {cmd, n: ++n, dead:false}; const pane = document.createElement("div"); pane.className = "tpane"; D.querySelector("#tbody").appendChild(pane); t.pane = pane;
+  const t = {cmd, agent, title: title || null, n: ++n, dead:false}; const pane = document.createElement("div"); pane.className = "tpane"; D.querySelector("#tbody").appendChild(pane); t.pane = pane;
   t.term = new Terminal({cursorBlink:true, scrollback:5000, fontFamily:"ui-monospace, Menlo, monospace", fontSize:13.5,
                          theme:{background:"#0B0F24", foreground:"#E9ECF8", cursor:"#4FD1C5", selectionBackground:"#3A4C73"}});
   t.fitter = new FitAddon.FitAddon(); t.term.loadAddon(t.fitter); t.term.open(pane);
@@ -69,10 +71,12 @@ async function open(cmd){
 }
 async function connect(t){
   t.dead = false; t.pane.querySelector(".tdead")?.remove(); fit(t);
-  let tok;
-  try { tok = (await fetch("/api/shell/token", {cache:"no-store"}).then(r => r.json())).token; } catch(e) {}
+  let tok, info = {};
+  try { info = await fetch("/api/shell/token", {cache:"no-store"}).then(r => r.json()); tok = info.token; } catch(e) {}
+  if(tok && t.cmd === "agent" && !info.agent_talk){
+    t.term.write("\r\n\x1b[33mTalking to agents here waits for your approval of amendment A-0030 (the web terminal drawer in Article 18.8).\x1b[0m\r\n"); return dead(t); }
   if(!tok){ t.term.write("\r\n\x1b[33mThe terminal is off here (public view, or the dashboard isn't reachable).\x1b[0m\r\n"); return dead(t); }
-  const ws = new WebSocket(`ws://${location.host}/ws/shell?cmd=${t.cmd}&token=${encodeURIComponent(tok)}&cols=${t.term.cols}&rows=${t.term.rows}`);
+  const ws = new WebSocket(`ws://${location.host}/ws/shell?cmd=${t.cmd}${t.agent ? "&agent=" + encodeURIComponent(t.agent) : ""}&token=${encodeURIComponent(tok)}&cols=${t.term.cols}&rows=${t.term.rows}`);
   ws.binaryType = "arraybuffer"; t.ws = ws; const enc = new TextEncoder();
   ws.onopen = () => fit(t);
   ws.onmessage = e => t.term.write(typeof e.data === "string" ? e.data : new Uint8Array(e.data));
@@ -82,13 +86,14 @@ async function connect(t){
 function dead(t){
   t.dead = true; tabBar();
   const d = document.createElement("div"); d.className = "tdead";
-  d.innerHTML = `This session has ended. <b>Reconnect</b> starts a new ${t.cmd === "herdr" ? "herdr" : "shell"}; it doesn't resume the old one.<button>Reconnect</button>`;
+  d.innerHTML = `This session has ended. <b>Reconnect</b> starts a new ${t.cmd === "herdr" ? "herdr" : t.cmd === "agent" ? "talk" : "shell"}; it doesn't resume the old one.<button>Reconnect</button>`;
   d.querySelector("button").onclick = () => { t.term.write(`\r\n\x1b[90m--- a new ${t.cmd} session ---\x1b[0m\r\n`); connect(t); };
   t.pane.appendChild(d);
 }
 function closeTab(t){ try { t.ws?.close(); } catch(e) {} t.term.dispose(); t.pane.remove(); TABS.splice(TABS.indexOf(t), 1);
   if(active === t) show(TABS[TABS.length - 1] || null); tabBar(); if(!TABS.length) D.classList.remove("open"); }
 
+window.webTerminal = {open};   // the bio's "Open terminal" talks to an agent here (E-0092)
 D.querySelector("#t-shell").onclick = () => open("shell");
 D.querySelector("#t-herdr").onclick = () => open("herdr");
 D.querySelector("#t-close").onclick = () => D.classList.remove("open");

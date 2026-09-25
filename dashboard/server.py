@@ -168,7 +168,54 @@ def conversations(hours=48, limit=8):
     cutoff = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(time.time() - hours * 3600))
     recent = [c for c in out if c["last_ts"][:19] >= cutoff]
     return (recent or out)[:limit]
+def room_names():
+    """The rooms' project codenames (org/rooms.json, E-0088): room -> {name, project, about}."""
+    try: return json.loads(read(ROOT / "org/rooms.json") or "{}").get("rooms", {})
+    except ValueError: return {}
+
+def room_chat(room, hours=48):
+    """A project room's own chat (E-0091): the board posts by the agents in that room, merged in time order.
+    Agents in other rooms aren't in it; the whole Collective talks together only in a huddle."""
+    members = [a["key"] for a in roster() if a["status"] == "active" and a.get("room") == room]
+    posts = []
+    for bp in glob.glob(str(ROOT / "org/board/*.md")):
+        if pathlib.Path(bp).name == "README.md": continue
+        t = thread(bp)
+        if t["tag"] == "huddle": continue
+        for x in t["posts"]:
+            if x["who"] in members: posts.append({**x, "thread": t["id"], "thread_title": t["title"]})
+    posts.sort(key=lambda x: x["ts"])
+    cutoff = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(time.time() - hours * 3600))
+    recent = [x for x in posts if x["ts"][:19] >= cutoff] or posts[-12:]
+    who = []
+    for x in recent:
+        if x["who"] not in who: who.append(x["who"])
+    name = room_names().get(room, {}).get("name") or room.capitalize()
+    return {"id": f"room-{room}", "room": room, "title": name, "tag": "project", "members": members, "participants": who, "posts": recent[-80:]}
+
+def room_chats(hours=48):
+    out = []
+    rooms = sorted({a.get("room") for a in roster() if a["status"] == "active" and a.get("room")})
+    for r in rooms:
+        c = room_chat(r, hours)
+        if not c["posts"]: continue
+        last = c["posts"][-1]
+        out.append({k: c[k] for k in ("id", "room", "title", "tag", "members", "participants")} |
+                   {"count": len(c["posts"]), "last_ts": last["ts"], "last_who": last["who"], "last_text": last["text"][:140], "last_summary": last["summary"]})
+    h = huddle()                       # the one Collective-wide chat, only while a huddle is open
+    if h and h["open"]:
+        t = thread(ROOT / "org/board" / f"{h['id']}.md"); last = t["posts"][-1]
+        who = []
+        for x in t["posts"]:
+            if x["who"] not in who: who.append(x["who"])
+        out.append({"id": t["id"], "room": None, "title": "Huddle: " + h["topic"], "tag": "huddle", "participants": who, "count": len(t["posts"]),
+                    "last_ts": last["ts"], "last_who": last["who"], "last_text": last["text"][:140], "last_summary": last["summary"]})
+    return out
+
 def conversation(cid):
+    m = re.fullmatch(r"room-(\w+)", cid)
+    if m and m.group(1) in {a.get("room") for a in roster()}:
+        return 200, {**room_chat(m.group(1)), "doing": []}
     if not re.match(r"^[\w.-]+$", cid): return 400, {"error": "bad conversation id"}
     p = ROOT / "org/board" / f"{cid}.md"
     if not p.exists(): return 404, {"error": "no such conversation"}
@@ -419,7 +466,11 @@ def flags(offices):
         drafts = [n for n in pending if any(x in n for x in OUTBOX_BY.get(k, ()))]
         if drafts: f.append({"kind": "approval", "note": f"Awaiting approval: {len(drafts)} draft{'s' if len(drafts) > 1 else ''} in your outbox"})
         if asks.get(k): f.append({"kind": "instructions", "note": "Needs instructions: " + asks[k][0]})
-        if not f and o["status"] in ("idle", "never"): f.append({"kind": "scheduled", "note": "Awaiting its next scheduled run"})
+        mine_open = [t for t in T if t["office"] == k and t["state"] != "done"]
+        o["open_tasks"] = len(mine_open)
+        # asleep (E-0090): nothing running, nothing flagged, and no task on the board at all
+        o["asleep"] = not f and o["status"] in ("idle", "never") and not mine_open
+        if not f and not o["asleep"] and o["status"] in ("idle", "never"): f.append({"kind": "scheduled", "note": "Awaiting its next scheduled run"})
         o["flags"] = f
 
 def live():
@@ -478,7 +529,7 @@ def live():
     sched = dict(re.findall(r"^(SPRINT_[A-Z]+)='([^']*)'", cfg, re.M))
     ov = overview()
     flags(offices)
-    return {"offices": list(offices.values()), "roster": R, "huddle": huddle(), "activity": buckets, "incidents_24h": incidents_24h, "pipeline": pipeline,
+    return {"offices": list(offices.values()), "roster": R, "rooms": room_names(), "huddle": huddle(), "activity": buckets, "incidents_24h": incidents_24h, "pipeline": pipeline,
             "schedule": sched, "waiting": ov["waiting"], "sprint": ov["sprint"], "stopped": ov["stopped"],
             "setup_complete": ov["setup_complete"], "charter_version": ov["charter_version"], "last_event": ov["last_event"],
             "public_head": ov["public_head"], "mode": ov["mode"], "counts": ov["counts"]}
@@ -549,7 +600,7 @@ class H(BaseHTTPRequestHandler):
         if path == "/ws/shell": return SHELL.handle(self, PUBLIC, self.server.server_port)       # Article 18.7(c)(iii)
         if path == "/api/shell/token":
             if PUBLIC: return self.send(403, {"error": "the terminal is off in public view"})
-            return self.send(200, {"token": SHELL.new_token(), "valid_seconds": SHELL.TOKEN_SECS})
+            return self.send(200, {"token": SHELL.new_token(), "valid_seconds": SHELL.TOKEN_SECS, "agent_talk": SHELL.agent_talk_ok()})
         if path.startswith("/vendor/xterm/"):
             name = path[len("/vendor/xterm/"):]; f = ROOT / "dashboard/vendor/xterm" / name
             if not re.fullmatch(r"[\w.-]+\.(js|css)", name) or not f.is_file(): return self.send(404, {"error": "not found"})
@@ -573,6 +624,7 @@ class H(BaseHTTPRequestHandler):
             if PUBLIC: return self.send(200, {"hidden": True})
             return self.send(200, events(after=qint(q, "after", 0, 0, 10**9), limit=qint(q, "limit", 300, 1, 5000)))
         if u.path == "/api/conversations":
+            if q.get("by", [""])[0] == "room": return self.send(200, room_chats(hours=qint(q, "hours", 48, 1, 24 * 60)))
             return self.send(200, conversations(hours=qint(q, "hours", 48, 1, 24 * 60)))
         m = re.match(r"^/api/conversations/([\w.-]+)$", u.path)
         if m:
@@ -661,13 +713,18 @@ def chat_comment(h, cid):
     if p is None: return
     text = str(p.get("text", "")).strip()
     if not (1 <= len(text) <= 4000): return h.send(400, {"error": "a comment is 1 to 4000 characters"})
+    m = re.fullmatch(r"room-(\w+)", cid)
+    if m:                           # a project room's chat: the comment goes on the thread its agents spoke in last
+        c = room_chat(m.group(1)) if m.group(1) in {a.get("room") for a in roster()} else {"posts": []}
+        if not c["posts"]: return h.send(404, {"error": "nobody in that room has posted yet"})
+        cid = c["posts"][-1]["thread"]
     b = ROOT / "org/board" / f"{cid}.md"
     if not re.fullmatch(r"[\w.-]+", cid) or not b.exists(): return h.send(404, {"error": "no such conversation"})
     ts = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     with b.open("a") as f: f.write(f"\n### rex · {ts}\n{text}\n")
     run(PY, "agents/bin/eventlog.py", "record", "--actor", "steward", "--type", "board.comment",
         "--data", json.dumps({"summary": f"comment in {cid}: {summary(text, 100)}", "path": f"org/board/{cid}.md"}))
-    msg = "Comment added to the chat."
+    msg = f"Comment added to the chat ({cid})."
     if p.get("direction"):   # a direction from the Steward is an edict (Article 15)
         code, out = run(PY, "agents/bin/edict.py", "new", "--title", f"Chat direction: {summary(text, 60)}", "--text", text,
                         "--restatement", f"A direction the Steward gave in the floor chat for {cid} (org/board/{cid}.md).")

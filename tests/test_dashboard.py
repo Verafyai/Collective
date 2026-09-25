@@ -72,6 +72,16 @@ try:
     chat = json.loads(get(f"/api/conversations/{sd['id']}")[1])
     assert [p["who"] for p in chat["posts"]] == ["ideas", "lawyer", "steward"]
     assert not any("genesis" in d["what"] for d in chat["doing"]), "bookkeeping stays out of chats"
+    # one chat per project room (E-0091): only the agents in that room; the Collective-wide chat only in a huddle
+    rooms = {c["room"]: c for c in json.loads(get("/api/conversations?by=room")[1])}
+    lab = json.loads(get("/api/conversations/room-lab")[1])
+    assert "ideas" in lab["members"] and "lawyer" not in lab["members"] and all(x["who"] in lab["members"] for x in lab["posts"]), lab
+    assert "lab" in rooms and rooms["lab"]["id"] == "room-lab" and not any(c["tag"] == "huddle" for c in rooms.values())
+    live0 = json.loads(get("/api/live")[1])
+    assert live0["rooms"]["council"]["name"].startswith("Project "), "rooms carry project codenames (E-0088)"
+    assert all("asleep" in o and "open_tasks" in o for o in live0["offices"]), "idle agents with no task sleep (E-0090)"
+    try: get("/api/conversations/room-..%2Fx"); raise AssertionError("expected refusal")
+    except urllib.error.HTTPError as e: assert e.code in (400, 404)
     try: get("/api/conversations/..%2Fsecrets"); raise AssertionError("expected refusal")
     except urllib.error.HTTPError as e: assert e.code in (400, 404)
     # agent bios, and the wizard's one action: drafting a membership motion

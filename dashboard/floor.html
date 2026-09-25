@@ -18,7 +18,8 @@ a{color:var(--text)}
 /* HUD */
 .hud{position:fixed;top:0;left:0;right:0;display:flex;gap:10px;align-items:center;padding:12px 18px;z-index:5;pointer-events:none;flex-wrap:wrap}
 .hud > *{pointer-events:auto}
-.title{font:700 21px var(--display);margin-right:6px;text-shadow:0 2px 8px rgba(0,0,0,.5)}
+.title{font:700 21px var(--display);margin-right:6px;text-shadow:0 2px 8px rgba(0,0,0,.5);display:flex;flex-direction:column;line-height:1.05}
+.title .subtitle{font:600 12.5px var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:3px}
 .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;background:rgba(22,29,62,.85);border:1px solid var(--line);font:600 14px var(--display);backdrop-filter:blur(6px);text-decoration:none;color:var(--text)}
 .pill .sub{font:500 13px var(--ui);color:var(--muted)}
 .pill.run{color:var(--work)} .pill.setup{color:var(--gov)} .pill.stop{color:#fff;background:var(--fail);border-color:transparent}
@@ -148,7 +149,7 @@ details.prompt pre{white-space:pre-wrap;font:13px/1.5 var(--ui);background:#0F14
 </head>
 <body>
 <div class="hud">
-  <span class="title">The Collective</span>
+  <span class="title">The Collective<span class="subtitle">Return to Office</span></span>
   <span class="pill" id="state"><span class="lamp"></span>Connecting</span>
   <a class="pill" id="seal" href="/records#health">Checking records</a>
   <span class="pill" id="sprint">No sprint yet</span>
@@ -189,7 +190,9 @@ const nm = a => CAST[a]?.name || OTHERS[a] || a;
 
 // ---------- the world (isometric tiles) ----------
 const TW = 64, TH = 32;
-const iso = (x, y, z=0) => ({x: (x - y) * TW/2, y: (x + y) * TH/2 - z});
+let ROT = 0;   // the camera's quarter turns (E-0087): the floor turns under a fixed isometric view
+const turn = (x, y, r=ROT) => { for(let i=0;i<r;i++) [x, y] = [N - y, x]; return [x, y]; };
+const iso = (x, y, z=0) => { [x, y] = turn(x, y); return {x: (x - y) * TW/2, y: (x + y) * TH/2 - z}; };
 const svg = $("#world");
 function el(tag, attrs, parent){ const e = document.createElementNS(NS, tag); for(const k in attrs) e.setAttribute(k, attrs[k]); (parent||svg).appendChild(e); return e; }
 const pts = arr => arr.map(p => `${p.x},${p.y}`).join(" ");
@@ -208,7 +211,8 @@ const HOME = {  // where each agent normally stands (tile coordinates)
 // during deliberation and voting, everyone meets at the Council table: the four officers sit behind it,
 // the five makers in front. Laid out in screen space so nobody overlaps, then converted to tiles.
 const MEETING = {};
-const toTile = (sx, sy) => ({x:(sx/32 + sy/16)/2, y:(sy/16 - sx/32)/2});
+const toTile = (sx, sy) => { let x = (sx/32 + sy/16)/2, y = (sy/16 - sx/32)/2;   // screen to tile, undoing the camera's turns
+  for(let i=0;i<ROT;i++) [x, y] = [y, N - x]; return {x, y}; };
 [["lawyer",-150],["pm",-50],["scribe",50],["auditor",150]].forEach(([k, sx]) => MEETING[k] = toTile(sx, 80));
 [["social",-220],["media",-110],["prototyper",0],["ideas",110],["researcher",220]].forEach(([k, sx]) => MEETING[k] = toTile(sx, 182));
 function meetingSpot(k, i){ return MEETING[k] || toTile(-240 + (i % 6) * 96, 284); }   // voters added later: a third row
@@ -242,6 +246,8 @@ function adoptRoster(roster){
 function tile(x, y, fill, stroke, g){ const a=iso(x,y), b=iso(x+1,y), c=iso(x+1,y+1), d=iso(x,y+1);
   el("polygon", {points:pts([a,b,c,d]), fill, stroke, "stroke-width":1}, g); }
 function box(x, y, w, d, h, top, left, right, g){
+  if(ROT){ const [a,b] = turn(x,y), [c,e] = turn(x+w,y+d), r = ROT; ROT = 0;   // a turned box is still a box: draw its turned footprint
+    try { box(Math.min(a,c), Math.min(b,e), Math.abs(c-a), Math.abs(e-b), h, top, left, right, g); } finally { ROT = r; } return; }
   const A=iso(x,y,h), B=iso(x+w,y,h), Cc=iso(x+w,y+d,h), D=iso(x,y+d,h), B0=iso(x+w,y), C0=iso(x+w,y+d), D0=iso(x,y+d);
   el("polygon", {points:pts([D,Cc,C0,D0]), fill:left}, g);
   el("polygon", {points:pts([B,Cc,C0,B0]), fill:right}, g);
@@ -590,7 +596,7 @@ function drawChats(){
   }
 }
 async function pollConvos(){
-  const list = await api("/api/conversations");
+  const list = await api("/api/conversations?by=room");   // one chat per project room; the whole Collective only in a huddle (E-0091)
   if(!Array.isArray(list)) return;
   for(const c of CONVOS) seenCounts[c.id] = seenCounts[c.id] ?? c.count;
   CONVOS = list; drawChats();
@@ -656,6 +662,7 @@ build(); Object.keys(CAST).forEach(k => { CAST[k].cls = {pm:"officer",scribe:"of
 })();
 </script>
 <script src="/static/floor-extras.js"></script>
+<script src="/static/camera.js"></script>
 <script src="/static/terminal-drawer.js"></script>
 </body>
 </html>

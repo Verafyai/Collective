@@ -18,6 +18,14 @@ css.textContent = `
 @media (prefers-reduced-motion:no-preference){
   .agent:not(.paused):not(.ghost):not(.working) .fig{animation:idlebob 3.4s ease-in-out infinite}
 }
+.agent.asleep .fig{animation:none!important;transform:translate(6px,-3px) scale(1,.62) rotate(-90deg);transition:transform .6s}
+.agent.asleep .emb,.agent.asleep .flag,.agent.asleep .dots{display:none}
+.zzz{pointer-events:none;display:none}.agent.asleep .zzz{display:inline}
+.zzz text{animation:zfloat 3.6s ease-out infinite;opacity:0}.zzz text:nth-child(2){animation-delay:1.2s}.zzz text:nth-child(3){animation-delay:2.4s}
+@keyframes zfloat{0%{opacity:0;transform:translate(0,0) scale(.7)}15%{opacity:.95}100%{opacity:0;transform:translate(14px,-30px) scale(1.25)}}
+@media (prefers-reduced-motion:reduce){.zzz text{animation:none;opacity:.8}}
+.whisper{pointer-events:none;animation:whisper 3.6s ease-out forwards}
+@keyframes whisper{0%{opacity:0;transform:translateY(6px)}12%{opacity:1;transform:translateY(0)}70%{opacity:.85}100%{opacity:0;transform:translateY(-10px)}}
 @keyframes idlebob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2.5px)}}
 .agent .eye{transition:ry .06s}
 .agent.dragging{cursor:grabbing;transition:none!important;opacity:.92}
@@ -73,13 +81,19 @@ function decorate(k){
       for(const at of ["cx","cy","fill"]) e.setAttribute(at, c.getAttribute(at)); e.setAttribute("rx", 1.6); e.setAttribute("ry", 1.6);
       e.setAttribute("class", "eye"); c.replaceWith(e); }
   });
+  fig.querySelectorAll("circle").forEach(c => { if(c.getAttribute("r") === "13") c.classList.add("emb"); });
+  fig.querySelectorAll("text").forEach(t => { if(t.getAttribute("font-size") === "14") t.classList.add("emb"); });
+  const z = el("g", {class:"zzz", "aria-hidden":"true"}, a.g);            // asleep (E-0090): Zs rising from the pillow
+  [[-30,-16,11],[-24,-24,13],[-17,-33,15]].forEach(([x, y, f]) => { const t = el("text", {x, y, "font-size":f, "font-weight":700, fill:"#C9D2FF", "font-family":"Barlow Semi Condensed"}, z); t.textContent = "Z"; });
+  a.g.addEventListener("click", () => { if(a.g.classList.contains("asleep") && !a.g.classList.contains("dragging"))
+    floater(k, "No task. Nothing on the board for me, so I'm napping until one's assigned.", ROOMS[CAST[k]?.room]?.label || "my room"); });
   a.decorated = true; wireDrag(k);
 }
 const _makeAgent = makeAgent;
 makeAgent = function(k){ _makeAgent(k); decorate(k); };
 Object.keys(AG).forEach(decorate);
 (function blinkLoop(){
-  const keys = Object.keys(AG).filter(k => !AG[k].g.classList.contains("paused"));
+  const keys = Object.keys(AG).filter(k => !AG[k].g.classList.contains("paused") && !AG[k].g.classList.contains("asleep"));
   if(keys.length && !matchMedia("(prefers-reduced-motion: reduce)").matches){
     const k = keys[Math.floor(Math.random() * keys.length)], eyes = AG[k].g.querySelectorAll(".eye");
     eyes.forEach(e => e.setAttribute("ry", .25)); setTimeout(() => eyes.forEach(e => e.setAttribute("ry", 1.6)), 130);
@@ -230,8 +244,20 @@ render = function(){
   }
   const hb = $("#huddle-btn"); if(hb){ hb.classList.toggle("on", huddleOpen()); hb.textContent = huddleOpen() ? "☕ Huddle open" : "☕ Huddle"; }
   huddleBanner();
-  drawFlags();
+  drawFlags(); drawSleepers(); nameRooms(); roomLines();
 };
+// no standing speech bubbles (E-0093): what's said shows briefly above its room's chat icon instead (whisper)
+function roomLines(){ $("#bubbles").querySelectorAll(".bubble").forEach(b => b.remove()); }
+// idle agents with no task lie down asleep, eyes shut (E-0090); a huddle wakes everyone
+function drawSleepers(){
+  for(const o of (L?.offices || [])){
+    const a = AG[o.key]; if(!a) continue;
+    const sleep = !!o.asleep && !huddleOpen() && !a.g.classList.contains("dragging");
+    a.g.classList.toggle("asleep", sleep);
+    a.g.querySelectorAll(".eye").forEach(e => e.setAttribute("ry", sleep ? .25 : 1.6));
+    if(sleep) a.g.setAttribute("aria-label", `${CAST[o.key].name}: asleep, no task`);
+  }
+}
 
 // ---------- whiteboards and the kanban (E-0075) ----------
 const BOARD_AT = {council:{x:.5, y:3.4}, lab:{x:3.2, y:17.5}, studio:{x:17.5, y:3.2}, workshop:{x:17.5, y:14.4}};
@@ -345,8 +371,10 @@ side = function(){
   }
   if(!proposed && !document.querySelector("#side .term-btns")){
     const box = document.createElement("div"); box.className = "term-btns"; box.style.cssText = "display:flex;gap:6px;flex-wrap:wrap;margin:6px 0";
-    box.innerHTML = `<button class="btn" title="Talk with this agent in a new herdr tab (recorded)">Open terminal</button><button class="btn ghost" title="Talk in a standalone Terminal window (recorded)">Standalone</button>`;
-    const [a, b] = box.querySelectorAll("button"); a.onclick = () => openTerminal(selected, false); b.onclick = () => openTerminal(selected, true);
+    box.innerHTML = `<button class="btn" title="Talk with this agent in the terminal drawer, right here (recorded)">⌨ Open terminal</button><button class="btn ghost" title="Talk in a herdr tab or a Terminal window instead (recorded)">Outside the browser</button>`;
+    const [a, b] = box.querySelectorAll("button");
+    a.onclick = () => window.webTerminal ? window.webTerminal.open("agent", selected, `talk: ${CAST[selected].name}`) : openTerminal(selected, false);
+    b.onclick = () => openTerminal(selected, false);
     const anchor = document.querySelector("#side .tabs2"); anchor ? anchor.before(box) : document.querySelector("#side").appendChild(box);
   }
 };
@@ -409,21 +437,120 @@ drawChat = function(){
   nb.scrollTop = (atBottom || firstDraw) ? nb.scrollHeight : keepTop;      // new messages only pull you down if you were already at the bottom
 };
 
+// ---------- projects: room names, one chat per room, a telephone to central command (E-0088, E-0091) ----------
+const PHONE_AT = {council:{x:5.5, y:3.1}, lab:{x:5.5, y:13.1}, studio:{x:12.5, y:4.6}, workshop:{x:12.6, y:12.6}};
+function nameRooms(){
+  const names = L?.rooms || {};
+  document.querySelectorAll("#world text").forEach(t => {
+    if(t.dataset.room) return;
+    const k = Object.keys(ROOMS).find(r => ROOMS[r].label === t.textContent && t.getAttribute("font-size") === "17"); if(k) t.dataset.room = k; });
+  for(const [k, r] of Object.entries(ROOMS)){
+    const n = names[k]; if(!n) continue;
+    r.label = n.name;
+    const t = document.querySelector(`#world text[data-room="${k}"]`);
+    if(t && t.dataset.named !== n.name){ t.dataset.named = n.name; t.textContent = "";
+      t.textContent = n.name + (n.project ? ` · ${n.project}` : "");
+      const ti = document.createElementNS(NS, "title"); ti.textContent = `${n.name}${n.project ? " (" + n.project + ")" : ""}: ${n.about || ""}`; t.appendChild(ti); }
+  }
+}
+function drawPhones(){
+  if(document.querySelector("#phones")) return;
+  const g = el("g", {id:"phones"}); svg.insertBefore(g, $("#links"));
+  const hub = iso(RECORD.x, RECORD.y, 6);
+  for(const [room, p] of Object.entries(PHONE_AT)){
+    const at = iso(p.x, p.y, 14), col = ROOMS[room].edge;
+    const mx = (at.x + hub.x) / 2, my = (at.y + hub.y) / 2 + 40;
+    el("path", {d:`M${at.x},${at.y + 8} Q${mx},${my} ${hub.x},${hub.y}`, fill:"none", stroke:"#0B0F24", "stroke-width":5, opacity:.55, "stroke-linecap":"round"}, g);
+    const cord = el("path", {d:`M${at.x},${at.y + 8} Q${mx},${my} ${hub.x},${hub.y}`, fill:"none", stroke:col, "stroke-width":2.5, "stroke-linecap":"round", id:`cord-${room}`}, g);
+    cord.style.filter = "brightness(1.6)";
+    const ph = el("g", {class:"phone", tabindex:0, role:"button", "data-room":room, style:"cursor:pointer",
+                        "aria-label":`${ROOMS[room].label}'s telephone to central command: open this project's chat`}, g);
+    box(p.x - .35, p.y - .35, .7, .7, 12, "#3A3F66", "#262A4A", "#30355A", ph);                   // the little stand
+    el("rect", {x:at.x - 11, y:at.y - 8, width:22, height:12, rx:3, fill:"#F07167", stroke:"#141A3A", "stroke-width":1.2}, ph);   // the handset base
+    el("path", {d:`M${at.x - 12},${at.y - 9} q0,-7 6,-7 h12 q6,0 6,7 l-4,1 q0,-3 -3,-3 h-10 q-3,0 -3,3 z`, fill:"#FF8C80", stroke:"#141A3A", "stroke-width":1.2}, ph);  // the receiver
+    [[-5,-3],[0,-3],[5,-3],[-5,1],[0,1],[5,1]].forEach(([x, y]) => el("circle", {cx:at.x + x, cy:at.y + y, r:1.1, fill:"#141A3A"}, ph));
+    const ti = el("title", {}, ph); ti.textContent = `${ROOMS[room].label}: the line to central command. Click to open this project's chat.`;
+    const go = () => openChat(`room-${room}`);
+    ph.addEventListener("click", go); ph.addEventListener("keydown", e => { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); go(); } });
+  }
+  const hl = iso(RECORD.x, RECORD.y, 118);
+  const t = el("text", {x:hl.x, y:hl.y, "text-anchor":"middle", fill:"#CFC6FF", "font-family":"Barlow Semi Condensed", "font-size":13, "font-weight":700, "letter-spacing":".08em", opacity:.8}, g);
+  t.textContent = "CENTRAL COMMAND";
+}
+// a new line in a room's chat runs down its telephone cord to central command
+function ring(room){
+  const cord = document.getElementById(`cord-${room}`); if(!cord || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const dot = el("circle", {r:4.5, fill:"#FFE27A", filter:"drop-shadow(0 0 4px #FFE27A)"}, $("#phones"));
+  const L0 = cord.getTotalLength(), t0 = performance.now();
+  (function step(now){ const f = Math.min(1, (now - t0) / 1400), pt = cord.getPointAtLength(L0 * f);
+    dot.setAttribute("cx", pt.x); dot.setAttribute("cy", pt.y); if(f < 1) requestAnimationFrame(step); else dot.remove(); })(t0);
+  const ph = document.querySelector(`.phone[data-room="${room}"]`);
+  if(ph){ ph.animate([{transform:"translateX(0)"},{transform:"translateX(-1.5px)"},{transform:"translateX(1.5px)"},{transform:"translateX(0)"}], {duration:160, iterations:4}); }
+}
+// the chat pills: one per project room, its dotted lines only to the agents standing in that room; the huddle's at the coffee machine
+drawChats = function(){
+  $("#chats").innerHTML = ""; $("#links").innerHTML = "";
+  const huddling = huddleOpen();
+  for(const c of CONVOS){
+    const huddle = c.tag === "huddle";
+    if(huddle !== huddling) continue;                         // the Collective-wide chat shows only during a huddle, and then only it
+    const room = huddle ? null : (c.room || CAST[c.participants[0]]?.room);
+    if(!huddle && !ROOMS[room]) continue;
+    const people = huddle ? c.participants.filter(k => AG[k]?.pos)
+      : Object.keys(AG).filter(k => AG[k].pos && CAST[k]?.room === room && CAST[k]?.status === "active" && roomOf(toTile(AG[k].pos.x, AG[k].pos.y)) === room);
+    if(!people.length) continue;
+    const R = ROOMS[room], anchor = huddle ? iso(COFFEE.x, COFFEE.y, 90) : iso(R.x + R.w / 2, R.y + R.d / 2, 150);
+    const cx = anchor.x, cy = anchor.y, w = 64 + String(c.count).length * 9, h = 34;
+    const col = huddle ? "#F2B84B" : (R?.edge ? "#B7BEE3" : "#8E97C4");
+    for(const k of people){ const p = AG[k].pos; el("line", {x1:cx, y1:cy + h/2, x2:p.x, y2:p.y - 104, stroke:col, "stroke-width":1.6, "stroke-dasharray":"2 5", opacity:.75}, $("#links")); }
+    const fresh = seenCounts[c.id] !== undefined && c.count > seenCounts[c.id];
+    const g = el("g", {class:"convo" + (fresh ? " fresh" : ""), "data-id":c.id, tabindex:0, role:"button", transform:`translate(${cx},${cy})`,
+      "aria-label":`${huddle ? "The huddle" : c.title + "'s chat"}: ${people.map(k => who(k).name).join(", ")}. ${c.count} messages. Open the chat.`}, $("#chats"));
+    el("rect", {x:-w/2, y:-h/2, width:w, height:h, rx:h/2, fill:"#F7F8FF", stroke:huddle ? "#F2B84B" : R.edge, "stroke-width":2.5, class:"pill", filter:"drop-shadow(0 3px 6px rgba(0,0,0,.45))"}, g);
+    el("circle", {cx:-w/2 + 17, cy:0, r:12, fill:huddle ? "#F2B84B" : R.edge}, g);
+    const ic = el("text", {x:-w/2 + 17, y:5, "text-anchor":"middle", "font-size":13}, g); ic.textContent = huddle ? "☕" : "💬";
+    const t = el("text", {x:w/2 - 13, y:6, "text-anchor":"end", fill:"#1B2046", "font-family":"Barlow Semi Condensed", "font-size":17, "font-weight":700}, g); t.textContent = c.count;
+    const tt = el("title", {}, g); tt.textContent = `${c.title}: ${people.map(k => who(k).name).join(", ")}`;
+    g.addEventListener("click", () => openChat(c.id)); g.addEventListener("keydown", e => { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); openChat(c.id); } });
+  }
+};
+// one line from each room: a floating line replaces that room's speech bubble while it shows
+const _speech = speech;
+speech = function(k, ...rest){ _speech(k, ...rest); const b = $("#bubbles").lastElementChild; if(b && AG[k]) b.dataset.room = CAST[k]?.room || ""; };
+
 // ---------- floating speech bubbles while no chat is open (E-0071) ----------
 const lastSeen = {};
 const _pollConvos = pollConvos;
 pollConvos = async function(){
-  await _pollConvos();
+  await _pollConvos(); roomLines();
   for(const c of CONVOS){
     const before = lastSeen[c.id]; lastSeen[c.id] = c.count;
     if(before === undefined || c.count <= before || chatOpen) continue;
-    if(AG[c.last_who]) floater(c.last_who, c.last_summary || c.last_text || "", c.title);
+    whisper(c);
+    if(c.room) ring(c.room);
   }
 };
+// a ghosted summary of what was just said, above that chat's icon, gone after a few seconds (E-0093)
+function whisper(c){
+  const pill = [...document.querySelectorAll("#chats .convo")].find(g => g.dataset.id === c.id); if(!pill) return;
+  const m = /translate\(([-\d.]+),\s*([-\d.]+)\)/.exec(pill.getAttribute("transform") || ""); if(!m) return;
+  const x = +m[1], y = +m[2];
+  const layer = $("#whispers") || el("g", {id:"whispers"});                   // its own layer: render() clears #bubbles
+  layer.querySelectorAll(`.whisper[data-id="${CSS.escape(c.id)}"]`).forEach(w => w.remove());
+  const lines = wrap(`${who(c.last_who).name}: ${c.last_summary || c.last_text || ""}`, 42).slice(0, 2);
+  const w = Math.max(...lines.map(l => l.length)) * 6.6 + 22, h = lines.length * 16 + 12;
+  const g = el("g", {class:"whisper", "data-id":c.id, "aria-hidden":"true"}, layer);
+  el("rect", {x:x - w/2, y:y - 26 - h, width:w, height:h, rx:9, fill:"#F4F6FF", opacity:.72}, g);
+  lines.forEach((l, i) => { const t = el("text", {x:x, y:y - 26 - h + 19 + i * 16, "text-anchor":"middle", fill:"#1B2046", "font-family":"Barlow", "font-size":13, opacity:.9}, g); t.textContent = l; });
+  setTimeout(() => g.remove(), 3600);
+}
 function floater(k, text, where){
   const s = AG[k].pos; if(!s) return;
+  const room = CAST[k]?.room || "";                                          // one line per room at a time (E-0091)
+  $("#bubbles").querySelectorAll(`.floater[data-room="${room}"]`).forEach(x => x.remove());
+  $("#bubbles").querySelectorAll(`.bubble[data-room="${room}"]`).forEach(x => { x.style.display = "none"; setTimeout(() => { x.style.display = ""; }, 7200); });
   const lines = wrap(text, 34).slice(0, 2), w = Math.max(...lines.map(l => l.length), where.length + 3) * 6.9 + 26, h = lines.length * 16 + 30;
-  const g = el("g", {class:"floater"}, $("#bubbles"));
+  const g = el("g", {class:"floater", "data-room":room}, $("#bubbles"));
   const bx = s.x - w/2, by = s.y - 150 - h;
   el("rect", {x:bx, y:by, width:w, height:h, rx:12, fill:"#FFFFFF", stroke:CAST[k]?.color || "#8E97C4", "stroke-width":2}, g);
   el("path", {d:`M${s.x-7},${by+h} L${s.x},${by+h+10} L${s.x+7},${by+h} Z`, fill:"#FFFFFF"}, g);
@@ -486,7 +613,33 @@ if(DEMO){
   };
 }
 
+const _sideAsleep = side;
+side = function(){
+  _sideAsleep();
+  const o = selected && L?.offices?.find(x => x.key === selected), line = document.querySelector("#side .status-line");
+  if(o?.asleep && line && !document.querySelector("#side .asleep-note")){
+    const p = document.createElement("p"); p.className = "status-line asleep-note"; p.innerHTML = `💤 <b>No task.</b> Nothing on the board is assigned to ${esc(CAST[selected].name)}, so it's asleep.`;
+    line.after(p); }
+};
+
+// ---------- the side panel keeps its place (E-0090) ----------
+// side() rebuilds the panel on every live update; keep the scroll position, the open accordions, and anything typed.
+const _sideRebuild = side;
+side = function(){
+  const box = document.querySelector("#side"); if(!box) return _sideRebuild();
+  const top = box.scrollTop, who = selected + "|" + tab;
+  const open = new Set([...box.querySelectorAll("details[open] > summary")].map(s => s.textContent));
+  const typed = {}; box.querySelectorAll("input[id],textarea[id]").forEach(i => { if(i.type !== "checkbox") typed[i.id] = i.value; });
+  const focus = document.activeElement && box.contains(document.activeElement) ? document.activeElement.id : null;
+  _sideRebuild();
+  if(box.dataset.who !== who){ box.dataset.who = who; return; }     // a different agent or tab starts at the top
+  box.querySelectorAll("details > summary").forEach(s => { if(open.has(s.textContent)) s.parentElement.open = true; });
+  for(const [id, v] of Object.entries(typed)){ const i = document.getElementById(id); if(i && box.contains(i)) i.value = v; }
+  if(focus){ const f = document.getElementById(focus); if(f) f.focus({preventScroll:true}); }
+  box.scrollTop = top;
+};
 // ---------- start ----------
-drawWhiteboards(); drawCoffee(); huddleButton(); resetButton();
+drawWhiteboards(); drawCoffee(); drawPhones(); huddleButton(); resetButton();
+window.floorExtras = {redraw(){ drawWhiteboards(); drawCoffee(); drawPhones(); nameRooms(); }, whisper, ring};   // after the camera turns the floor (camera.js)
 if(typeof L !== "undefined" && L) render();
 })();
