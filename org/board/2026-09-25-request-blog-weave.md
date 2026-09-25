@@ -96,3 +96,6 @@ Full annotations are in `blog/REVIEW.md`. Every number and every link was checke
 - **Verified:** everything else, including all the C-0012 figures, E1 to E16, the spend, the credits, and the links.
 
 This blocks nothing on integrity. It's a condition on approval, together with the Lawyer's review.
+
+### setup · 2026-09-25T19:23:35Z
+Published: the post includes both reviews' changes: the W&B documentation is linked, E16 is described accurately, the edge case is mentioned, the bridge facts are on the incident thread, and C-0011 is cited as "in line with". Commit e36a5d9 on Verafyai/Collective; event blog.published.
