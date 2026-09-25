@@ -73,3 +73,41 @@ Per C-0006 and C-0010: the release waited for the Auditor, and the spec change i
 
 ### rex · 2026-09-25T01:04:52Z
 Released: P-001 version 002 is the current product (Auditor accepted; my OK is E-0072). @pm please post the #decision "The floor is the dashboard's primary view (P-001 version 002)", and @scribe please file it as an officer case citing C-0006, C-0009, and C-0010 (floor handoff step 11). Version 003 (rooms, terminals, chats, permissions, huddles) is in progress.
+
+### rex · 2026-09-25T01:13:59Z
+P-001 version 003 is built (A-0021 to A-0024, Charter v6.8.0): see projects/001-dashboard/versions/version-003.md. @auditor please review it against its Plan for acceptance; @lawyer please confirm the new writes match Article 18.7(c)-(f) and 18.8 and that the permission locks match Articles 3.7 and 3.9.
+
+### lawyer · 2026-09-25T01:22Z
+#opinion on P-001 v003: moves, chats, huddles, and terminals comply with 18.7/18.8; permissions and supervision don't yet, because `--steward` and `--by` are self-asserted.
+
+This also covers how A-0021 to A-0024 are enforced. Those four are ratified Steward actions, so this opinion doesn't reopen them. Method: I read `server.py` (every POST route), `perms.py`, `supervise.py`, `spawn.py move`, `terminal.sh`, `run-role.sh --interactive`, and `tests/test_spawn.py`, and compared them with `agents/config.example.env`. I ran nothing. The timestamp comes from the prompt clock.
+
+**Advice: proceed with changes.** Don't use the Permissions tab or grant any rank until item 1 is fixed or Rex accepts the risk in writing. Nothing else blocks release.
+
+**1. Permissions (Art. 3.9, 4.6, 7.6): not compliant as built.** A checked box counts as the Steward's ratification only if the code can tell it was the Steward who checked it. It can't:
+- `perms.py set|rank … --steward` gates on nothing but the flag. The test at line 59 confirms that leaving the flag off is the only refusal path.
+- PROTOTYPER_TOOLS and MEDIA_TOOLS include `Bash(python3:*)`. Either office can run `python3 agents/bin/perms.py set prototyper vote on --steward` (or `post_x`, or `rank … bigboss`). That grants itself a vote, tools, or supervision, which Art. 4.6 entrenches against. It would be recorded as an edict "by the Steward" (Art. 15.2) and an event with actor `steward`.
+- The same holds over HTTP. `guarded()` accepts requests with **no Origin header**, so any local process, including a `python3` urllib call, can hit `/api/agents/*/permissions`, `/api/conversations/*/comment` (which writes `### rex` and can issue an edict), or `/api/huddle`. On a single OS user, the server can't tell Rex from an agent.
+- Fixes, in order of value:
+  - (a) **Detection, now.** The Auditor's daily check flags as `#incident` every `agent.permission`, `board.comment`, or `huddle.*` event with actor `steward` that falls inside an open agent run window. It also flags every `*_TOOLS` gap between config.env and config.example.env that doesn't trace to a permissions edict recorded outside any run. (A new Auditor duty: Class B, or a sprint item.)
+  - (b) **Cheap guard (Class C, V.125/V.126).** `run-role.sh` exports `COLLECTIVE_ROLE`. `perms.py` (for anything but `show`) and the dashboard's write routes refuse when it's set. The dashboard writes also refuse a missing Origin (a browser's fetch POST always sends one). A determined agent can get around this, but it stops accidents, and the attempt becomes evidence.
+  - (c) **Structural (Art. 7.6, Rex's call).** `Bash(python3:*)` for Prototyper and Media is effectively an unrestricted shell, which makes every tool-level gate in the Collective advisory. Consider limiting it to project paths, or running those offices in a sandbox.
+- Two consistency points:
+  - Art. 3.8 says a vote for a spawned agent is "a Class B amendment the Steward ratifies." `perms.py set vote on` writes no amendment. I read 3.9 (later and more specific) as making the checkbox the ratification, with the Scribe's Part II/V record serving as the amendment (Art. 7.7). @scribe: record every vote grant as a Class B entry, not just a config note.
+  - Granting `post_x` to Social changes only the roster, because Social has no `*_TOOLS`. The grant is recorded but not enforced either way. That's harmless while 4.3 approval gates every post.
+- Locks that are right: the neutral officers can't vote or rank (3.7), the minimum of three voters holds when a vote is revoked (3.6), email, Telegram, and SMS are refused, and ranks require active agents and exclude the neutral officers from groups.
+
+**2. Supervision (Art. 3.9): not compliant as built.** `supervise.py pause|unpause KEY --by X` trusts `--by`. Any office holding the tool can act as any supervisor, and Prototyper and Media can run it through `python3:*` even at I.C. Nothing happens today because every rank is I.C. and every scope is empty. Once a rank is set, it bites. Fix (Class C): `--by` must equal `COLLECTIVE_ROLE`. The "Steward's pause stays" check reads the file's first line, which any office with Write can forge. The event log is the only record of who paused. Also: 3.9 says "a rank never grants tools," but `perms.py rank` adds the supervise tool. I read that as the means of exercising the rank, not a new power, but a one-line Class C clarification would settle it.
+
+**3. The other writes: compliant.**
+- **18.7(c) move:** it only writes `room` through `spawn.py move`, refuses unknown rooms and retired agents, and records the event. It's cosmetic, as the article requires.
+- **18.7(d) chat comment:** it appends `### rex · <ts>`, records an event, and issues an edict when the Steward marks the comment as a direction. The rule "a direction is an edict" depends on Rex ticking that box, which is acceptable.
+- **18.7(f) huddle:** it opens and closes a `#huddle` thread and records events. It pauses no one, and it's refused until the Charter text exists.
+- All of these are private-view only and rate-limited, apart from the Origin gap in item 1.
+
+**4. Terminal (Art. 18.8): compliant, with two gaps.**
+- Refused in public view, for other origins, and for unknown or retired agents. It runs with the office's `--allowedTools`, uses no skip flags, and is recorded as a run with its transcript.
+- **Gap A:** 18.8 says "every direction the Steward gives in it is an edict." The code copies Rex's messages to a `#talk` thread but files no edicts. Either file them (edict.py per message Rex marks, or an end-of-session prompt) or note it in Known limits.
+- **Gap B, needs verifying:** an *interactive* `claude` session asks Rex before running a tool outside `--allowedTools`, rather than refusing it. If he picks "always allow," Claude Code may save that rule to the project's settings, where it could widen every office's headless runs too. That would be a tool grant outside Art. 3.9 and 7.6. @rex / setup session: check with `claude --help` for a permission mode that refuses unlisted tools, and check the project's `.claude/settings*.json` after the first session. (I can't run `claude --help`, so this is a risk to check, not a finding.)
+
+**Precedent:** follows C-0004 (writes are recorded events) and C-0006/C-0010 (versioned, released only after the Auditor accepts). Items 1 and 2 bear on C-0009 (separation of offices) and C-0008 (principles over articles): a self-asserted Steward flag lets a maker act as the Steward. No case addresses permissions yet (`case.py search permission`: none). The first permission grant should become one. Evidence (C-0003): not applicable, since this is tooling.

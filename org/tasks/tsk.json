@@ -1,6 +1,6 @@
 {
   "format_version": 5,
-  "next_task_number": 3,
+  "next_task_number": 8,
   "next_notice_number": 1,
   "tasks": [
     {
@@ -74,6 +74,171 @@
       "updated_at": [
         1790294689,
         274622000
+      ]
+    },
+    {
+      "id": "7c7b3d7a-644f-4699-b71a-122560e893d3",
+      "number": 3,
+      "revision": "c41ded4e-1767-433c-abc7-53a56950d0a1",
+      "title": "S-0001: file your Sprint 0 proposal (sprints/S-0001/proposals/researcher.md) by Fri 09:00 PDT",
+      "notes": "Seven sections; check with sprint.py check. Choose the P-002 v001 dataset. See org/board/2026-09-24-sprint-0.md.",
+      "thread": "researcher",
+      "status": "open",
+      "scope": {
+        "project": {
+          "path": "/Users/rexstjohn/Desktop/Collective/Collective"
+        }
+      },
+      "provenance": "capture",
+      "history": [
+        {
+          "kind": "created",
+          "at": [
+            1790299316,
+            645512000
+          ]
+        }
+      ],
+      "soft_deleted": false,
+      "created_at": [
+        1790299316,
+        645512000
+      ],
+      "updated_at": [
+        1790299316,
+        645512000
+      ]
+    },
+    {
+      "id": "ca2ef7c8-0140-450f-a99d-eedbae44e987",
+      "number": 4,
+      "revision": "5d19bdb9-84c8-4762-aebd-c8ee0d69a4ef",
+      "title": "S-0001: file your Sprint 0 proposal (sprints/S-0001/proposals/ideas.md) by Fri 09:00 PDT",
+      "notes": "Seven sections; check with sprint.py check. Panel Illusion is a P-002 work item (C-0011). See org/board/2026-09-24-sprint-0.md.",
+      "thread": "ideas",
+      "status": "open",
+      "scope": {
+        "project": {
+          "path": "/Users/rexstjohn/Desktop/Collective/Collective"
+        }
+      },
+      "provenance": "capture",
+      "history": [
+        {
+          "kind": "created",
+          "at": [
+            1790299318,
+            186960000
+          ]
+        }
+      ],
+      "soft_deleted": false,
+      "created_at": [
+        1790299318,
+        186960000
+      ],
+      "updated_at": [
+        1790299318,
+        186960000
+      ]
+    },
+    {
+      "id": "ffa2cb39-f846-464c-a48d-cdd857a7dd02",
+      "number": 5,
+      "revision": "dca85477-84d1-4759-abf2-57163fb602d4",
+      "title": "S-0001: file your Sprint 0 proposal (sprints/S-0001/proposals/prototyper.md) by Fri 09:00 PDT",
+      "notes": "Seven sections; check with sprint.py check. P-002 version 001 per C-0011; spend waits for the Steward's budget decision. See org/board/2026-09-24-sprint-0.md.",
+      "thread": "prototyper",
+      "status": "open",
+      "scope": {
+        "project": {
+          "path": "/Users/rexstjohn/Desktop/Collective/Collective"
+        }
+      },
+      "provenance": "capture",
+      "history": [
+        {
+          "kind": "created",
+          "at": [
+            1790299319,
+            838355000
+          ]
+        }
+      ],
+      "soft_deleted": false,
+      "created_at": [
+        1790299319,
+        838355000
+      ],
+      "updated_at": [
+        1790299319,
+        838355000
+      ]
+    },
+    {
+      "id": "637cba3f-f0f1-4172-be73-47a04b337ad1",
+      "number": 6,
+      "revision": "e40a832d-a343-4788-9319-eacd2a68edad",
+      "title": "S-0001: file your Sprint 0 proposal (sprints/S-0001/proposals/media.md) by Fri 09:00 PDT",
+      "notes": "Seven sections; check with sprint.py check. See org/board/2026-09-24-sprint-0.md.",
+      "thread": "media",
+      "status": "open",
+      "scope": {
+        "project": {
+          "path": "/Users/rexstjohn/Desktop/Collective/Collective"
+        }
+      },
+      "provenance": "capture",
+      "history": [
+        {
+          "kind": "created",
+          "at": [
+            1790299321,
+            241715000
+          ]
+        }
+      ],
+      "soft_deleted": false,
+      "created_at": [
+        1790299321,
+        241715000
+      ],
+      "updated_at": [
+        1790299321,
+        241715000
+      ]
+    },
+    {
+      "id": "d2f5090c-b912-41d6-96dc-605968c6c1b2",
+      "number": 7,
+      "revision": "43c37ee5-25c3-4754-b5b2-0e8f1c77c142",
+      "title": "S-0001: file your Sprint 0 proposal (sprints/S-0001/proposals/social.md) by Fri 09:00 PDT",
+      "notes": "Seven sections. Social has no shell: write the file directly. See org/board/2026-09-24-sprint-0.md.",
+      "thread": "social",
+      "status": "open",
+      "scope": {
+        "project": {
+          "path": "/Users/rexstjohn/Desktop/Collective/Collective"
+        }
+      },
+      "provenance": "capture",
+      "history": [
+        {
+          "kind": "created",
+          "at": [
+            1790299322,
+            586894000
+          ]
+        }
+      ],
+      "soft_deleted": false,
+      "created_at": [
+        1790299322,
+        586894000
+      ],
+      "updated_at": [
+        1790299322,
+        586894000
       ]
     }
   ],

@@ -31,8 +31,8 @@ base = f"http://127.0.0.1:{port}"
 def get(path):
     with urllib.request.urlopen(base + path, timeout=90) as r: return r.status, r.read().decode()
 def post(path, body, headers=None):
-    req = urllib.request.Request(base + path, data=json.dumps(body).encode(), method="POST",
-                                 headers={"Content-Type": "application/json", **(headers or {})})
+    req = urllib.request.Request(base + path, data=json.dumps(body).encode(), method="POST",   # as the browser sends it
+                                 headers={"Content-Type": "application/json", "Origin": base, **(headers or {})})
     try:
         with urllib.request.urlopen(req, timeout=30) as r: return r.status, json.loads(r.read())
     except urllib.error.HTTPError as e: return e.code, json.loads(e.read())
@@ -107,6 +107,10 @@ try:
     code, body = post("/api/huddle", {"topic": "test"})
     assert (code == 403 and "A-0024" in body["error"]) or code == 200, body          # gated until the Charter allows huddles
     assert "summary" in json.loads(get(f"/api/conversations/{conv[0]['id']}")[1])["posts"][0]
+    # a write with no Origin (not from a page this server served) is refused
+    req = urllib.request.Request(base + "/api/agents/media/move", data=b'{"room":"lab"}', method="POST", headers={"Content-Type": "application/json"})
+    try: urllib.request.urlopen(req, timeout=10); raise AssertionError("expected 403 without an Origin")
+    except urllib.error.HTTPError as e: assert e.code == 403
     print("dashboard tests passed")
 finally:
     srv.terminate(); srv.wait(timeout=5)

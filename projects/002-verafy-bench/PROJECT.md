@@ -2,7 +2,7 @@
 id: P-002
 name: Verafy Bench
 owner: prototyper
-status: spec
+status: building
 created: 2026-09-24
 code: projects/002-verafy-bench/src
 current_version: 

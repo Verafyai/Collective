@@ -1,7 +1,7 @@
 # CHARTER — The Collective
 
 ```
-Charter version: 6.9.1
+Charter version: 6.8.1
 Ratified by: Rex St. John (Steward)
 Genesis date: 2026-09-24
 ```
@@ -795,21 +795,13 @@ an event:
 - **(e)** in private view only, the Steward's permission and rank changes on
   an agent's Permissions tab (Article 3.9);
 - **(f)** in private view only, a huddle the Steward calls or closes (see
-  **Huddles.** below);
-- **(g)** in private view only, the Steward's firing of an agent (see
-  **Firing.** below).
+  **Huddles.** below).
 
 **Huddles.** The Steward can call everyone to the floor's coffee machine: the
 Huddle button (or the coffee machine itself) starts a `#huddle` board thread
 addressed to every agent, and the Steward closes it when done. A huddle
 pauses no one; each office answers it first, in one or two sentences, on its
 next run (COMMON.md), and the floor shows everyone gathered while it's open.
-
-**Firing.** The Fire button on a non-officer agent's bio pauses that agent at
-once (the Steward's pause, which only the Steward removes) and drafts its
-retirement motion (`spawn.py retire`, Article 3.8). The retirement takes
-effect only if the motion passes (Article 3.6), when the Scribe applies it;
-the agent's history is kept. Officers can't be fired this way (Article 3.7).
 
 It changes no other record. The public release, which can't accept writes,
 links to GitHub Discussions for comments, and the Scribe imports those
@@ -2616,12 +2608,6 @@ for line in tr.read_text(errors="replace").splitlines():          # Claude Code 
     if e.get("type") == "user" and m.get("role") == "user" and isinstance(m.get("content"), str) and not e.get("isMeta"):
         said.append((e.get("timestamp") or datetime.datetime.now(datetime.timezone.utc).isoformat(), m["content"].strip()))
 if said:
-    # Article 18.8: the Steward's directions are edicts; his messages are filed verbatim as one edict for the conversation
-    import subprocess
-    words = "\n\n".join(f"[{ts[:19]}Z] {t}" for ts, t in said if t)
-    subprocess.run([sys.executable, "agents/bin/edict.py", "new", "--title", f"Terminal conversation with {role}", "--text", words,
-                    "--restatement", f"What the Steward said to the {role} office in a recorded terminal conversation (Article 18.8). "
-                                     "Directions in it are edicts; questions and chat are conversation."], capture_output=True)
     day = datetime.date.today().isoformat(); b = pathlib.Path(f"org/board/{day}-talk-{role}.md")
     head = "" if b.exists() else "#talk\n"
     with b.open("a") as f:
@@ -8391,8 +8377,8 @@ base = f"http://127.0.0.1:{port}"
 def get(path):
     with urllib.request.urlopen(base + path, timeout=90) as r: return r.status, r.read().decode()
 def post(path, body, headers=None):
-    req = urllib.request.Request(base + path, data=json.dumps(body).encode(), method="POST",   # as the browser sends it
-                                 headers={"Content-Type": "application/json", "Origin": base, **(headers or {})})
+    req = urllib.request.Request(base + path, data=json.dumps(body).encode(), method="POST",
+                                 headers={"Content-Type": "application/json", **(headers or {})})
     try:
         with urllib.request.urlopen(req, timeout=30) as r: return r.status, json.loads(r.read())
     except urllib.error.HTTPError as e: return e.code, json.loads(e.read())
@@ -8467,10 +8453,6 @@ try:
     code, body = post("/api/huddle", {"topic": "test"})
     assert (code == 403 and "A-0024" in body["error"]) or code == 200, body          # gated until the Charter allows huddles
     assert "summary" in json.loads(get(f"/api/conversations/{conv[0]['id']}")[1])["posts"][0]
-    # a write with no Origin (not from a page this server served) is refused
-    req = urllib.request.Request(base + "/api/agents/media/move", data=b'{"room":"lab"}', method="POST", headers={"Content-Type": "application/json"})
-    try: urllib.request.urlopen(req, timeout=10); raise AssertionError("expected 403 without an Origin")
-    except urllib.error.HTTPError as e: assert e.code == 403
     print("dashboard tests passed")
 finally:
     srv.terminate(); srv.wait(timeout=5)
@@ -8971,23 +8953,3 @@ ratified_by: Rex St. John
 charter_sha256_before_entry: 5757dff95b25e758aa7933e54ecd35478f936cc0869689be70bdd043a5d708f3
 prev_entry_hash: 02143f668bcc5b0deefbd86682232e5717f0782cb27b7656cf18addb7968e541
 entry_hash: 8eaba38ccdba2f8d4474eec1bbe16df72da73f91f4695ec8acc97b82fbbdd44d
-
-### A-0026 · v6.9.0 · 2026-09-24 · Class B · Firing an agent from the dashboard
-proposed_by: Rex St. John (Steward), edicts E-0081, E-0082 (ratification)
-thread: org/board/2026-09-24-amendment-a-0026.md
-change: Article 18.7(g): in private view only, the Steward's Fire button on a non-officer agent's bio pauses that agent at once (the Steward's pause) and drafts its retirement motion (spawn.py retire, Class M); the retirement takes effect only when the motion passes (Articles 3.6, 3.8) and the Scribe applies it; officers can't be fired this way; the agent's history is kept.
-vote: Steward action
-ratified_by: Rex St. John
-charter_sha256_before_entry: 32cba22ff780f7c0689c731e550aa54793d1b05d91a7062b3806827fa90c5b91
-prev_entry_hash: 8eaba38ccdba2f8d4474eec1bbe16df72da73f91f4695ec8acc97b82fbbdd44d
-entry_hash: 6a63bf4f07521d8fa7e36fb9a2a9bec69aedb9af4fe32b6be926fc1c08131a3c
-
-### A-0027 · v6.9.1 · 2026-09-24 · Class C · Auditor's version 003 findings: terminal edicts, same-origin writes
-proposed_by: Rex St. John (Steward), edicts E-0080 and E-0082, at the Auditor's version 003 review
-thread: org/board/2026-09-24-amendment-a-0027.md
-change: run-role.sh (V.18): an interactive conversation files the Steward's messages verbatim as one edict, as Article 18.8 requires (the Auditor's finding 2). tests/test_dashboard.py (V.126): writes are sent as a browser sends them, with this server's Origin, and a write without an Origin is refused. Outside Part V (P-001 code): every dashboard write now requires this server's Origin; huddles stay open until the Steward closes them (finding 3, Article 18.7(f)); the remaining roster values are escaped; malformed query numbers no longer raise. Not fixed here (finding 1): an office with unrestricted code execution (Bash(python3:*), Bash(node:*)) can still act as the Steward on this machine; that needs a tool change the Steward decides.
-vote: Steward action
-ratified_by: Rex St. John
-charter_sha256_before_entry: 020ed74a3c69a8e886d19ddc6480348dfdb7aa566eacf3eb12b1c382ad3157d1
-prev_entry_hash: 6a63bf4f07521d8fa7e36fb9a2a9bec69aedb9af4fe32b6be926fc1c08131a3c
-entry_hash: f3d51d229f1e6f7249800ffe8c7d10cf05e2cb223cd056a88d5aa758143cf3e0

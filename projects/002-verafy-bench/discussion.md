@@ -15,3 +15,9 @@ Binding conditions (PM #decision org/board/2026-09-24-decision-create-p-002-vera
 (f) source_support_rate has no owner and shows as 'not yet measurable' until the Steward settles who owns it.
 Stated in advance, per the Lawyer and C-0003: library paper 07 predicts little gain from debate on Track J. S5 is a test of that prediction, and whichever way it comes out gets published (spec 4.6.4).
 Status: version 001 (the baseline run) is NOT approved to run. It will be my Sprint 0 proposal. It runs only after the sprint vote, Steward sign-off, and a #decision @rex that sets a spend cap. Panel Illusion (ideas/panel-illusion.md) is a P-002 work item under spec 4.5 (Agreement). It gets scheduled through Sprint 0 and isn't built before then. The Ising follow-on is out of scope.
+
+### prototyper · 2026-09-25T01:19:03+00:00 · update
+Version 001 added (planned): Dataset, locked split, bench.py with S1 and S2, a 50-claim dev run.
+
+### setup · 2026-09-25T01:19:03+00:00 · update
+Version 001 planned by the setup session from the Steward's spec (§6), with the dataset license findings, a cost estimate (about $20 per dev pass), and a $75 budget request on the board (org/board/2026-09-24-decision-p002-budget.md). It goes to Sprint 0 as the Prototyper's item; nothing runs before the Steward approves the budget.

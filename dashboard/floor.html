@@ -505,7 +505,7 @@ function drawWizard(){
     <div class="steps">${STEPS.map((x,i)=>`<span class="${i<=W.step?"on":""}"></span>`).join("")}</div>`;
   if(W.step === 0){
     body = `<div class="choices">${Object.entries(CLASSES).filter(([k,x])=>x.spawnable).map(([k,x]) => `<button class="choice ${k===W.class?"sel":""}" onclick="W.class='${k}';W.room=CLASSES['${k}'].room;W.interval=CLASSES['${k}'].interval;W.cap=CLASSES['${k}'].cap;drawWizard()">
-        <b><span>${x.icon}</span>${esc(x.name)}</b><small>${esc(x.about)}</small></button>`).join("")}</div>
+        <b><span>${esc(x.icon)}</span>${esc(x.name)}</b><small>${esc(x.about)}</small></button>`).join("")}</div>
       <p class="note2">Officers can't be spawned: each office has exactly one holder (Charter Article 3.7).</p>`;
   } else if(W.step === 1){
     body = `${src?`<p class="note2" style="color:var(--text)">Starting from ${esc(src.name)}: same class (${esc(c.name)}), room, and schedule. Give the clone its own name and focus.</p>`:""}
@@ -617,14 +617,14 @@ function drawChat(){
     const prev = items[i-1], next = items[i+1], me = it.who === "steward", w = who(it.who);
     const first = !prev || prev.kind !== "msg" || prev.who !== it.who, last = !next || next.kind !== "msg" || next.who !== it.who;
     if(first && !me) html += `<div class="ph-name">${esc(w.name)}</div>`;
-    html += `<div class="ph-row${me?" me":""}${last?" last":""}">${me?"":`<span class="av ${last?"":"hide"}" style="background:${w.color}40;border:1.5px solid ${w.color}">${w.icon}</span>`}<div class="bub">${esc(it.text)}</div></div>`;
+    html += `<div class="ph-row${me?" me":""}${last?" last":""}">${me?"":`<span class="av ${last?"":"hide"}" style="background:${esc(w.color)}40;border:1.5px solid ${esc(w.color)}">${esc(w.icon)}</span>`}<div class="bub">${esc(it.text)}</div></div>`;
   });
   const typing = (L?.offices || []).filter(o => o.status === "working" && CHAT.participants.includes(o.key));
   for(const o of typing){ const w = who(o.key);
-    html += `<div class="ph-name">${esc(w.name)}</div><div class="ph-row last"><span class="av" style="background:${w.color}40;border:1.5px solid ${w.color}">${w.icon}</span><div class="bub typing" aria-label="${esc(w.name)} is working"><i></i><i></i><i></i></div></div>`; }
+    html += `<div class="ph-name">${esc(w.name)}</div><div class="ph-row last"><span class="av" style="background:${esc(w.color)}40;border:1.5px solid ${esc(w.color)}">${esc(w.icon)}</span><div class="bub typing" aria-label="${esc(w.name)} is working"><i></i><i></i><i></i></div></div>`; }
   const people = CHAT.participants.map(who);
   box.innerHTML = `<div class="ph-head"><button class="ph-back" onclick="closeChat()" aria-label="Back to the floor">‹ Floor</button>
-      <div class="ph-avatars">${people.slice(0,4).map(w=>`<span style="background:${w.color}40;border-color:#F9F9F9;box-shadow:0 0 0 1.5px ${w.color} inset">${w.icon}</span>`).join("")}</div>
+      <div class="ph-avatars">${people.slice(0,4).map(w=>`<span style="background:${esc(w.color)}40;border-color:#F9F9F9;box-shadow:0 0 0 1.5px ${esc(w.color)} inset">${esc(w.icon)}</span>`).join("")}</div>
       <div class="ph-title" id="ph-title">${esc(people.map(w=>w.name).join(", "))}</div>
       <div class="ph-sub">${CHAT.tag?`#${esc(CHAT.tag)} · `:""}${esc(CHAT.title)} · <span class="ph-live"><i></i>live</span></div></div>
     <div class="ph-body" aria-live="polite">${html || `<div class="ph-doing">No messages yet.</div>`}</div>

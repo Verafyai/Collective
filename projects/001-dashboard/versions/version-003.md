@@ -36,6 +36,10 @@ Articles 3.9, 18.7(c)–(f), and 18.8 (A-0021 to A-0024, Charter v6.8.0):
 - `dashboard/floor.html`: loads the module; `api` is replaceable for the demo mode.
 - `agents/bin/spawn.py` (`move`), `run-role.sh` (`--interactive`), new `terminal.sh`,
   `perms.py`, `supervise.py`; tests extended (Part V via A-0021 to A-0024).
+- Fixes from the Steward's first use (E-0079): chats no longer jump back to the top while
+  you scroll (they redraw only when something changes, keeping your place and any open
+  Advanced sections); an **End huddle** banner on the floor and button in the huddle chat;
+  a **Reset floor** button that sends everyone back to their spots.
 
 ## Release notes
 

@@ -13,3 +13,11 @@ as part of that approval.
 | SlopGuard | Chrome extension flagging AI slop patterns, with measured error rates | Spec kit exists |
 | Source linkage | Trace every claim in an article (e.g. Wikipedia) to its sources and catch circular citation | Designed in conversation; no spec yet |
 | ProofSwarm | Volunteer agents cooperating on Lean proofs; cheap-to-verify work | Spec kit exists; the Steward is releasing it as a proposal first |
+
+## From the Steward's spec (E-0052, §9)
+
+| Candidate | Why it matters to the KPIs |
+|---|---|
+| **P-003 Verafy Verdicts:** a public, sourced verdict log with 30- and 90-day re-checks | Needed for the North Star (`durable_claims_weekly`), `verdict_survival`, and O2 |
+| **P-004 Verafy Facts:** an atomic fact store with provenance, queried before judging | Needed for `fact_reuse_rate` and O3 |
+| **Source linkage:** trace citations to primary sources and catch circular citation | Raises `source_support_rate` |

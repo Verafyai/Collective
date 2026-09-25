@@ -92,6 +92,12 @@ for line in tr.read_text(errors="replace").splitlines():          # Claude Code 
     if e.get("type") == "user" and m.get("role") == "user" and isinstance(m.get("content"), str) and not e.get("isMeta"):
         said.append((e.get("timestamp") or datetime.datetime.now(datetime.timezone.utc).isoformat(), m["content"].strip()))
 if said:
+    # Article 18.8: the Steward's directions are edicts; his messages are filed verbatim as one edict for the conversation
+    import subprocess
+    words = "\n\n".join(f"[{ts[:19]}Z] {t}" for ts, t in said if t)
+    subprocess.run([sys.executable, "agents/bin/edict.py", "new", "--title", f"Terminal conversation with {role}", "--text", words,
+                    "--restatement", f"What the Steward said to the {role} office in a recorded terminal conversation (Article 18.8). "
+                                     "Directions in it are edicts; questions and chat are conversation."], capture_output=True)
     day = datetime.date.today().isoformat(); b = pathlib.Path(f"org/board/{day}-talk-{role}.md")
     head = "" if b.exists() else "#talk\n"
     with b.open("a") as f:

@@ -364,17 +364,20 @@ def tasks():
     return [{"n": t.get("number"), "title": t.get("title", ""), "office": t.get("thread") or "", "state": t.get("status", "open"),
              "notes": (t.get("notes") or "")[:300]} for t in d.get("tasks", []) if not t.get("deleted") and not t.get("archived")]
 
+def qint(q, k, default, lo, hi):
+    """A query number, clamped; anything that isn't a number falls back to the default."""
+    try: return max(lo, min(hi, int(q.get(k, [default])[0] or default)))
+    except (TypeError, ValueError): return default
+
 def huddle():
-    """The open huddle, if any: the newest org/board/*-huddle-*.md, open until the Steward closes it or 3 hours pass."""
+    """The open huddle, if any: the newest org/board/*-huddle-*.md, open until the Steward closes it (Article 18.7(f))."""
     files = sorted(glob.glob(str(ROOT / "org/board/*-huddle-*.md")))
     if not files: return None
     t = thread(files[-1])
     if not t["posts"]: return None
     start, last = t["posts"][0], t["posts"][-1]
     closed = last["who"] == "steward" and last["text"].startswith("Huddle closed")
-    try: age = time.time() - calendar.timegm(time.strptime(start["ts"][:19], "%Y-%m-%dT%H:%M:%S"))
-    except ValueError: age = 0
-    return {"id": t["id"], "topic": summary(start["text"], 120), "started": start["ts"], "open": not closed and age < 3 * 3600,
+    return {"id": t["id"], "topic": summary(start["text"], 120), "started": start["ts"], "open": not closed,
             "replies": len(t["posts"]) - 1}
 
 def huddle_write(h, action):
@@ -558,9 +561,9 @@ class H(BaseHTTPRequestHandler):
             return self.send(200, read(ROOT / "dashboard/index.html").encode(), "text/html")
         if u.path == "/api/events":
             if PUBLIC: return self.send(200, {"hidden": True})
-            return self.send(200, events(after=int(q.get("after", ["0"])[0] or 0), limit=int(q.get("limit", ["300"])[0])))
+            return self.send(200, events(after=qint(q, "after", 0, 0, 10**9), limit=qint(q, "limit", 300, 1, 5000)))
         if u.path == "/api/conversations":
-            return self.send(200, conversations(hours=int(q.get("hours", ["48"])[0] or 48)))
+            return self.send(200, conversations(hours=qint(q, "hours", 48, 1, 24 * 60)))
         m = re.match(r"^/api/conversations/([\w.-]+)$", u.path)
         if m:
             code, body = conversation(m.group(1)); return self.send(code, body)
@@ -576,14 +579,14 @@ class H(BaseHTTPRequestHandler):
     def do_POST(self):
         if not self.host_ok(): return self.send(403, {"error": "the dashboard answers only on 127.0.0.1"})
         if self.path == "/api/agents/propose": return self.propose_agent()
-        m = re.match(r"^/api/agents/([a-z][a-z0-9]{1,15})/(move|terminal|permissions)$", self.path)
+        m = re.match(r"^/api/agents/([a-z][a-z0-9]{1,15})/(move|terminal|permissions|fire)$", self.path)
         if m: return agent_write(self, m.group(1), m.group(2))
         if self.path in ("/api/huddle", "/api/huddle/close"): return huddle_write(self, "close" if self.path.endswith("close") else "start")
         m = re.match(r"^/api/conversations/([\w.-]+)/comment$", self.path)
         if m: return chat_comment(self, m.group(1))
         m = re.match(r"^/api/projects/(\d+)/comment$", self.path)
         if not m: return self.send(404, {"error": "not found"})
-        if self.headers.get("Origin") not in (None, f"http://127.0.0.1:{self.server.server_port}", f"http://localhost:{self.server.server_port}"):
+        if self.headers.get("Origin") not in (f"http://127.0.0.1:{self.server.server_port}", f"http://localhost:{self.server.server_port}"):
             return self.send(403, {"error": "cross-origin comments refused"})
         if time.time() - LAST_COMMENT["t"] < 5: return self.send(429, {"error": "one comment every 5 seconds"})
         n = int(self.headers.get("Content-Length", "0") or 0)
@@ -597,7 +600,7 @@ LAST_WRITE = {}
 def guarded(h, kind, gap):
     """Shared guard for the dashboard's writes: private view only, same origin, rate-limited, small JSON body."""
     if PUBLIC: h.send(403, {"error": "this is off in public view"}); return None
-    if h.headers.get("Origin") not in (None, f"http://127.0.0.1:{h.server.server_port}", f"http://localhost:{h.server.server_port}"):
+    if h.headers.get("Origin") not in (f"http://127.0.0.1:{h.server.server_port}", f"http://localhost:{h.server.server_port}"):
         h.send(403, {"error": "cross-origin requests refused"}); return None
     if time.time() - LAST_WRITE.get(kind, 0) < gap: h.send(429, {"error": f"one {kind} every {gap} seconds"}); return None
     n = int(h.headers.get("Content-Length", "0") or 0)
@@ -624,6 +627,20 @@ def agent_write(h, key, action):
             code, out = run(PY, "agents/bin/perms.py", "rank", key, str(p["rank"]), "--group", group, "--steward")
         else:
             code, out = run(PY, "agents/bin/perms.py", "set", key, str(p.get("capability", "")), "on" if p.get("on") else "off", "--steward")
+    elif action == "fire":
+        # Article 18.7(g): pause the agent now (the Steward's pause) and draft its retirement motion (Articles 3.6, 3.8)
+        if "**Firing.**" not in read(ROOT / "CHARTER.md"):
+            return h.send(403, {"error": "Firing is waiting for the Steward's approval of amendment A-0026."})
+        p = guarded(h, "fire", 3)
+        if p is None: return
+        reason = str(p.get("reason", "")).strip()[:500] or "The Steward fired this agent from the dashboard."
+        code, out = run(PY, "agents/bin/spawn.py", "retire", key, "--reason", reason, "--proposer", "steward")
+        if code == 0:
+            m = re.search(r"(A-\d{4})", out)
+            (ROOT / "org" / f"PAUSE-{key}").write_text(f"paused by the Steward: fired, pending retirement motion {m.group(1) if m else ''}\n")
+            run(PY, "agents/bin/eventlog.py", "record", "--actor", "steward", "--type", "agent.fired",
+                "--data", json.dumps({"summary": f"fired {key}: paused; retirement motion {m.group(1) if m else ''}", "agent": key}))
+            out = f"{out.strip()}. {key} is paused now; the retirement takes effect when the motion passes."
     else:
         return h.send(404, {"error": "not found"})
     h.send(200 if code == 0 else 400, {"ok": code == 0, "message": out.replace("REFUSED: ", "")})
@@ -650,7 +667,7 @@ def chat_comment(h, cid):
 def _propose(self):
     """The wizard's one action: draft a membership motion for a new agent (Article 3.6). It creates no agent."""
     if PUBLIC: return self.send(403, {"error": "proposing agents is off in public view"})
-    if self.headers.get("Origin") not in (None, f"http://127.0.0.1:{self.server.server_port}", f"http://localhost:{self.server.server_port}"):
+    if self.headers.get("Origin") not in (f"http://127.0.0.1:{self.server.server_port}", f"http://localhost:{self.server.server_port}"):
         return self.send(403, {"error": "cross-origin requests refused"})
     if time.time() - LAST_COMMENT["t"] < 5: return self.send(429, {"error": "one action every 5 seconds"})
     n = int(self.headers.get("Content-Length", "0") or 0)

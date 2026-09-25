@@ -188,10 +188,35 @@ async function callHuddle(){
   toast(r.ok ? r.message : (r.error || "Couldn't call the huddle."), !r.ok);
   if(r.ok){ await pollLive(); pollConvos(); }
 }
-async function closeHuddle(){ const r = await post("/api/huddle/close", {}); toast(r.ok ? r.message : (r.error || "Couldn't close it."), !r.ok); if(r.ok) pollLive(); }
+async function closeHuddle(){
+  const r = await post("/api/huddle/close", {}); toast(r.ok ? "Huddle ended: everyone's heading back to their rooms." : (r.error || "Couldn't end it."), !r.ok);
+  if(r.ok){ if(L && L.huddle) L.huddle.open = false; if(chatOpen && L?.huddle && chatOpen === L.huddle.id) closeChat(); render(); pollLive(); pollConvos(); }
+}
 function huddleSpot(i, n){   // a ring around the coffee machine, in screen space so nobody overlaps
   const c = iso(COFFEE.x, COFFEE.y), ang = (i / n) * Math.PI * 2 - Math.PI / 2, rx = 225, ry = 120;
   return toTile(c.x + Math.cos(ang) * rx, c.y + Math.sin(ang) * ry + 30);
+}
+
+function huddleBanner(){
+  let b = $("#huddle-banner");
+  if(!huddleOpen()){ if(b) b.remove(); return; }
+  if(!b){ b = document.createElement("div"); b.id = "huddle-banner"; b.setAttribute("role", "status");
+    b.style.cssText = "position:fixed;left:50%;top:64px;transform:translateX(-50%);z-index:12;background:#2B1F14;border:1px solid #F2B84B;color:#FFD9A8;border-radius:14px;padding:8px 10px 8px 14px;display:flex;gap:10px;align-items:center;font:600 14px var(--display);box-shadow:0 6px 20px rgba(0,0,0,.4)";
+    document.body.appendChild(b); }
+  const topic = L.huddle.topic || "Huddle";
+  b.innerHTML = `<span>☕ Huddle: ${esc(topic.length > 60 ? topic.slice(0, 59) + "…" : topic)} · ${esc(L.huddle.replies)} repl${L.huddle.replies === 1 ? "y" : "ies"}</span>
+    <button class="btn ghost" id="hb-open" style="padding:6px 10px">Open chat</button><button class="btn" id="hb-end" style="padding:6px 12px;background:#F2B84B">End huddle</button>`;
+  $("#hb-open").onclick = () => openChat(L.huddle.id); $("#hb-end").onclick = closeHuddle;
+}
+function resetFloor(){   // everyone back to their own spot; closes nothing, writes nothing
+  drag = null; highlightRoom(null); document.querySelectorAll(".agent.dragging").forEach(g => g.classList.remove("dragging"));
+  render(); toast(huddleOpen() ? "The huddle is still open: use End huddle to send everyone back." : "Everyone's back in their rooms.");
+}
+function resetButton(){
+  const hud = document.querySelector(".hud"); if(!hud || $("#reset-btn")) return;
+  const b = document.createElement("button"); b.id = "reset-btn"; b.className = "hbtn"; b.style.background = "#161D3E"; b.style.color = "var(--text)";
+  b.textContent = "↺ Reset floor"; b.title = "Send everyone back to their spots"; b.addEventListener("click", resetFloor);
+  const h = $("#huddle-btn"); h ? h.after(b) : hud.appendChild(b);
 }
 
 // ---------- render: flags, huddle seating, whiteboards ----------
@@ -203,7 +228,8 @@ render = function(){
     const keys = L.offices.map(o => o.key).filter(k => AG[k]);
     keys.forEach((k, i) => place(k, huddleSpot(i, keys.length), true)); sortDepth();
   }
-  const hb = $("#huddle-btn"); if(hb){ hb.classList.toggle("on", huddleOpen()); hb.textContent = huddleOpen() ? "☕ Huddle open · close" : "☕ Huddle"; }
+  const hb = $("#huddle-btn"); if(hb){ hb.classList.toggle("on", huddleOpen()); hb.textContent = huddleOpen() ? "☕ Huddle open" : "☕ Huddle"; }
+  huddleBanner();
   drawFlags();
 };
 
@@ -254,7 +280,7 @@ function ask(title, note, value){
 }
 
 // ---------- the bio: Open terminal and the Permissions tab (A-0021 18.8; A-0023) ----------
-const PERMS = {}; let pending = null;
+const PERMS = {}; let pending = null, firing = null;
 async function loadPerms(k){ try { PERMS[k] = await api(`/api/agents/${k}/permissions`); } catch(e) { PERMS[k] = {error:"Couldn't load permissions."}; } if(selected === k) side(); }
 function permsHtml(k){
   const P = PERMS[k]; if(!P){ loadPerms(k); return `<p class="none">Loading permissions…</p>`; }
@@ -304,6 +330,19 @@ side = function(){
       let n = tabs.nextSibling; while(n){ const nx = n.nextSibling; n.remove(); n = nx; }
       tabs.insertAdjacentHTML("afterend", permsHtml(selected)); wirePerms(selected); }
   }
+  if(!proposed && c.cls !== "officer" && c.status === "active" && !document.querySelector("#side .fire-box")){
+    const fb = document.createElement("div"); fb.className = "fire-box"; fb.style.cssText = "margin:10px 0";
+    fb.innerHTML = firing === selected
+      ? `<div class="confirmbar" style="border-color:var(--fail);background:rgba(240,113,103,.1)"><b>Fire ${esc(c.name)}?</b> It's paused now, and a retirement motion goes to the Collective's vote (Articles 3.6, 3.8); its history is kept.
+          <input id="fire-why" placeholder="Reason (optional)" style="width:100%;margin-top:6px;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:#0F1430;color:var(--text)">
+          <div class="row"><button class="btn" id="fire-ok" style="background:var(--fail)">Fire</button><button class="btn ghost" id="fire-no">Cancel</button></div></div>`
+      : `<button class="btn ghost" id="fire-btn" style="border-color:var(--fail);color:var(--fail)">Fire ${esc(c.name)}</button>`;
+    document.querySelector("#side").appendChild(fb);
+    const b = $("#fire-btn"); if(b) b.onclick = () => { firing = selected; side(); };
+    const no = $("#fire-no"); if(no) no.onclick = () => { firing = null; side(); };
+    const ok = $("#fire-ok"); if(ok) ok.onclick = async () => { const k = selected; firing = null;
+      const r = await post(`/api/agents/${k}/fire`, {reason: $("#fire-why")?.value || ""}); toast(r.message || r.error || "Done.", !r.ok); pollLive(); side(); };
+  }
   if(!proposed && !document.querySelector("#side .term-btns")){
     const box = document.createElement("div"); box.className = "term-btns"; box.style.cssText = "display:flex;gap:6px;flex-wrap:wrap;margin:6px 0";
     box.innerHTML = `<button class="btn" title="Talk with this agent in a new herdr tab (recorded)">Open terminal</button><button class="btn ghost" title="Talk in a standalone Terminal window (recorded)">Standalone</button>`;
@@ -323,8 +362,15 @@ function mini(k){   // the agent's own figure, drawn small: its profile primitiv
 }
 drawChat = function(){
   const box = $("#phone");
+  if(!CHAT) delete box.dataset.sig;
   if(!CHAT){ box.innerHTML = `<div class="ph-head"><button class="ph-back" onclick="closeChat()">‹ Floor</button><div class="ph-title" style="margin-top:28px">Loading…</div></div><div class="ph-body"></div>`; return; }
+  const typingNow = (L?.offices || []).filter(o => o.status === "working" && CHAT.participants.includes(o.key)).map(o => o.key).join(",");
+  const sig = JSON.stringify([CHAT.id, CHAT.posts.length, (CHAT.doing || []).length, CHAT.posts[CHAT.posts.length - 1]?.ts, typingNow]);
+  if(box.dataset.sig === sig && box.querySelector(".ph-body")) return;   // nothing new: leave the page (and your scroll) alone
+  box.dataset.sig = sig;
   const body = box.querySelector(".ph-body"), atBottom = !body || body.scrollHeight - body.scrollTop - body.clientHeight < 60;
+  const keepTop = body ? body.scrollTop : 0, firstDraw = !body;
+  const openDetails = new Set([...box.querySelectorAll(".bub details[open]")].map(d => d.dataset.k));
   const draft = box.querySelector("textarea")?.value || "", dirChecked = !!box.querySelector("#ph-dir")?.checked;
   const items = CHAT.posts.map(p => ({kind:"msg", ...p})).concat((CHAT.doing||[]).map(d => ({kind:"doing", ...d}))).sort((a,b) => a.ts < b.ts ? -1 : a.ts > b.ts ? 1 : 0);
   let html = "", lastTs = null;
@@ -337,7 +383,7 @@ drawChat = function(){
     if(first && !me) html += `<div class="ph-name">${esc(w.name)}</div>`;
     const sum = it.summary || it.text, long = (it.text || "").trim() !== (sum || "").trim();
     html += `<div class="ph-row${me ? " me" : ""}${last ? " last" : ""}">${me ? "" : `<span class="av ${last ? "" : "hide"}" style="background:none;border:0">${mini(it.who)}</span>`}
-      <div class="bub"><span class="sum">${esc(sum)}</span>${long ? `<details><summary>Advanced</summary><pre>${esc(it.text)}</pre></details>` : ""}</div></div>`;
+      <div class="bub"><span class="sum">${esc(sum)}</span>${long ? `<details data-k="${esc(it.who + it.ts)}"><summary>Advanced</summary><pre>${esc(it.text)}</pre></details>` : ""}</div></div>`;
   });
   const typing = (L?.offices || []).filter(o => o.status === "working" && CHAT.participants.includes(o.key));
   for(const o of typing){ const w = who(o.key);
@@ -346,17 +392,21 @@ drawChat = function(){
   box.innerHTML = `<div class="ph-head"><button class="ph-back" onclick="closeChat()" aria-label="Back to the floor">‹ Floor</button>
       <div class="ph-avatars">${CHAT.participants.slice(0,4).map(k => `<span style="background:#fff;border-color:#F9F9F9">${mini(k)}</span>`).join("")}</div>
       <div class="ph-title" id="ph-title">${esc(people.map(w => w.name).join(", "))}</div>
-      <div class="ph-sub">${CHAT.tag ? `#${esc(CHAT.tag)} · ` : ""}${esc(CHAT.title)} · <span class="ph-live"><i></i>live</span></div></div>
+      <div class="ph-sub">${CHAT.tag ? `#${esc(CHAT.tag)} · ` : ""}${esc(CHAT.title)} · <span class="ph-live"><i></i>live</span></div>
+      ${CHAT.tag === "huddle" && huddleOpen() && L.huddle.id === CHAT.id ? `<button id="ph-end" style="margin-top:6px;background:#F2B84B;border:0;border-radius:14px;padding:5px 12px;font:600 13px var(--display);cursor:pointer">End huddle</button>` : ""}</div>
     <div class="ph-body" aria-live="polite">${html || `<div class="ph-doing">No messages yet.</div>`}</div>
     <div class="ph-foot">${L?.mode === "public" || DEMO ? `<div class="ph-input">${DEMO ? "Simulation: comments are off in demo mode." : "Read-only in public view."}</div>` :
       `<form class="ph-compose" id="ph-form"><textarea id="ph-text" placeholder="Add a comment to this chat…" aria-label="Your comment" maxlength="4000"></textarea>
         <div class="row"><label><input type="checkbox" id="ph-dir"> This is a direction (record it as an edict)</label><button type="submit">Send</button></div></form>`}</div>`;
   const ta = $("#ph-text"); if(ta){ ta.value = draft; $("#ph-dir").checked = dirChecked; }
+  const pe = $("#ph-end"); if(pe) pe.onclick = closeHuddle;
   const f = $("#ph-form");
   if(f) f.addEventListener("submit", async e => { e.preventDefault(); const text = $("#ph-text").value.trim(); if(!text) return;
     const r = await post(`/api/conversations/${encodeURIComponent(CHAT.id)}/comment`, {text, direction: $("#ph-dir").checked});
     toast(r.message || r.error || (r.ok ? "Sent." : "Couldn't send."), !r.ok); if(r.ok){ $("#ph-text").value = ""; $("#ph-dir").checked = false; loadChat(); } });
-  const nb = box.querySelector(".ph-body"); if(atBottom) nb.scrollTop = nb.scrollHeight;
+  box.querySelectorAll(".bub details").forEach(d => { if(openDetails.has(d.dataset.k)) d.open = true; });
+  const nb = box.querySelector(".ph-body");
+  nb.scrollTop = (atBottom || firstDraw) ? nb.scrollHeight : keepTop;      // new messages only pull you down if you were already at the bottom
 };
 
 // ---------- floating speech bubbles while no chat is open (E-0071) ----------
@@ -437,6 +487,6 @@ if(DEMO){
 }
 
 // ---------- start ----------
-drawWhiteboards(); drawCoffee(); huddleButton();
+drawWhiteboards(); drawCoffee(); huddleButton(); resetButton();
 if(typeof L !== "undefined" && L) render();
 })();
