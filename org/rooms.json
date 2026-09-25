@@ -1,0 +1,9 @@
+{
+ "note": "Each room on the floor is named for a project (edict E-0088). Room keys (council, lab, studio, workshop) never change; names do. A live record: renamed by the Steward.",
+ "rooms": {
+  "council":  {"name": "Project Valkyrie", "project": "P-001", "about": "The Collective Dashboard: the window every human looks through"},
+  "workshop": {"name": "Project Plumb Line", "project": "P-002", "about": "Verafy Bench: measuring whether panels beat one judge"},
+  "lab":      {"name": "Project Lodestar", "project": "P-003", "about": "Verafy Verdicts (proposed): a public, sourced verdict log"},
+  "studio":   {"name": "Project Keystone", "project": "P-004", "about": "Verafy Facts (proposed): verify once, reuse everywhere"}
+ }
+}

@@ -79,6 +79,7 @@ writing in the amendment log:
 | Sending a request for written permission to use IP-restricted material | The Lawyer drafts | Sent by the Steward; logged in `org/PERMISSIONS.md` |
 | Rewinding the Charter or the live tree | N/A — Steward-only | `agents/bin/charter.py rewind` / `agents/bin/replay.py rewind`, both require `org/STOP` first |
 | Removing the kill switch, or a pause the Steward or a retirement set | N/A — Steward-only | `rm org/STOP` / `rm org/PAUSE-<office>` |
+| Opening a terminal on this machine from the dashboard (the web terminal, Article 18.7(h)) | N/A — Steward-only; no agent is ever given a tool that opens it | The dashboard's ⌨ Terminal drawer, in private view, with a one-time token |
 | Granting or revoking a permission, or setting a rank | N/A — Steward-only | The dashboard's Permissions tab (`agents/bin/perms.py … --steward`); a checked box is the ratification (Articles 3.9, 7.6) |
 | Deploying a prototype publicly, spending money, or signing up for a paid service | Prototyper proposes | Board `#decision` with `@rex`, before any of it happens |
 | Publishing the dashboard's public release (GitHub Pages) | Prototyper builds; the Auditor accepts | Steward approval, then the Steward pushes |

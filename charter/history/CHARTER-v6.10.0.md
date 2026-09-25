@@ -1,7 +1,7 @@
 # CHARTER — The Collective
 
 ```
-Charter version: 6.10.1
+Charter version: 6.10.0
 Ratified by: Rex St. John (Steward)
 Genesis date: 2026-09-24
 ```
@@ -2728,12 +2728,7 @@ scan_public() {  # redaction gate over everything the public commit would includ
     # gitleaks sees exactly the files this commit would include, never git-ignored ones (agents/.env)
     local stage; stage="$(mktemp -d)"
     while IFS= read -r f; do
-      [ -f "$f" ] || continue
-      # vendored third-party code (dashboard/vendor/*) skips gitleaks only while it still matches its committed SHA256SUMS
-      d="$(dirname "$f")"; b="$(basename "$f")"
-      if [[ "$f" == dashboard/vendor/* ]] && [ -f "$d/SHA256SUMS" ] && [ "$b" != SHA256SUMS ] \
-         && grep -q "^$( (command -v sha256sum >/dev/null && sha256sum "$f" || shasum -a 256 "$f") | awk '{print $1}')  $b\$" "$d/SHA256SUMS"; then continue; fi
-      mkdir -p "$stage/s/$d" && cp -p "$f" "$stage/s/$f"
+      [ -f "$f" ] && mkdir -p "$stage/s/$(dirname "$f")" && cp -p "$f" "$stage/s/$f"
     done <<< "$files"
     if ! gitleaks detect --no-git --no-banner --redact --source "$stage/s" \
          --report-format json --report-path "$stage/r.json" >/dev/null 2>&1; then
@@ -9400,13 +9395,3 @@ ratified_by: Rex St. John
 charter_sha256_before_entry: dd8f70ba529339b2af83591fab65716a4428eeca2d65c1e910d599d4684c3f1b
 prev_entry_hash: f3d51d229f1e6f7249800ffe8c7d10cf05e2cb223cd056a88d5aa758143cf3e0
 entry_hash: 49750e86a14a980463096603771d0ce045b357424611552844788be8c8be4ca5
-
-### A-0029 · v6.10.1 · 2026-09-24 · Class C · Vendored code and the redaction gate
-proposed_by: Rex St. John (Steward), edicts E-0083 and E-0086, at the test failure found while recording A-0028
-thread: org/board/2026-09-24-amendment-a-0029.md
-change: repos.sh (V.22): gitleaks flagged minified vendored xterm.js as a generic API key, which would block every public commit. Vendored third-party files under dashboard/vendor/ now skip gitleaks only while each still matches its committed SHA256SUMS; a changed file is scanned as before, and the grep scan still covers every file.
-vote: Steward action
-ratified_by: Rex St. John
-charter_sha256_before_entry: 62ab8f7da0999f516ebe9204dceb3dae2d2e6813e92add528c34747eb7dbdfc0
-prev_entry_hash: 49750e86a14a980463096603771d0ce045b357424611552844788be8c8be4ca5
-entry_hash: 52c3c67879ead817257b551191809b8db476ff3f8951b5178e62dad70d7840c2

@@ -1,0 +1,1 @@
+xterm.js 6.0.0 (@xterm/xterm) and @xterm/addon-fit 0.11.0, MIT, from the npm registry (npm pack, integrity-checked), 2026-09-24.

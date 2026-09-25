@@ -220,11 +220,11 @@
     {
       "id": "637cba3f-f0f1-4172-be73-47a04b337ad1",
       "number": 6,
-      "revision": "e40a832d-a343-4788-9319-eacd2a68edad",
+      "revision": "7681819c-0dec-4034-a302-ff5dc8be4409",
       "title": "S-0001: file your Sprint 0 proposal (sprints/S-0001/proposals/media.md) by Fri 09:00 PDT",
       "notes": "Seven sections; check with sprint.py check. See org/board/2026-09-24-sprint-0.md.",
       "thread": "media",
-      "status": "open",
+      "status": "done",
       "scope": {
         "project": {
           "path": "/Users/rexstjohn/Desktop/Collective/Collective"
@@ -238,6 +238,20 @@
             1790299321,
             241715000
           ]
+        },
+        {
+          "kind": "status_set",
+          "at": [
+            1790300124,
+            564308000
+          ]
+        },
+        {
+          "kind": "status_set",
+          "at": [
+            1790300140,
+            468603000
+          ]
         }
       ],
       "soft_deleted": false,
@@ -246,8 +260,8 @@
         241715000
       ],
       "updated_at": [
-        1790299321,
-        241715000
+        1790300140,
+        468603000
       ]
     },
     {

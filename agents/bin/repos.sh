@@ -26,7 +26,12 @@ scan_public() {  # redaction gate over everything the public commit would includ
     # gitleaks sees exactly the files this commit would include, never git-ignored ones (agents/.env)
     local stage; stage="$(mktemp -d)"
     while IFS= read -r f; do
-      [ -f "$f" ] && mkdir -p "$stage/s/$(dirname "$f")" && cp -p "$f" "$stage/s/$f"
+      [ -f "$f" ] || continue
+      # vendored third-party code (dashboard/vendor/*) skips gitleaks only while it still matches its committed SHA256SUMS
+      d="$(dirname "$f")"; b="$(basename "$f")"
+      if [[ "$f" == dashboard/vendor/* ]] && [ -f "$d/SHA256SUMS" ] && [ "$b" != SHA256SUMS ] \
+         && grep -q "^$( (command -v sha256sum >/dev/null && sha256sum "$f" || shasum -a 256 "$f") | awk '{print $1}')  $b\$" "$d/SHA256SUMS"; then continue; fi
+      mkdir -p "$stage/s/$d" && cp -p "$f" "$stage/s/$f"
     done <<< "$files"
     if ! gitleaks detect --no-git --no-banner --redact --source "$stage/s" \
          --report-format json --report-path "$stage/r.json" >/dev/null 2>&1; then

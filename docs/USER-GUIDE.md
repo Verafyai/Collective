@@ -1,6 +1,6 @@
 # The Collective: User Guide
 
-> **Matches Charter v6.4.0.** Maintained by the Scribe, with accuracy checked
+> **Matches Charter v6.10.0.** Maintained by the Scribe, with accuracy checked
 > by the Auditor (task T-0002, Charter Article 19). Updated in any sprint that
 > changes how the Collective is operated, and reviewed every week. The version
 > history of this page is its git history.
@@ -149,6 +149,24 @@ whether it's active, proposed, or retired (Charter Article 3.8).
 - **Retire an agent:** `spawn.py retire <key>` drafts its own motion; after
   it passes, the Scribe runs `spawn.py retire-apply <key>`, which pauses it
   and keeps its history.
+
+## 6c. The web terminal
+
+The dashboard's **⌨ Terminal** button (private view only) opens a drawer of real
+terminals on this Mac, in the Collective folder (Charter Article 18.7(h)):
+
+- **+ shell** opens your login shell; **+ herdr** opens the full herdr UI (it
+  may take over your own herdr window).
+- Drag the drawer's top edge, or use ▴, to resize; the shell always knows its
+  size. Selecting text copies it.
+- **Everything is recorded:** each session's start and end, every line you
+  type, and the session's output (up to 5 MB), redacted for secrets. Lines
+  you type that the terminal doesn't echo (a `sudo` or `read -s` password)
+  are counted, never recorded.
+- A closed session says so; **Reconnect** starts a *new* one.
+- It refuses anything but this dashboard's own page (same origin, a one-time
+  token), allows at most 4 terminals, and ends a terminal after 30 minutes
+  idle. It's yours alone: no agent is given a tool that opens it.
 
 ## 7. Records, history, and rewinding
 

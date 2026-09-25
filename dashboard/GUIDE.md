@@ -50,3 +50,13 @@ Python standard library only; binds to 127.0.0.1 only. Spec:
 
 Known limits in this version: no time travel yet, no KPI charts yet (they
 need `metrics.py`), and no public release yet. See the project's roadmap.
+
+## The web terminal (P-001 version 004; Charter Article 18.7(h))
+
+`/ws/shell` serves a real pseudo-terminal (`dashboard/shell_bridge.py`), shown in the floor's
+**⌨ Terminal** drawer (`dashboard/static/terminal-drawer.js`, xterm.js vendored in
+`dashboard/vendor/xterm/`). Two commands only: `shell` ($SHELL -l) and `herdr`. Refused unless:
+private view; Host 127.0.0.1:<port> or localhost:<port>; Origin equal to the dashboard's own; a
+one-time token from `/api/shell/token` (30 s). At most 4 at once; killed on disconnect or 30
+minutes idle. Recorded: `shell.start`, `shell.input` (echoed lines only, redacted), `shell.end` with
+the redacted output as a blob (5 MB cap). Tests: `tests/test_shell.py`.

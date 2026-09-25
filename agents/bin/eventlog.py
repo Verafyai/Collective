@@ -31,7 +31,7 @@ IGNORE_FILE = LEDGER / "ignore"
 DEFAULT_IGNORE = [".git/*", "*/.git/*", "private/secrets/*.key", "private/ledger/*", "agents/.env", "*/logs/*", "*.pyc", "__pycache__/*",
                   "node_modules/*", ".venv/*", ".DS_Store", "*/.DS_Store", "org/STOP", "org/PAUSE-*"]
 SECRET_RE = re.compile(
-    r"(?<![A-Za-z0-9])sk-(ant-)?[A-Za-z0-9_-]{20,}|gh[pous]_[A-Za-z0-9]{30,}|xox[abprs]-[A-Za-z0-9-]{10,}|AKIA[0-9A-Z]{16}"
+    r"(?<![A-Za-z0-9])sk-(ant-)?[A-Za-z0-9_-]{20,}|(?<![A-Za-z0-9])xai-[A-Za-z0-9]{20,}|gh[pous]_[A-Za-z0-9]{30,}|xox[abprs]-[A-Za-z0-9-]{10,}|AKIA[0-9A-Z]{16}"
     r"|\b\d{8,10}:[A-Za-z0-9_-]{35}\b|(?:API|SECRET|TOKEN|PASSWORD)[A-Z_]*=[^\s'\"]{6,}")
 
 def now():

@@ -495,6 +495,7 @@ def comment(n, payload):
 
 # ---------- history: version 001's time travel (dashboard/history.py) ----------
 import history as HIST
+import shell_bridge as SHELL
 FONT_RE = re.compile(r"^[\w.-]+\.(woff2|css|txt)$")
 
 def history_route(h):
@@ -544,6 +545,15 @@ class H(BaseHTTPRequestHandler):
         return (self.headers.get("Host") or "").rsplit(":", 1)[0] in ("127.0.0.1", "localhost")
     def do_GET(self):
         if not self.host_ok(): return self.send(403, {"error": "the dashboard answers only on 127.0.0.1"})
+        path = urllib.parse.urlparse(self.path).path
+        if path == "/ws/shell": return SHELL.handle(self, PUBLIC, self.server.server_port)       # Article 18.7(c)(iii)
+        if path == "/api/shell/token":
+            if PUBLIC: return self.send(403, {"error": "the terminal is off in public view"})
+            return self.send(200, {"token": SHELL.new_token(), "valid_seconds": SHELL.TOKEN_SECS})
+        if path.startswith("/vendor/xterm/"):
+            name = path[len("/vendor/xterm/"):]; f = ROOT / "dashboard/vendor/xterm" / name
+            if not re.fullmatch(r"[\w.-]+\.(js|css)", name) or not f.is_file(): return self.send(404, {"error": "not found"})
+            return self.send(200, f.read_bytes(), "text/javascript" if name.endswith(".js") else "text/css")
         if history_route(self): return
         u = urllib.parse.urlparse(self.path); q = urllib.parse.parse_qs(u.query)
         m = re.match(r"^/api/agents/([a-z][a-z0-9]{1,15})/permissions$", u.path)
