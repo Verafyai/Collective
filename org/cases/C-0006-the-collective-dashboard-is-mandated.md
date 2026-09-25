@@ -43,3 +43,4 @@ The dashboard and its metrics. Changes to panels or KPIs follow the normal chann
 - 2026-09-24: follows by C-0007.
 - 2026-09-24: limits by C-0009.
 - 2026-09-24: follows by C-0010.
+- 2026-09-24: follows by C-0011.

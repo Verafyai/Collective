@@ -39,3 +39,4 @@ All proposals by Ideas, and any design decision by the Prototyper that introduce
 
 - 2026-09-24: filed.
 - 2026-09-24: limits by C-0009.
+- 2026-09-24: follows by C-0011.

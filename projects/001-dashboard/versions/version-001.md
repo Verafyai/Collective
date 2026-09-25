@@ -15,7 +15,12 @@ Spec §7, step 1, built by the setup session (setup plan Step 3b):
 - the header on every page (Charter version, sprint and phase, stop switch, "as of" commit and event, public/private badge);
 - the Mission, Charter, and Versioning panels;
 - time travel (render any past commit, date, or event).
-Accepted by the Auditor against the spec; design reviewed by Media.
+Acceptance: the Auditor accepted this version after it was released, for the
+spec §7 step 1 scope, on code review (discussion, 2026-09-25). Full acceptance
+against the spec comes at version 006. Media has not reviewed the design yet.
+(Corrected 2026-09-25 by the prototyper. The original line said "Accepted by
+the Auditor against the spec; design reviewed by Media", which was not true at
+release.)
 
 ## Changes
 

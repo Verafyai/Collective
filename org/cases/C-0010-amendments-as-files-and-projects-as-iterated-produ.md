@@ -40,3 +40,4 @@ All amendments, all projects, and the dashboard's Projects panel.
 ## History
 
 - 2026-09-24: filed.
+- 2026-09-24: follows by C-0011.

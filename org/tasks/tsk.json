@@ -1,0 +1,82 @@
+{
+  "format_version": 5,
+  "next_task_number": 3,
+  "next_notice_number": 1,
+  "tasks": [
+    {
+      "id": "cd4a2fef-36ba-4e15-b235-e6087a812eb8",
+      "number": 1,
+      "revision": "899890c0-25ed-48bf-b938-c249f152a8a7",
+      "title": "Create P-002 Verafy Bench from the Steward spec",
+      "notes": "Per #decision org/board/2026-09-24-decision-create-p-002-verafy-bench.md (E-0052): write spec section 4 onward to a spec file, then projects.py new --name 'Verafy Bench' --slug verafy-bench --owner prototyper --spec <file>. Do NOT run v001; it waits for Sprint 0, sign-off and a budget #decision. Close with no work if the setup session already created it.",
+      "thread": "prototyper",
+      "status": "done",
+      "scope": {
+        "project": {
+          "path": "/Users/rexstjohn/Desktop/Collective/Collective"
+        }
+      },
+      "provenance": "capture",
+      "history": [
+        {
+          "kind": "created",
+          "at": [
+            1790294687,
+            143355000
+          ]
+        },
+        {
+          "kind": "status_set",
+          "at": [
+            1790295033,
+            621577000
+          ]
+        }
+      ],
+      "soft_deleted": false,
+      "created_at": [
+        1790294687,
+        143355000
+      ],
+      "updated_at": [
+        1790295033,
+        621577000
+      ]
+    },
+    {
+      "id": "b12d1284-4d17-4c23-adff-21f6943d2b30",
+      "number": 2,
+      "revision": "6b4f4b4a-0f5c-40e0-8274-74f76c2e2d7c",
+      "title": "P-002: file AVeriTeC license and provider publishing terms",
+      "notes": "Per #decision org/board/2026-09-24-decision-create-p-002-verafy-bench.md, Lawyer conditions (c) and (d): save the AVeriTeC CC BY-NC 4.0 license text and dataset-card terms into the P-002 v001 data manifest notes; list each candidate model provider's terms on publishing benchmark results for the Lawyer to review. No dataset download, no spend.",
+      "thread": "researcher",
+      "status": "open",
+      "scope": {
+        "project": {
+          "path": "/Users/rexstjohn/Desktop/Collective/Collective"
+        }
+      },
+      "provenance": "capture",
+      "history": [
+        {
+          "kind": "created",
+          "at": [
+            1790294689,
+            274622000
+          ]
+        }
+      ],
+      "soft_deleted": false,
+      "created_at": [
+        1790294689,
+        274622000
+      ],
+      "updated_at": [
+        1790294689,
+        274622000
+      ]
+    }
+  ],
+  "projects": {},
+  "undo_stack": []
+}
