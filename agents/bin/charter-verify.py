@@ -10,15 +10,21 @@ Exit 0 if everything verifies.
 import hashlib, pathlib, re, sys
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 cur = (ROOT / "CHARTER.md").read_text()
-entries = re.findall(r"### (A-\d{4}) · v([\d.]+) ·.*?charter_sha256_before_entry: (\w+)\nprev_entry_hash: (\w+)\nentry_hash: (\w+)", cur, re.S)
+# only the log itself (after the last Part VI heading), and only headings at the start of a line: text quoted in
+# Part V (code, tests) must never be read as a log entry
+log = cur[[m.start() for m in re.finditer(r"\n---\n\n# PART VI — ", cur)][-1]:]
+entries = re.findall(r"^### (A-\d{4}) · v([\d.]+) ·[^\n]*\n(?:(?!### A-)[^\n]*\n)*?charter_sha256_before_entry: (\w+)\nprev_entry_hash: (\w+)\nentry_hash: (\w+)", log, re.M)
 ok, prev = True, "GENESIS"
+heads = re.findall(r"^### (A-\d{4}) · ", log, re.M)
+if [e[0] for e in entries] != heads:                   # every log heading must parse as a full entry, in order
+    print(f"FAIL log has {len(heads)} entries but {len(entries)} parse: {sorted(set(heads) - {e[0] for e in entries})}"); ok = False
 for aid, ver, csha, peh, eh in entries:
     hist = next((d / f"CHARTER-v{ver}.md" for d in (ROOT / "charter" / "history", ROOT / "private" / "charter-history")
                  if (d / f"CHARTER-v{ver}.md").exists()), None)
     if hist is None:
         print(f"skip {aid} v{ver}  (archived privately; clone the private repo to verify)"); prev = eh; continue
     text = hist.read_text()
-    before = text[: text.index(f"\n### {aid}")]
+    before = text[: text.rindex(f"\n### {aid} · v{ver} ·")]
     c1 = hashlib.sha256(before.encode()).hexdigest() == csha
     c2 = peh == prev
     c3 = hashlib.sha256((prev + csha + aid).encode()).hexdigest() == eh

@@ -71,7 +71,7 @@
    "key": "prototyper",
    "name": "Prototyper",
    "class": "artisan",
-   "room": "lab",
+   "room": "workshop",
    "color": "#9B7BF2",
    "icon": "🔧",
    "votes": true,
@@ -89,7 +89,8 @@
    "icon": "🎥",
    "votes": true,
    "status": "active",
-   "motto": "Shows the work: demos, voice, video."
+   "motto": "Shows the work: demos, voice, video.",
+   "retire_motion": "A-0041"
   },
   {
    "key": "social",
@@ -100,7 +101,9 @@
    "icon": "📣",
    "votes": true,
    "status": "active",
-   "motto": "The voice of Verafy on X. Positive, truthful, never spammy."
+   "motto": "The voice of Verafy on X. Positive, truthful, never spammy.",
+   "rank": "gm",
+   "supervises": []
   },
   {
    "key": "charlie",
@@ -110,10 +113,11 @@
    "color": "#E8C547",
    "icon": "🛰️",
    "votes": false,
-   "status": "proposed",
-   "motion": "A-0021",
+   "status": "active",
+   "motion": "A-0036",
    "motto": "Making sure tweets that are put out contain no profanity",
-   "clone_of": null
+   "clone_of": null,
+   "activated": "2026-09-24"
   },
   {
    "key": "getscholar",
@@ -154,6 +158,62 @@
    "status": "active",
    "motion": "A-0033",
    "motto": "Works on Project Get a job (P-003): Scan the local job boards and apply for 20 jobs.",
+   "clone_of": null,
+   "activated": "2026-09-24"
+  },
+  {
+   "key": "dave",
+   "name": "Dave",
+   "class": "artisan",
+   "room": "getajob",
+   "color": "#A98EF5",
+   "icon": "🔧",
+   "votes": false,
+   "status": "active",
+   "motion": "A-0042",
+   "motto": "Generates AI videos and explainer talks",
+   "clone_of": null,
+   "activated": "2026-09-24"
+  },
+  {
+   "key": "pizzascholar",
+   "name": "Pizza Scholar",
+   "class": "scholar",
+   "room": "pizza",
+   "color": "#4F86C6",
+   "icon": "📚",
+   "votes": false,
+   "status": "active",
+   "motion": "A-0038",
+   "motto": "Works on Project Pizza (P-004): Organize a team and scan yelp and google places, email me ",
+   "clone_of": null,
+   "activated": "2026-09-24"
+  },
+  {
+   "key": "pizzainventor",
+   "name": "Pizza Inventor",
+   "class": "inventor",
+   "room": "pizza",
+   "color": "#8FC248",
+   "icon": "💡",
+   "votes": false,
+   "status": "active",
+   "motion": "A-0039",
+   "motto": "Works on Project Pizza (P-004): Organize a team and scan yelp and google places, email me ",
+   "clone_of": null,
+   "activated": "2026-09-24"
+  },
+  {
+   "key": "pizzaherald",
+   "name": "Pizza Herald",
+   "class": "herald",
+   "room": "pizza",
+   "color": "#F48AC0",
+   "icon": "📣",
+   "votes": false,
+   "status": "active",
+   "motion": "A-0040",
+   "motto": "Works on Project Pizza (P-004): Organize a team and scan yelp and google places, email me ",
    "clone_of": null,
    "activated": "2026-09-24"
   }

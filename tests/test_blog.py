@@ -7,6 +7,7 @@ atexit.register(shutil.rmtree, t.parent, True)   # leave nothing behind
 os.environ["GIT_CONFIG_GLOBAL"] = str(t.parent / "gitconfig")   # never touch the Steward's ~/.gitconfig
 shutil.copytree(ROOT, t, ignore=shutil.ignore_patterns(".git", "ledger", "logs", "pdfs", ".env", "secrets", "*.key"))
 if (t / "private" / ".git").exists(): shutil.rmtree(t / "private" / ".git")
+shutil.rmtree(t / "sprints", True); (t / "sprints").mkdir()        # a fresh week: the live sprints aren't this test's
 def sh(*cmd, ok=True):
     r = subprocess.run(list(cmd), capture_output=True, text=True, cwd=t)
     if ok: assert r.returncode == 0, (cmd, r.stdout, r.stderr)

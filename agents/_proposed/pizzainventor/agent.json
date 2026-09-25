@@ -1,0 +1,16 @@
+{
+ "key": "pizzainventor",
+ "name": "Pizza Inventor",
+ "class": "inventor",
+ "room": "pizza",
+ "focus": "Works on Project Pizza (P-004): Organize a team and scan yelp and google places, email me a list of the best ten pizza restaurants and order by distance from my current location and yelp stars - Do this once per day , starting today…",
+ "interval": 14400,
+ "cap": 6,
+ "model": "default",
+ "base_tools": "Read,Glob,Grep,Write(org/board/**),Edit(org/board/**),Bash(python3 agents/bin/case.py search:*),Bash(python3 agents/bin/case.py show:*),Bash(python3 agents/bin/sprint.py status:*),Bash(python3 agents/bin/projects.py show:*)",
+ "requested_tools": "Write(ideas/**),Edit(ideas/**)",
+ "votes": false,
+ "clone_of": null,
+ "color": "#8FC248",
+ "icon": "💡"
+}

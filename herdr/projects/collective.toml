@@ -91,3 +91,23 @@ command = "agents/bin/run-role.sh getinventor --loop"
 [[tabs]]
 name = "getverifier"
 command = "agents/bin/run-role.sh getverifier --loop"
+
+[[tabs]]
+name = "charlie"
+command = "agents/bin/run-role.sh charlie --loop"
+
+[[tabs]]
+name = "dave"
+command = "agents/bin/run-role.sh dave --loop"
+
+[[tabs]]
+name = "pizzascholar"
+command = "agents/bin/run-role.sh pizzascholar --loop"
+
+[[tabs]]
+name = "pizzainventor"
+command = "agents/bin/run-role.sh pizzainventor --loop"
+
+[[tabs]]
+name = "pizzaherald"
+command = "agents/bin/run-role.sh pizzaherald --loop"

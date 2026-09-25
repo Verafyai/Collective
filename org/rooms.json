@@ -32,6 +32,18 @@
    "floor": "#23404A",
    "edge": "#346070",
    "created": "2026-09-25T02:04:52Z"
+  },
+  "pizza": {
+   "name": "Project Pizza",
+   "project": "P-004",
+   "about": "# Find me a pizza restaurant The Steward's spec, written on the floor (Project Pizza). Organize a team and scan yelp and",
+   "x": 24,
+   "y": 12,
+   "w": 6,
+   "d": 6,
+   "floor": "#40302A",
+   "edge": "#634A3E",
+   "created": "2026-09-25T02:17:06Z"
   }
  }
 }

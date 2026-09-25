@@ -1,6 +1,6 @@
 {
   "format_version": 5,
-  "next_task_number": 8,
+  "next_task_number": 16,
   "next_notice_number": 1,
   "tasks": [
     {
@@ -295,6 +295,270 @@
       "updated_at": [
         1790299322,
         586894000
+      ]
+    },
+    {
+      "id": "1c958854-de45-44a6-87bc-329393664d8f",
+      "number": 8,
+      "revision": "d48933fd-6c23-41ac-96e3-66312f98bfa4",
+      "title": "P-003 Project Get a job: your part",
+      "notes": "Seated in Project Get a job by the Steward. Read projects/*/spec.md for P-003, agree your part with the Project Manager in org/board/project-getajob.md, then do it and post progress there.",
+      "thread": "getscholar",
+      "status": "open",
+      "scope": {
+        "project": {
+          "path": "/Users/rexstjohn/Desktop/Collective/Collective"
+        }
+      },
+      "provenance": "capture",
+      "history": [
+        {
+          "kind": "created",
+          "at": [
+            1790302305,
+            291153000
+          ]
+        }
+      ],
+      "soft_deleted": false,
+      "created_at": [
+        1790302305,
+        291153000
+      ],
+      "updated_at": [
+        1790302305,
+        291153000
+      ]
+    },
+    {
+      "id": "ee4933b3-98a0-4226-b617-efd4726f718e",
+      "number": 9,
+      "revision": "82e98fff-4886-494c-a482-fbc2923ef334",
+      "title": "P-003 Project Get a job: your part",
+      "notes": "Seated in Project Get a job by the Steward. Read projects/*/spec.md for P-003, agree your part with the Project Manager in org/board/project-getajob.md, then do it and post progress there.",
+      "thread": "getinventor",
+      "status": "open",
+      "scope": {
+        "project": {
+          "path": "/Users/rexstjohn/Desktop/Collective/Collective"
+        }
+      },
+      "provenance": "capture",
+      "history": [
+        {
+          "kind": "created",
+          "at": [
+            1790302305,
+            431778000
+          ]
+        }
+      ],
+      "soft_deleted": false,
+      "created_at": [
+        1790302305,
+        431778000
+      ],
+      "updated_at": [
+        1790302305,
+        431778000
+      ]
+    },
+    {
+      "id": "4ed66ea6-32cd-40f2-8e8a-21dee584f757",
+      "number": 10,
+      "revision": "3e291088-ef9d-48e5-8107-5d2e5d893933",
+      "title": "P-003 Project Get a job: your part",
+      "notes": "Seated in Project Get a job by the Steward. Read projects/*/spec.md for P-003, agree your part with the Project Manager in org/board/project-getajob.md, then do it and post progress there.",
+      "thread": "getverifier",
+      "status": "open",
+      "scope": {
+        "project": {
+          "path": "/Users/rexstjohn/Desktop/Collective/Collective"
+        }
+      },
+      "provenance": "capture",
+      "history": [
+        {
+          "kind": "created",
+          "at": [
+            1790302305,
+            555177000
+          ]
+        }
+      ],
+      "soft_deleted": false,
+      "created_at": [
+        1790302305,
+        555177000
+      ],
+      "updated_at": [
+        1790302305,
+        555177000
+      ]
+    },
+    {
+      "id": "e4736241-8b4d-4175-8fff-9c8e1e3e3add",
+      "number": 11,
+      "revision": "637ce411-efec-4a50-b4ad-18a3b542c98a",
+      "title": "P-002 Project Plumb Line: your part",
+      "notes": "Seated in Project Plumb Line by the Steward. Read projects/*/spec.md for P-002, agree your part with the Project Manager in org/board/project-workshop.md, then do it and post progress there.",
+      "thread": "prototyper",
+      "status": "open",
+      "scope": {
+        "project": {
+          "path": "/Users/rexstjohn/Desktop/Collective/Collective"
+        }
+      },
+      "provenance": "capture",
+      "history": [
+        {
+          "kind": "created",
+          "at": [
+            1790302447,
+            85175000
+          ]
+        }
+      ],
+      "soft_deleted": false,
+      "created_at": [
+        1790302447,
+        85175000
+      ],
+      "updated_at": [
+        1790302447,
+        85175000
+      ]
+    },
+    {
+      "id": "f489d358-a2da-464b-960d-517e9f5dcc5b",
+      "number": 12,
+      "revision": "c054dff8-4849-422e-beca-d878084ac8a3",
+      "title": "P-004 Project Pizza: your part",
+      "notes": "Seated in Project Pizza by the Steward. Read projects/*/spec.md for P-004, agree your part with the Project Manager in org/board/project-pizza.md, then do it and post progress there.",
+      "thread": "pizzascholar",
+      "status": "open",
+      "scope": {
+        "project": {
+          "path": "/Users/rexstjohn/Desktop/Collective/Collective"
+        }
+      },
+      "provenance": "capture",
+      "history": [
+        {
+          "kind": "created",
+          "at": [
+            1790302887,
+            715375000
+          ]
+        }
+      ],
+      "soft_deleted": false,
+      "created_at": [
+        1790302887,
+        715375000
+      ],
+      "updated_at": [
+        1790302887,
+        715375000
+      ]
+    },
+    {
+      "id": "0047e9b5-14d0-4301-a7f5-2ff01d134d5d",
+      "number": 13,
+      "revision": "a00c02a4-b278-4eea-a546-5b11ea3654a5",
+      "title": "P-004 Project Pizza: your part",
+      "notes": "Seated in Project Pizza by the Steward. Read projects/*/spec.md for P-004, agree your part with the Project Manager in org/board/project-pizza.md, then do it and post progress there.",
+      "thread": "pizzainventor",
+      "status": "open",
+      "scope": {
+        "project": {
+          "path": "/Users/rexstjohn/Desktop/Collective/Collective"
+        }
+      },
+      "provenance": "capture",
+      "history": [
+        {
+          "kind": "created",
+          "at": [
+            1790302887,
+            812258000
+          ]
+        }
+      ],
+      "soft_deleted": false,
+      "created_at": [
+        1790302887,
+        812258000
+      ],
+      "updated_at": [
+        1790302887,
+        812258000
+      ]
+    },
+    {
+      "id": "ee0fc888-261b-4286-9cef-a2befe569254",
+      "number": 14,
+      "revision": "bedc0157-869f-4e1d-86f3-c095784e6ddc",
+      "title": "P-004 Project Pizza: your part",
+      "notes": "Seated in Project Pizza by the Steward. Read projects/*/spec.md for P-004, agree your part with the Project Manager in org/board/project-pizza.md, then do it and post progress there.",
+      "thread": "pizzaherald",
+      "status": "open",
+      "scope": {
+        "project": {
+          "path": "/Users/rexstjohn/Desktop/Collective/Collective"
+        }
+      },
+      "provenance": "capture",
+      "history": [
+        {
+          "kind": "created",
+          "at": [
+            1790302887,
+            905378000
+          ]
+        }
+      ],
+      "soft_deleted": false,
+      "created_at": [
+        1790302887,
+        905378000
+      ],
+      "updated_at": [
+        1790302887,
+        905378000
+      ]
+    },
+    {
+      "id": "f6e49dd5-529b-49a2-a44a-54f283ae5e54",
+      "number": 15,
+      "revision": "8fc579f8-fb97-4570-a3f8-320fe6ec4702",
+      "title": "P-003 Project Get a job: your part",
+      "notes": "Seated in Project Get a job by the Steward. Read projects/*/spec.md for P-003, agree your part with the Project Manager in org/board/project-getajob.md, then do it and post progress there.",
+      "thread": "dave",
+      "status": "open",
+      "scope": {
+        "project": {
+          "path": "/Users/rexstjohn/Desktop/Collective/Collective"
+        }
+      },
+      "provenance": "capture",
+      "history": [
+        {
+          "kind": "created",
+          "at": [
+            1790302887,
+            999407000
+          ]
+        }
+      ],
+      "soft_deleted": false,
+      "created_at": [
+        1790302887,
+        999407000
+      ],
+      "updated_at": [
+        1790302887,
+        999407000
       ]
     }
   ],

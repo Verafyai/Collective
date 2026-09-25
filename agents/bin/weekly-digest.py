@@ -34,7 +34,7 @@ def fm(path):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--end", default=datetime.date.today().isoformat()); ap.add_argument("--days", type=int, default=7)
+    ap.add_argument("--end", default=datetime.datetime.now(datetime.timezone.utc).date().isoformat()); ap.add_argument("--days", type=int, default=7)   # --end in UTC, like every event timestamp
     a = ap.parse_args()
     end = a.end; start = (datetime.date.fromisoformat(end) - datetime.timedelta(days=a.days - 1)).isoformat()
     ev = events(start, end); L = []

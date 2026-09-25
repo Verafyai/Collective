@@ -48,7 +48,8 @@ try:
     for ep in ["overview", "live", "charter", "amendments", "cases", "projects", "sprints", "edicts", "events?after=0"]:
         code, body = get("/api/" + ep); assert code == 200, ep; json.loads(body)
     live = json.loads(get("/api/live")[1])
-    assert {o["key"] for o in live["offices"]} == {"pm","scribe","lawyer","auditor","researcher","ideas","prototyper","media","social"}
+    active = {a["key"] for a in json.loads((t / "agents/roster.json").read_text())["agents"] if a["status"] == "active"}
+    assert {o["key"] for o in live["offices"]} == active and {"pm","scribe","lawyer","auditor"} <= active   # every active agent, the offices always
     r = next(o for o in live["offices"] if o["key"] == "researcher")
     assert r["status"] == "working", r
     assert r["last"].startswith("Briefing library paper 07"), "the latest board post is what the agent 'says'"
@@ -135,7 +136,7 @@ try:
     assert body["spawned"] == ["Test Scholar"] and body["spawn_failed"], body                  # agent types proposed with it (E-0096); offices aren't
     assert next(a for a in json.loads(get("/api/live")[1])["roster"] if a["key"] == "testscholar")["status"] == "proposed"
     room = body["room"]; rj = json.loads((t / "org/rooms.json").read_text())["rooms"][room]
-    assert rj["name"] == "Project Test" and rj["project"] == body["project"] and rj["x"] >= 18, rj
+    assert rj["name"] == "Project Test" and rj["project"] == body["project"] and (rj["x"] >= 18 or rj["y"] >= 18), rj   # outside the first four rooms
     assert (t / "org/board" / f"project-{room}.md").exists() and "@pm" in (t / "org/board" / f"project-{room}.md").read_text()
     assert list((t / "projects").glob("*-test/spec.md")), "the project was created from the spec"
     time.sleep(1.1); code, body = post("/api/agents/researcher/move", {"room": room}); assert code == 200 and body["ok"], body

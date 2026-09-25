@@ -1,0 +1,16 @@
+{
+ "key": "dave",
+ "name": "Dave",
+ "class": "artisan",
+ "room": "getajob",
+ "focus": "Generates AI videos and explainer talks",
+ "interval": 3600,
+ "cap": 12,
+ "model": "default",
+ "base_tools": "Read,Glob,Grep,Write(org/board/**),Edit(org/board/**),Bash(python3 agents/bin/case.py search:*),Bash(python3 agents/bin/case.py show:*),Bash(python3 agents/bin/sprint.py status:*),Bash(python3 agents/bin/projects.py show:*)",
+ "requested_tools": "Write,Edit,Bash(git:*),Bash(node:*),Bash(npm:*),Bash(python3:*),Bash(make:*),Bash(python3 agents/bin/projects.py version:*),Bash(python3 agents/bin/projects.py comment:*)",
+ "votes": false,
+ "clone_of": null,
+ "color": "#A98EF5",
+ "icon": "🔧"
+}

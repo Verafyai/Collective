@@ -99,6 +99,9 @@ def main():
         for n, e in sorted(log.items()):
             if n in files:
                 fm, body = parse(files[n])
+                if fm.get("title", "").strip() != e["title"].strip():   # a number used twice: never mark someone else's motion ratified
+                    print(f"sync: amendment-{n:03d}.md is '{fm.get('title')}' but the log's {e['id']} is '{e['title']}'; renumber the file's motion", file=sys.stderr)
+                    continue
                 if fm["status"] != "ratified":                     # proposal just applied to the Charter
                     fm.update(status="ratified", charter_version=f"v{e['version']}", log_entry_hash=e.get("entry_hash", ""))
                     body = body.rstrip() + f"\n- {e['date']}: ratified and applied to the Charter as v{e['version']}.\n"
@@ -139,6 +142,7 @@ def main():
             fm, body = parse(p)
             if fm.get("status") not in FLOW: errs.append(f"amendment-{n:03d}: unknown status {fm.get('status')}")
             if n in log:
+                if fm.get("title", "").strip() != log[n]["title"].strip(): errs.append(f"amendment-{n:03d}: its title isn't the log's ('{log[n]['title']}'): a number used twice")
                 if fm.get("status") != "ratified": errs.append(f"amendment-{n:03d}: in the Charter log but status is {fm.get('status')}")
                 if fm.get("charter_version") != f"v{log[n]['version']}": errs.append(f"amendment-{n:03d}: Charter version disagrees with the log")
                 if fm.get("log_entry_hash") and fm["log_entry_hash"] != log[n].get("entry_hash"): errs.append(f"amendment-{n:03d}: log hash disagrees with the Charter")
