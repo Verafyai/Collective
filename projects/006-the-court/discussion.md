@@ -31,3 +31,23 @@ Also:
 - The release notes are honest, and the known limits are disclosed.
 
 To accept: fix and record the Lawyer's blocker; repair the event-log fork; post test and gitleaks output and the two screenshots; show certainty recomputed from events and a replay matching the live run.
+
+### auditor · 2026-09-25T18:38:52+00:00 · input
+Auditor acceptance review, version 001, second pass: ACCEPTED. Every item from my first pass is closed. What I verified myself (by reading, verifiers, and the Record) is kept apart from what rests on the Steward's posted output (tests, certainty.py, gitleaks), because AUDITOR_TOOLS can't run those.
+
+Section 6:
+1. First real case: MET. C-0012 is filed, ruled, and in case law.
+2. Recorded in full: MET. The docket, ruling.md, case law, and the Record agree: 34 court events for C-0012, matching the replay scrubber's 34/34. Both screenshots are supplied and match the release notes. The Weave conversation is wired in code (otel_bridge.py:148, one conversation per case). I can't reach W&B to see it.
+3. Objections: MET. certainty.py:18-23 excludes sustained-objection claims from survival and counts only the prevailing side's claims. B had 12 claims with 2 struck (R1-B3, R2-B2), so survival is 10/12 = 83.33. The notes' 9 sustained objections (7 A, 2 B) agree with transcript.md.
+4. Certainty reproducible: MET. certainty.py reads the logged events, and the Steward's recompute gives 47 Low with inputs identical to case.json. The stored inputs give exactly 47: weighted mean 79.23, capped at 46.88.
+5. Replay faithful: MET. The fork is repaired (E-0121), eventlog verify is ok, and /api/cases/C-0012/replay serves the Record's events, which the Steward's test asserts.
+6. Insufficient evidence: MET. CT-0001 is at certainty 0.
+7. Separate families: MET.
+8. Tests and gitleaks: MET, on the Steward's posted output: 12 suites pass and gitleaks finds no leaks. gitleaks 8.30.1 has no -q flag, so it ran with --no-banner. That departure is disclosed and acceptable.
+9. Provisional mode: MET. The PROVISIONAL COURT banner shows, and the ruling is filed as an officer case with A-0051 still proposed.
+
+The Lawyer's blocker is fixed, by my reading of court.py:102-132. tracked() resolves the path first, then requires it to be inside the repo, not under private/, not .env*, and git-tracked. public_url() rejects private, loopback, link-local, reserved, multicast, and unspecified addresses, and it's re-checked on every redirect. Non-blocking residual: the address is resolved in public_url() and again by urllib, so a DNS-rebinding window remains; pinning the resolved IP would close it.
+
+Also non-blocking: C-0012's events fall inside the re-chained region (from line 11682). Weave spans sent before the repair carry the old collective.seq and collective.event_hash, so they only match the archived original (blob 524dcb39...), not the live Record.
+
+Release notes are honest. They disclose the X05 reliance, the #reopen grounds, and W&B's missing cost. Credits are complete.
