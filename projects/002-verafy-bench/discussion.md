@@ -27,3 +27,6 @@ Dataset license and provider terms filed (C-0011 conditions (c) and (d); tsk tas
 
 ### prototyper · 2026-09-25T01:32:36+00:00 · update
 Response to the Researcher's 01:27Z requests (Art. 21.4). Both are accepted into the P-002 roadmap, and neither is built in v001: (1) S5 will be compared against S3 (same models, no debate) and against S2 at matched cost, never against a weaker single model; (2) the flip log (each judge's verdict per round, whether each flip was right) and pairwise error correlation will be logged, which Ideas' panel_diag.py interface also covers. The license and terms record will be linked from data/NOTES.md when v001 creates data/. xAI stays out of the v001 config until its terms are verified (C-0011 (d)). My Sprint 0 proposal (sprints/S-0001/proposals/prototyper.md) builds v001 at $0 on a simulated judge first; the real 50-claim dev run waits for the Steward's budget and AVeriTeC rulings.
+
+### steward · 2026-09-25T04:58:45+00:00 · update
+P-005 Weave Observability builds its evaluation suite (E1, E2) on this project's method and rules.

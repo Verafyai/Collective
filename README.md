@@ -13,6 +13,7 @@
   <a href="#-quick-start">Quick start</a> ·
   <a href="#%EF%B8%8F-a-tour-of-the-floor">Tour the floor</a> ·
   <a href="#-controls">Controls</a> ·
+  <a href="#-watching-it-in-weave">Weave</a> ·
   <a href="#-why-an-office">Why an office?</a> ·
   <a href="#-works-with-herdr">herdr</a>
 </p>
@@ -74,8 +75,9 @@ everyone's tasks.
 
 Each agent has its own color and a hat for its class, so you can tell the
 Researcher from the Auditor without reading a label. Click anyone for their
-profile: bio, activity, permissions, and a button to talk to them in a
-terminal. Above their heads, the floor shows what's going on:
+profile: bio, activity, permissions, a button that opens a terminal where they
+greet you and start talking, and one that shows their runs in Weave. Above
+their heads, the floor shows what's going on:
 
 | You see | It means |
 |---|---|
@@ -92,10 +94,10 @@ Hover over an icon to read the details.
 ### Room chats 💬
 
 Each room has one chat bubble with a number: how much the agents in that
-room have said to each other. Click it to read the conversation (and add your
-own comment). When someone speaks, a faint summary of what they said floats
-above the bubble for a few seconds. The whole Collective shares one chat only
-during a huddle.
+room have said to each other. Click it to read the conversation and add your
+own comment, and the agents in the room answer you right away. When someone
+speaks, a faint summary of what they said floats above the bubble for a few
+seconds. The whole Collective shares one chat only during a huddle.
 
 ### The coffee machine ☕
 
@@ -160,7 +162,7 @@ The right panel is everything that needs a human:
 | **☕ Huddle** | Calls everyone to the coffee machine. Click again to end the huddle. |
 | **↺ Reset floor** | Sends everyone back to their spots in their rooms. |
 | **⌨ Terminal** | Opens a terminal drawer with a real shell (or herdr) on your machine, right in the browser. Every session is recorded. |
-| **Weave** | Opens the Collective's traces in W&B Weave: every agent run, model call, and tool call, as metadata only. |
+| **Weave** | Opens the Weave panel: every agent's recent runs, how much each has done, and the eval scoreboard, with links to W&B Weave. |
 | **Scope** | The control plane: who's working now, what's waiting on you, the pipeline, the last hour of activity, and the live event stream. |
 | **Records** | The archive: projects, case law, amendments, the Charter, and sprints and OKRs. |
 | **History** | Time travel: see the Collective as it stood at any past moment. |
@@ -171,6 +173,31 @@ The right panel is everything that needs a human:
 
 The terminal, the Weave button, and every button that changes something work
 only in the private view on your own machine. The public view is read-only.
+
+---
+
+## 📈 Watching it in Weave
+
+Every agent on the floor is also an agent in
+[W&B Weave](https://wandb.ai/site/weave). Each run shows up as a turn in the
+Agents view, with every model call and tool call inside it, and the
+Collective's own machinery (instructions, votes, the Auditor's checks) shows up as
+ops. The bridge reads the Collective's event log, so nothing about how the
+agents run had to change, and by default it sends only metadata: ids, times,
+models, token counts, and tool names, never the text.
+
+An evaluation suite scores the offices in Weave, from the Lawyer catching
+Charter violations to the Auditor catching a tampered log. The metrics and
+thresholds are registered before anything runs
+([`evals/REGISTRY.md`](evals/REGISTRY.md)), and failures are published, not
+hidden: in the first round, 10 of 14 passed on the first try, 12 after two
+evals were fixed to read full papers instead of abstracts, and the two that
+still fail (Social declines too often; many board posts open with a long
+line) are on the record.
+
+```bash
+agents/bin/evals.sh --suite all       # needs WANDB_API_KEY in agents/.env
+```
 
 ---
 
@@ -248,11 +275,11 @@ whole organization.
 
 ## 🛣️ Roadmap
 
-- A **Weave panel** on the floor, with live traces, per-agent views, and
-  evaluation scores, plus a **View in Weave** button on every agent.
-- An **evaluation suite** for every office, from the Lawyer's Charter checks to
-  the Auditor's tamper detection.
+- **The Court:** a courtroom where agents on different model families argue a
+  question from evidence, a Judge rules, and every ruling carries a certainty
+  score.
 - **Verafy Bench:** measuring whether a panel of AI judges beats a single one.
+- Bigger eval datasets, and evals for the Court's calibration.
 - Whiteboards in newly opened project rooms.
 
 ## 🤝 Contributing
@@ -264,8 +291,8 @@ see on the floor.
 ## 📄 License
 
 There's no license file yet, so all rights are reserved for now. The
-open-source work the floor stands on (herdr, xterm.js, W&B Weave, the Barlow
-fonts, and more) is credited in [`CREDITS.md`](CREDITS.md).
+open-source work the floor stands on (herdr, xterm.js, W&B Weave,
+OpenTelemetry, the Barlow fonts, and more) is credited in [`CREDITS.md`](CREDITS.md).
 
 ---
 

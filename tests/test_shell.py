@@ -5,7 +5,7 @@ import atexit, re, base64, hashlib, json, os, pathlib, shutil, signal, socket, s
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 t = pathlib.Path(tempfile.mkdtemp()) / "c"
 atexit.register(shutil.rmtree, t.parent, True)
-shutil.copytree(ROOT, t, ignore=shutil.ignore_patterns(".git", "ledger", "logs", "pdfs", "__pycache__", ".env", "secrets", "*.key"))
+shutil.copytree(ROOT, t, ignore=shutil.ignore_patterns(".venv", "node_modules", ".git", "ledger", "logs", "pdfs", "__pycache__", ".env", "secrets", "*.key"))
 subprocess.run([sys.executable, "agents/bin/eventlog.py", "init", "--actor", "steward"], cwd=t, capture_output=True)
 home = t.parent / "home"; home.mkdir()
 env = {**os.environ, "SHELL": "/bin/bash", "HOME": str(home), "COLLECTIVE_SHELL_TOKEN_SECS": "2", "BASH_SILENCE_DEPRECATION_WARNING": "1"}

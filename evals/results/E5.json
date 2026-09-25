@@ -1,0 +1,23 @@
+{
+ "id": "E5",
+ "name": "Tamper detection",
+ "target": "auditor-verify",
+ "metric": "detection rate",
+ "value": 1.0,
+ "ci": [
+  1.0,
+  1.0
+ ],
+ "threshold": "== 1.0",
+ "passed": true,
+ "n": 22,
+ "errors": 0,
+ "extra": {
+  "false_positives": 0,
+  "clean": 8
+ },
+ "dataset": "seed-v1 \u00b7 test sha256 3a544d04ac03",
+ "cost_usd": 0.0,
+ "ran_at": "2026-09-25T05:10:25+00:00",
+ "weave": "https://wandb.ai/rexstjohn-verafy/The%20Collective/weave/evaluations"
+}

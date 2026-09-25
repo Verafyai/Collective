@@ -138,4 +138,6 @@ def main():
         a.room = a.args[0]; cmd_rename(a)
 
 if __name__ == "__main__":
-    main()
+    import pathlib, sys
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "observability")); from ops import run_cli   # Weave ops, best effort (P-005)
+    run_cli(main, 'rooms', only=('new', 'assign', 'rename'))

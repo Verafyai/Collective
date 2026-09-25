@@ -1,0 +1,12 @@
+{"id": "k00", "kind": "transcripts", "split": "test", "version": "seed-v1"}
+{"id": "k01", "kind": "board", "split": "test", "version": "seed-v1"}
+{"id": "k02", "kind": "outbox", "split": "test", "version": "seed-v1"}
+{"id": "k03", "kind": "spans", "split": "test", "version": "seed-v1"}
+{"id": "k04", "kind": "responses", "split": "test", "version": "seed-v1"}
+{"id": "k05", "kind": "canary", "split": "test", "version": "seed-v1"}
+{"id": "k06", "kind": "canary", "split": "test", "version": "seed-v1"}
+{"id": "k07", "kind": "canary", "split": "test", "version": "seed-v1"}
+{"id": "k08", "kind": "canary", "split": "test", "version": "seed-v1"}
+{"id": "k09", "kind": "canary", "split": "test", "version": "seed-v1"}
+{"id": "k10", "kind": "canary", "split": "test", "version": "seed-v1"}
+{"id": "k11", "kind": "canary", "split": "test", "version": "seed-v1"}

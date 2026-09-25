@@ -1,0 +1,30 @@
+{"id": "c00", "claim": "Water boils at 100 degrees Celsius at sea level.", "label": true, "split": "test", "version": "seed-v1"}
+{"id": "c01", "claim": "The Great Wall of China is visible to the naked eye from the Moon.", "label": false, "split": "train", "version": "seed-v1"}
+{"id": "c02", "claim": "Mount Everest is the tallest mountain on Earth above sea level.", "label": true, "split": "train", "version": "seed-v1"}
+{"id": "c03", "claim": "Humans use only 10 percent of their brains.", "label": false, "split": "train", "version": "seed-v1"}
+{"id": "c04", "claim": "The chemical symbol for gold is Au.", "label": true, "split": "test", "version": "seed-v1"}
+{"id": "c05", "claim": "Lightning never strikes the same place twice.", "label": false, "split": "test", "version": "seed-v1"}
+{"id": "c06", "claim": "Light from the Sun takes about eight minutes to reach Earth.", "label": true, "split": "test", "version": "seed-v1"}
+{"id": "c07", "claim": "Bats are blind.", "label": false, "split": "train", "version": "seed-v1"}
+{"id": "c08", "claim": "The Pacific is the largest ocean on Earth.", "label": true, "split": "train", "version": "seed-v1"}
+{"id": "c09", "claim": "Goldfish have a memory span of three seconds.", "label": false, "split": "test", "version": "seed-v1"}
+{"id": "c10", "claim": "DNA has a double-helix structure.", "label": true, "split": "test", "version": "seed-v1"}
+{"id": "c11", "claim": "Napoleon Bonaparte was unusually short for his time.", "label": false, "split": "train", "version": "seed-v1"}
+{"id": "c12", "claim": "Venus is the hottest planet in the Solar System.", "label": true, "split": "test", "version": "seed-v1"}
+{"id": "c13", "claim": "Vikings wore horned helmets in battle.", "label": false, "split": "test", "version": "seed-v1"}
+{"id": "c14", "claim": "An octopus has three hearts.", "label": true, "split": "train", "version": "seed-v1"}
+{"id": "c15", "claim": "Glass is a slow-flowing liquid at room temperature.", "label": false, "split": "test", "version": "seed-v1"}
+{"id": "c16", "claim": "Honey can remain edible for thousands of years when sealed.", "label": true, "split": "train", "version": "seed-v1"}
+{"id": "c17", "claim": "Different parts of the tongue taste only one basic flavor each.", "label": false, "split": "test", "version": "seed-v1"}
+{"id": "c18", "claim": "Sound travels faster in water than in air.", "label": true, "split": "train", "version": "seed-v1"}
+{"id": "c19", "claim": "Einstein failed mathematics in school.", "label": false, "split": "test", "version": "seed-v1"}
+{"id": "c20", "claim": "The human body has 206 bones in adulthood.", "label": true, "split": "test", "version": "seed-v1"}
+{"id": "c21", "claim": "Bulls are enraged by the color red.", "label": false, "split": "test", "version": "seed-v1"}
+{"id": "c22", "claim": "Diamonds are made of carbon.", "label": true, "split": "test", "version": "seed-v1"}
+{"id": "c23", "claim": "Ostriches bury their heads in the sand when frightened.", "label": false, "split": "test", "version": "seed-v1"}
+{"id": "c24", "claim": "The Amazon River carries more water than any other river.", "label": true, "split": "train", "version": "seed-v1"}
+{"id": "c25", "claim": "Shaving hair makes it grow back thicker.", "label": false, "split": "train", "version": "seed-v1"}
+{"id": "c26", "claim": "Penguins live in the Southern Hemisphere in the wild, with one species reaching the equator.", "label": true, "split": "test", "version": "seed-v1"}
+{"id": "c27", "claim": "Mount Kilimanjaro is in Asia.", "label": false, "split": "train", "version": "seed-v1"}
+{"id": "c28", "claim": "The speed of light in a vacuum is about 300,000 kilometers per second.", "label": true, "split": "test", "version": "seed-v1"}
+{"id": "c29", "claim": "Humans have five senses and no more.", "label": false, "split": "train", "version": "seed-v1"}

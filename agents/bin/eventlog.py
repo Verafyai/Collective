@@ -29,7 +29,8 @@ BLOBS = LEDGER / "blobs"
 HEAD = LEDGER / "HEAD.json"
 IGNORE_FILE = LEDGER / "ignore"
 DEFAULT_IGNORE = [".git/*", "*/.git/*", "private/secrets/*.key", "private/ledger/*", "agents/.env", "*/logs/*", "*.pyc", "__pycache__/*",
-                  "node_modules/*", ".venv/*", ".DS_Store", "*/.DS_Store", "org/STOP", "org/PAUSE-*"]
+                  "node_modules/*", ".venv/*", "*/node_modules/*", "*/.venv/*",
+                  "agents/observability/.bridge_state*", "agents/observability/.ops_spool.ndjson*", "agents/observability/gitleaks-rules.toml", ".DS_Store", "*/.DS_Store", "org/STOP", "org/PAUSE-*"]
 SECRET_RE = re.compile(
     r"(?<![A-Za-z0-9])sk-(ant-)?[A-Za-z0-9_-]{20,}|(?<![A-Za-z0-9])xai-[A-Za-z0-9]{20,}|gh[pous]_[A-Za-z0-9]{30,}|xox[abprs]-[A-Za-z0-9-]{10,}|AKIA[0-9A-Z]{16}"
     r"|\b\d{8,10}:[A-Za-z0-9_-]{35}\b|(?:API|SECRET|TOKEN|PASSWORD)[A-Z_]*=[^\s'\"]{6,}")
@@ -173,4 +174,6 @@ def main():
         save_head(head)
 
 if __name__ == "__main__":
-    main()
+    import pathlib, sys
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "observability")); from ops import run_cli   # Weave ops, best effort (P-005)
+    run_cli(main, 'auditor', only=('verify',), rename={'verify': 'auditor.verify_event_log'})

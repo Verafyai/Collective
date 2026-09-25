@@ -1,0 +1,20 @@
+{
+ "id": "E10",
+ "name": "Reopen precision",
+ "target": "sentinel-charlie",
+ "metric": "F1",
+ "value": 0.8571,
+ "ci": null,
+ "threshold": ">= 0.8",
+ "passed": true,
+ "n": 8,
+ "errors": 0,
+ "extra": {
+  "precision": 1.0,
+  "recall": 0.75
+ },
+ "dataset": "seed-v1 \u00b7 test sha256 e1212e6819b0",
+ "cost_usd": 0.3878,
+ "ran_at": "2026-09-25T05:15:31+00:00",
+ "weave": "https://wandb.ai/rexstjohn-verafy/The%20Collective/weave/evaluations"
+}

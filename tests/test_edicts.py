@@ -4,7 +4,7 @@ import pathlib, shutil, subprocess, sys, tempfile, atexit
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 t = pathlib.Path(tempfile.mkdtemp())
 atexit.register(shutil.rmtree, t, True)   # leave nothing behind
-shutil.copytree(ROOT / "agents", t / "agents", ignore=shutil.ignore_patterns(".env", "logs")); shutil.copytree(ROOT / "private" / "edicts", t / "private" / "edicts")
+shutil.copytree(ROOT / "agents", t / "agents", ignore=shutil.ignore_patterns(".venv", "node_modules", ".env", "logs")); shutil.copytree(ROOT / "private" / "edicts", t / "private" / "edicts")
 E = [sys.executable, str(t / "agents/bin/edict.py")]
 def run(*a): return subprocess.run(E + list(a), capture_output=True, text=True, cwd=t)
 assert run("check").returncode == 0

@@ -134,4 +134,6 @@ def main():
             if fm.get("implemented_by"): print(f"  → {fm['implemented_by']}")
 
 if __name__ == "__main__":
-    main()
+    import pathlib, sys
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "observability")); from ops import run_cli   # Weave ops, best effort (P-005)
+    run_cli(main, 'edict')

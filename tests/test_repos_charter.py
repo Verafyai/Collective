@@ -5,7 +5,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 t = pathlib.Path(tempfile.mkdtemp()) / "c"
 atexit.register(shutil.rmtree, t.parent, True)   # leave nothing behind
 os.environ["GIT_CONFIG_GLOBAL"] = str(t.parent / "gitconfig")   # never touch the Steward's ~/.gitconfig
-shutil.copytree(ROOT, t, ignore=shutil.ignore_patterns(".git", "ledger", "logs", "pdfs", ".env", "secrets", "*.key"))
+shutil.copytree(ROOT, t, ignore=shutil.ignore_patterns(".venv", "node_modules", ".git", "ledger", "logs", "pdfs", ".env", "secrets", "*.key"))
 def sh(*cmd, ok=True, cwd=t):
     r = subprocess.run(list(cmd), capture_output=True, text=True, cwd=cwd)
     if ok: assert r.returncode == 0, (cmd, r.stdout, r.stderr)

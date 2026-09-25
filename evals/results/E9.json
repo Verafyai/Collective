@@ -1,0 +1,22 @@
+{
+ "id": "E9",
+ "name": "Research faithfulness",
+ "target": "researcher-briefs",
+ "metric": "faithfulness",
+ "value": 0.89,
+ "ci": [
+  0.82,
+  0.95
+ ],
+ "threshold": ">= 0.8",
+ "passed": true,
+ "n": 3,
+ "errors": 0,
+ "extra": {
+  "key_claim_recall": 0.5333
+ },
+ "dataset": "seed-v1 \u00b7 test sha256 41446ea473ac",
+ "cost_usd": 0.0895,
+ "ran_at": "2026-09-25T05:22:19+00:00",
+ "weave": "https://wandb.ai/rexstjohn-verafy/The%20Collective/weave/evaluations"
+}

@@ -237,4 +237,6 @@ def main():
         print(f"{meta['id']} closed. Open the next sprint with `sprint.py open`."); return
 
 if __name__ == "__main__":
-    main()
+    import pathlib, sys
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "observability")); from ops import run_cli   # Weave ops, best effort (P-005)
+    run_cli(main, 'sprint', rename={'tally': 'sprint.count_votes', 'steward': 'sprint.steward_signoff', 'grade': 'sprint.postmortem_grade'})

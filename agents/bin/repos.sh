@@ -17,6 +17,20 @@ cmd="${1:-status}"; shift || true
 scan_public() {  # redaction gate over everything the public commit would include
   local files; files="$(git ls-files -mo --exclude-standard)"
   [ -z "$files" ] && return 0
+  # archived Charter versions are immutable and hash-verified: skip one only if the text before its log entry hashes to
+  # the logged value and the file ends exactly at that entry (Article 8.1), so nothing can be slipped into an archive
+  local archived; archived="$(python3 - <<'PY'
+import hashlib, pathlib, re
+s = pathlib.Path("CHARTER.md").read_text(); log = s[[m.start() for m in re.finditer(r"\n---\n\n# PART VI — ", s)][-1]:]
+for aid, v, csha, eh in re.findall(r"^### (A-\d{4}) · v([\d.]+) ·[^\n]*\n(?:(?!### A-)[^\n]*\n)*?charter_sha256_before_entry: (\w+)\nprev_entry_hash: \w+\nentry_hash: (\w+)", log, re.M):
+    f = pathlib.Path(f"charter/history/CHARTER-v{v}.md")
+    if not f.exists(): continue
+    t = f.read_text(); i = t.rfind(f"\n### {aid} · v{v} ·")
+    if i >= 0 and hashlib.sha256(t[:i].encode()).hexdigest() == csha and t.endswith(f"entry_hash: {eh}\n"): print(f)
+PY
+)"
+  [ -n "$archived" ] && files="$(printf '%s\n' "$files" | grep -vxF -f <(printf '%s\n' "$archived") || true)"
+  [ -z "$files" ] && return 0
   local hits
   hits="$(printf '%s\n' "$files" | tr '\n' '\0' | xargs -0 grep -HInE \
     -e '(^|[^A-Za-z0-9])sk-(ant-)?[A-Za-z0-9_-]{20,}' -e 'gh[pous]_[A-Za-z0-9]{30,}' -e 'xox[abprs]-' -e 'AKIA[0-9A-Z]{16}' \

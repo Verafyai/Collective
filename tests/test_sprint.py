@@ -4,8 +4,12 @@ import pathlib, shutil, subprocess, sys, tempfile, json, atexit
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 t = pathlib.Path(tempfile.mkdtemp())
 atexit.register(shutil.rmtree, t, True)   # leave nothing behind
-shutil.copytree(ROOT / "agents", t / "agents", ignore=shutil.ignore_patterns(".env", "logs")); (t / "org").mkdir()
+shutil.copytree(ROOT / "agents", t / "agents", ignore=shutil.ignore_patterns(".venv", "node_modules", ".env", "logs")); (t / "org").mkdir()
 shutil.copytree(ROOT / "org" / "cases", t / "org" / "cases")
+R = t / "agents/roster.json"; r = json.loads(R.read_text())                 # the scenario's nine offices, whatever the live roster says
+for a in r["agents"]:
+    if a["key"] == "media": a["status"] = "active"
+R.write_text(json.dumps(r))
 S = [sys.executable, str(t / "agents/bin/sprint.py")]
 def run(*a, ok=True):
     r = subprocess.run(S + list(a), capture_output=True, text=True, cwd=t)

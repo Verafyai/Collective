@@ -1,0 +1,22 @@
+{
+ "id": "E7",
+ "name": "Edict follow-through",
+ "target": "collective",
+ "metric": "follow-through share",
+ "value": 0.9823,
+ "ci": [
+  0.9558,
+  1.0
+ ],
+ "threshold": ">= 0.8",
+ "passed": true,
+ "n": 113,
+ "errors": 0,
+ "extra": {
+  "median_hours_to_close": 0.49
+ },
+ "dataset": "seed-v1 \u00b7 test sha256 53fbee35fc1b",
+ "cost_usd": 0.0,
+ "ran_at": "2026-09-25T05:32:36+00:00",
+ "weave": "https://wandb.ai/rexstjohn-verafy/The%20Collective/weave/evaluations"
+}

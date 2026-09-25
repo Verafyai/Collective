@@ -19,7 +19,9 @@ additions are part of the work that uses them.
 | age | Filippo Valsorda and contributors | BSD-3-Clause | Sealing auth |
 | Claude Code | Anthropic | commercial terms | Agent runtime |
 | Grok CLI | xAI | commercial terms | Social agent |
-| W&B Weave (weave 0.53.10) | Weights & Biases | Apache-2.0 | Tracing the Collective's runs and events to the Steward's private Weave project (Article 12.10) |
+| W&B Weave (weave 0.53.10) | Weights & Biases | Apache-2.0 | Traces, ops, and the eval suite in the Steward's private Weave project (Article 12.10, P-005) |
+| OpenTelemetry Python SDK and OTLP exporter (1.44.0), and the OTel GenAI semantic conventions | The OpenTelemetry authors | Apache-2.0 | The bridge from the event log to Weave's Agents view (agents/observability/otel_bridge.py) |
+| gitleaks detection rules (v8.30.1 config) | Zachary Rice and contributors | MIT | Patterns redact.py strips before anything is exported; fetched by bootstrap, pinned by SHA-256 |
 | gitleaks | Zachary Rice and contributors | MIT | Public-commit redaction gate |
 | Barlow, Barlow Semi Condensed (fonts) | Jeremy Tribby (The Barlow Project Authors) | SIL Open Font License 1.1 | Dashboard floor and scope; served locally from `dashboard/fonts/` |
 | Public Sans (font) | USWDS (The Public Sans Project Authors) | SIL Open Font License 1.1 | Dashboard records; served locally |

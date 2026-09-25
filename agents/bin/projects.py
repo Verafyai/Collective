@@ -168,5 +168,7 @@ def check():
     print("\n".join(errs) if errs else f"ok: {len(ps)} projects valid"); sys.exit(1 if errs else 0)
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1 and sys.argv[1] == "check": check()
-    else: main()
+    import pathlib
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "observability")); from ops import run_cli   # Weave ops, best effort (P-005)
+    if len(sys.argv) > 1 and sys.argv[1] == "check": run_cli(check, "projects")
+    else: run_cli(main, "projects", only=("new", "version", "release", "comment"), keep_flags=("--status", "--kind", "--owner"))

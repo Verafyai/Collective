@@ -12,7 +12,7 @@ event log, and verification. Python standard library only.
   a project, appended to its discussion.md through projects.py.
 - --public hides everything from the private repo (edicts, event details).
 """
-import argparse, calendar, glob, json, pathlib, re, subprocess, sys, time, urllib.parse
+import argparse, calendar, glob, json, os, pathlib, re, subprocess, sys, time, urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -182,8 +182,9 @@ def room_chat(room, hours=48):
         if pathlib.Path(bp).name == "README.md": continue
         t = thread(bp)
         if t["tag"] == "huddle": continue
-        for x in t["posts"]:
-            if x["who"] in members: posts.append({**x, "thread": t["id"], "thread_title": t["title"]})
+        if not any(x["who"] in members for x in t["posts"]) and t["id"] != f"project-{room}": continue
+        for x in t["posts"]:        # the room's agents, and the Steward where he talks with them (E-0116)
+            if x["who"] in members or x["who"] == "steward": posts.append({**x, "thread": t["id"], "thread_title": t["title"]})
     posts.sort(key=lambda x: x["ts"])
     cutoff = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(time.time() - hours * 3600))
     recent = [x for x in posts if x["ts"][:19] >= cutoff] or posts[-12:]
@@ -474,6 +475,65 @@ def flags(offices):
         o["flags"] = f
 
 WEAVE_URL = "https://wandb.ai/rexstjohn-verafy/The%20Collective/weave"   # the Steward's Weave project (P-005)
+WEAVE_LINKS = {"project": WEAVE_URL, "agents": WEAVE_URL + "/agents", "traces": WEAVE_URL + "/traces", "evals": WEAVE_URL + "/evaluations"}
+BRIDGE_STATE = ROOT / "agents/observability/.bridge_state"
+VENV_PY = ROOT / "agents/.venv/bin/python"
+_weave_cache, _weave_last = {}, {"t": 0.0}
+
+def weave_status():
+    """Whether tracing is configured and the bridge is running, and how far it has exported. Never the key."""
+    try: st = json.loads(read(BRIDGE_STATE) or "{}")
+    except ValueError: st = {}
+    env = read(ROOT / "agents/.env")
+    last_seq = -1
+    try:
+        with open(ROOT / "private/ledger/events.ndjson", "rb") as f:
+            f.seek(max(0, f.seek(0, 2) - 4096)); tail = f.read().decode("utf-8", "replace").strip().splitlines()
+        last_seq = json.loads(tail[-1])["seq"] if tail else -1
+    except (OSError, ValueError, KeyError, IndexError): pass
+    held = sum(len(v) for v in (st.get("open") or {}).values())
+    running = BRIDGE_STATE.exists() and time.time() - BRIDGE_STATE.stat().st_mtime < 300
+    return {"configured": bool(re.search(r"^WANDB_API_KEY=\S", env, re.M)) and VENV_PY.exists(), "bridge_running": running,
+            "last_exported_hash": st.get("last_hash"), "last_exported_seq": st.get("last_seq", -1), "log_last_seq": last_seq,
+            "waiting": max(0, last_seq - st.get("last_seq", -1)) + held, "open_runs": len(st.get("open") or {}),
+            "exported_spans": st.get("exported_spans", 0), "ops_sent": st.get("ops_sent", 0), "last_export": st.get("last_export"),
+            "mode": re.search(r"^OBS_PRIVATE_MODE=(\w+)", env, re.M).group(1) if re.search(r"^OBS_PRIVATE_MODE=(\w+)", env, re.M) else "metadata",
+            "links": WEAVE_LINKS}
+
+def weave_query(args):
+    """Ask Weave through agents/observability/weave_query.py (the venv has weave; this server doesn't). Cached 30 s."""
+    k = " ".join(args)
+    hit = _weave_cache.get(k)
+    if hit and time.time() - hit[0] < 30: return hit[1]
+    out = {"live": False, "error": "tracing isn't set up here (no agents/.venv)"}
+    if VENV_PY.exists():
+        try:
+            r = subprocess.run([str(VENV_PY), str(ROOT / "agents/observability/weave_query.py"), *args], capture_output=True, text=True, cwd=ROOT, timeout=25)
+            out = json.loads(r.stdout.strip().splitlines()[-1]) if r.stdout.strip() else {"live": False, "error": "no answer"}
+        except (subprocess.TimeoutExpired, ValueError, IndexError, OSError) as e:
+            out = {"live": False, "error": f"Weave didn't answer ({type(e).__name__})"}
+    key = re.search(r"^WANDB_API_KEY=(\S+)", read(ROOT / "agents/.env"), re.M)
+    if key and key.group(1).strip("'\"") in json.dumps(out): out = {"live": False, "error": "withheld"}   # the key never leaves the server
+    out["links"] = WEAVE_LINKS
+    _weave_cache[k] = (time.time(), out)
+    return out
+
+def weave_route(h, path):
+    """/api/weave/status | recent | agents | evals: read-only, private view only, one uncached Weave query per 2 s."""
+    if PUBLIC: return h.send(403, {"error": "Weave is off in public view", "live": False, "links": WEAVE_LINKS})
+    q = urllib.parse.parse_qs(urllib.parse.urlparse(h.path).query)
+    if path == "/api/weave/status": return h.send(200, weave_status())
+    if path in ("/api/weave/recent", "/api/weave/agents", "/api/weave/evals"):
+        cmd = path.rsplit("/", 1)[1]
+        args = [cmd]
+        if cmd == "recent":
+            agent = re.sub(r"[^a-z0-9]", "", (q.get("agent") or [""])[0])[:16]
+            args += ["--limit", str(qint(q, "limit", 25, 1, 100))] + (["--agent", agent] if agent else [])
+        if " ".join(args) not in _weave_cache and time.time() - _weave_last["t"] < 2:
+            return h.send(429, {"error": "one Weave query every 2 seconds", "live": False, "links": WEAVE_LINKS})
+        _weave_last["t"] = time.time()
+        return h.send(200, weave_query(args))
+    return h.send(404, {"error": "not found"})
 
 def live():
     """The control plane's single live feed: every office's state right now, activity, pipeline, schedule."""
@@ -614,6 +674,7 @@ class H(BaseHTTPRequestHandler):
             name = path[len("/vendor/xterm/"):]; f = ROOT / "dashboard/vendor/xterm" / name
             if not re.fullmatch(r"[\w.-]+\.(js|css)", name) or not f.is_file(): return self.send(404, {"error": "not found"})
             return self.send(200, f.read_bytes(), "text/javascript" if name.endswith(".js") else "text/css")
+        if path.startswith("/api/weave/"): return weave_route(self, path)                     # P-005: read-only
         if history_route(self): return
         u = urllib.parse.urlparse(self.path); q = urllib.parse.parse_qs(u.query)
         m = re.match(r"^/api/agents/([a-z][a-z0-9]{1,15})/permissions$", u.path)
@@ -768,6 +829,25 @@ def room_rename(h, room):
     code, out = run(PY, "agents/bin/rooms.py", "rename", room, "--codename", str(p.get("codename", "")), "--steward")
     h.send(200 if code == 0 else 400, {"ok": code == 0, "message": out.replace("REFUSED: ", "").strip()})
 
+REPLY_GAP = {}                      # (agent, thread) -> last reply started: one per agent per thread per 2 minutes
+def nm_of(k):
+    return next((a.get("name", k) for a in roster() if a["key"] == k), k)
+
+def chat_repliers(thread_id, room=None):
+    """Who answers the Steward's comment: the room's active, unpaused agents (a room chat), else the agents in the
+    thread; at most three, preferring those who spoke last."""
+    R = {a["key"]: a for a in roster() if a["status"] == "active"}
+    t = thread(ROOT / "org/board" / f"{thread_id}.md")
+    spoke = [x["who"] for x in reversed(t["posts"]) if x["who"] in R]
+    pool = ([k for k in dict.fromkeys(spoke) if R[k].get("room") == room] + [k for k, a in R.items() if a.get("room") == room]) if room else list(dict.fromkeys(spoke))
+    out = []
+    for k in dict.fromkeys(pool):
+        if (ROOT / "org" / f"PAUSE-{k}").exists() or (ROOT / "org/STOP").exists(): continue
+        if time.time() - REPLY_GAP.get((k, thread_id), 0) < 120: continue
+        REPLY_GAP[(k, thread_id)] = time.time(); out.append(k)
+        if len(out) == 3: break
+    return out
+
 def chat_comment(h, cid):
     """/api/conversations/<id>/comment: the Steward's comment in a floor chat (Article 18.7(d))."""
     p = guarded(h, "comment", 2)
@@ -777,8 +857,9 @@ def chat_comment(h, cid):
     m = re.fullmatch(r"room-(\w+)", cid)
     if m:                           # a project room's chat: the comment goes on the thread its agents spoke in last
         c = room_chat(m.group(1)) if m.group(1) in {a.get("room") for a in roster()} else {"posts": []}
-        if not c["posts"]: return h.send(404, {"error": "nobody in that room has posted yet"})
-        cid = c["posts"][-1]["thread"]
+        if c["posts"]: cid = c["posts"][-1]["thread"]
+        elif (ROOT / "org/board" / f"project-{m.group(1)}.md").exists(): cid = f"project-{m.group(1)}"
+        else: return h.send(404, {"error": "nobody in that room has posted yet"})
     b = ROOT / "org/board" / f"{cid}.md"
     if not re.fullmatch(r"[\w.-]+", cid) or not b.exists(): return h.send(404, {"error": "no such conversation"})
     ts = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
@@ -786,6 +867,13 @@ def chat_comment(h, cid):
     run(PY, "agents/bin/eventlog.py", "record", "--actor", "steward", "--type", "board.comment",
         "--data", json.dumps({"summary": f"comment in {cid}: {summary(text, 100)}", "path": f"org/board/{cid}.md"}))
     msg = f"Comment added to the chat ({cid})."
+    repliers = chat_repliers(cid, m.group(1) if m else None)
+    for k in repliers:              # the agents in the chat answer now, each in one short recorded run (E-0116)
+        if os.environ.get("COLLECTIVE_NO_REPLIES") == "1": continue          # tests: name the repliers, start nothing
+        subprocess.Popen(["bash", str(ROOT / "agents/bin/run-role.sh"), k, "--reply", cid], cwd=ROOT, start_new_session=True,
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                         env={k2: v for k2, v in os.environ.items() if not re.match(r"CLAUDE(CODE|_CODE_)", k2)})
+    if repliers: msg += " " + ", ".join(nm_of(k) for k in repliers) + (" is" if len(repliers) == 1 else " are") + " replying now."
     if p.get("direction"):   # a direction from the Steward is an edict (Article 15)
         code, out = run(PY, "agents/bin/edict.py", "new", "--title", f"Chat direction: {summary(text, 60)}", "--text", text,
                         "--restatement", f"A direction the Steward gave in the floor chat for {cid} (org/board/{cid}.md).")

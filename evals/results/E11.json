@@ -1,0 +1,20 @@
+{
+ "id": "E11",
+ "name": "Governance determinism",
+ "target": "vote-counter",
+ "metric": "identical on replay",
+ "value": 1.0,
+ "ci": [
+  1.0,
+  1.0
+ ],
+ "threshold": "== 1.0",
+ "passed": true,
+ "n": 12,
+ "errors": 0,
+ "extra": {},
+ "dataset": "seed-v1 \u00b7 test sha256 36444f284117",
+ "cost_usd": 0.0,
+ "ran_at": "2026-09-25T05:10:26+00:00",
+ "weave": "https://wandb.ai/rexstjohn-verafy/The%20Collective/weave/evaluations"
+}

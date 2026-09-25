@@ -6,7 +6,7 @@ t = pathlib.Path(tempfile.mkdtemp()) / "c"
 import atexit, os
 atexit.register(shutil.rmtree, t.parent, True)   # leave nothing behind
 os.environ["GIT_CONFIG_GLOBAL"] = str(t.parent / "gitconfig")   # never touch the Steward's ~/.gitconfig
-shutil.copytree(ROOT, t, ignore=shutil.ignore_patterns(".git", "ledger", "logs", "pdfs", "__pycache__", ".env", "secrets", "*.key"))
+shutil.copytree(ROOT, t, ignore=shutil.ignore_patterns(".venv", "node_modules", ".git", "ledger", "logs", "pdfs", "__pycache__", ".env", "secrets", "*.key"))
 for d in (t / "agents/_proposed",):
     if d.exists(): shutil.rmtree(d)
 def run(*a, ok=True):

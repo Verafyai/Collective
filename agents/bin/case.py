@@ -211,4 +211,6 @@ def main():
         print(f"precedent survival rate: {rate} ({len(survived)}/{len(challenged)} challenged cases still stand)")
 
 if __name__ == "__main__":
-    main()
+    import pathlib, sys
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "observability")); from ops import run_cli   # Weave ops, best effort (P-005)
+    run_cli(main, 'case')

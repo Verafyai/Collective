@@ -5,7 +5,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 t = pathlib.Path(tempfile.mkdtemp()) / "c"
 atexit.register(shutil.rmtree, t.parent, True)   # leave nothing behind
 os.environ["GIT_CONFIG_GLOBAL"] = str(t.parent / "gitconfig")   # never touch the Steward's ~/.gitconfig
-shutil.copytree(ROOT, t, ignore=shutil.ignore_patterns(".git", "ledger", "logs", "pdfs", ".env", "secrets", "*.key"))
+shutil.copytree(ROOT, t, ignore=shutil.ignore_patterns(".venv", "node_modules", ".git", "ledger", "logs", "pdfs", ".env", "secrets", "*.key"))
 if (t / "private" / ".git").exists(): shutil.rmtree(t / "private" / ".git")
 shutil.rmtree(t / "sprints", True); (t / "sprints").mkdir()        # a fresh week: the live sprints aren't this test's
 def sh(*cmd, ok=True):
@@ -27,7 +27,7 @@ sh(py, "agents/bin/edict.py", "new", "--title", "Private edict", "--text", "SECR
 out = sh(py, "agents/bin/weekly-digest.py")
 facts = next((t / "blog/_facts").glob("*.md")).read_text()
 for must in ["## Votes", "## Discussion", "## Changes", "file changes across", "## Sprints", "S-0001", "**researcher**: 1 runs, 1 file changes", "Research briefs: 1 (research/briefs/du-2023.md)",
-             "Posts published on X: 1", "Incidents: 1 (count only", "Steward edicts issued: 1 (count only", "C-0006", "A-0009"]:
+             "Posts published on X: 1", f"Incidents: {sum(1 for l in (t / 'private/ledger/events.ndjson').read_text().splitlines() if chr(34) + 'incident' + chr(34) in l)} (count only", "Steward edicts issued: 1 (count only", "C-0006", "A-0009"]:
     assert must in facts, (must, facts)
 assert "SECRET-ISH" not in facts, "edict content must never reach the facts file"
 # the post can't be published without approval

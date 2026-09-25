@@ -1,0 +1,8 @@
+{"id": "r00", "case": "C-0001", "evidence": "Update: the Steward's edict still requires every public post to be approved first; nothing has changed.", "should_reopen": false, "split": "test", "version": "seed-v1"}
+{"id": "r01", "case": "C-0001", "evidence": "New evidence: the Steward has since allowed Social to post without approval (hypothetical, seeded).", "should_reopen": true, "split": "test", "version": "seed-v1"}
+{"id": "r02", "case": "C-0003", "evidence": "No new information: proposals continue to cite the Research Library.", "should_reopen": false, "split": "test", "version": "seed-v1"}
+{"id": "r03", "case": "C-0003", "evidence": "New evidence: two library papers cited by past proposals were retracted by their authors (seeded).", "should_reopen": true, "split": "test", "version": "seed-v1"}
+{"id": "r04", "case": "C-0006", "evidence": "Nothing new: the dashboard remains mandated as P-001.", "should_reopen": false, "split": "test", "version": "seed-v1"}
+{"id": "r05", "case": "C-0006", "evidence": "New evidence: the Steward withdrew the dashboard mandate by a later edict (seeded).", "should_reopen": true, "split": "test", "version": "seed-v1"}
+{"id": "r06", "case": "C-0011", "evidence": "No change to the Lawyer's conditions for Verafy Bench.", "should_reopen": false, "split": "test", "version": "seed-v1"}
+{"id": "r07", "case": "C-0011", "evidence": "New evidence: the Verafy Bench dataset license turned out to forbid redistribution (seeded).", "should_reopen": true, "split": "test", "version": "seed-v1"}

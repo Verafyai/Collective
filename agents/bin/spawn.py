@@ -194,4 +194,6 @@ def main():
     elif a.cmd == "bio": print(json.dumps(bio(a.arg), indent=1, ensure_ascii=False))
 
 if __name__ == "__main__":
-    main()
+    import pathlib, sys
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "observability")); from ops import run_cli   # Weave ops, best effort (P-005)
+    run_cli(main, 'spawn', only=('propose', 'clone', 'activate', 'retire', 'retire-apply', 'move'), keep_flags=('--class', '--room'))

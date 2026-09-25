@@ -155,7 +155,8 @@ class Session:
         argv = ([os.environ.get("SHELL") or "/bin/bash", "-l"] if self.cmd == "shell" else ["herdr"] if self.cmd == "herdr"
                 else [str(ROOT / "agents/bin/run-role.sh"), self.agent, "--interactive"])
         if self.cmd == "shell" and not os.path.exists(argv[0]): argv = ["/bin/bash", "-l"]
-        env = {**os.environ, "TERM": "xterm-256color", "COLLECTIVE_WEB_TERMINAL": "1"}
+        env = {k: v for k, v in os.environ.items() if not re.match(r"CLAUDE(CODE|_CODE_)", k)}   # a fresh session, not a child of the dashboard's launcher
+        env.update(TERM="xterm-256color", COLLECTIVE_WEB_TERMINAL="1")
         def ctty():   # make the pty this session's controlling terminal, so Ctrl-C reaches the foreground job
             fcntl.ioctl(0, termios.TIOCSCTTY, 0)
         self.proc = subprocess.Popen(argv, stdin=slave, stdout=slave, stderr=slave, cwd=ROOT, env=env,

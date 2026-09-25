@@ -58,9 +58,13 @@ echo "6) Event log (replayability)"
 if [ -s private/ledger/events.ndjson ]; then ok "event log exists ($(wc -l < private/ledger/events.ndjson) events)"
 else run "python3 agents/bin/eventlog.py init --actor steward" && ok "event log initialized (genesis snapshot)"; fi
 
-echo "6b) Weave mirror (Article 12.10)"
-if [ -x agents/.venv/bin/python ] && agents/.venv/bin/python -c "import weave" 2>/dev/null; then ok "weave installed in agents/.venv"
-else run "python3 -m venv agents/.venv && agents/.venv/bin/pip install -q 'weave==0.53.10'" && ok "weave 0.53.10 installed in agents/.venv (set WANDB_API_KEY in agents/.env to turn the mirror on)"; fi
+echo "6b) Observability: the Weave bridge and evals (Article 12.10, P-005)"
+if [ -x agents/.venv/bin/python ] && agents/.venv/bin/python -c "import weave, opentelemetry.exporter.otlp.proto.http" 2>/dev/null; then ok "weave and the OTel exporter installed in agents/.venv"
+else run "python3 -m venv agents/.venv && agents/.venv/bin/pip install -q 'weave==0.53.10' 'opentelemetry-sdk==1.44.0' 'opentelemetry-exporter-otlp-proto-http==1.44.0'" && ok "installed in agents/.venv (set WANDB_API_KEY in agents/.env to turn tracing on)"; fi
+rules=agents/observability/gitleaks-rules.toml; want=e163e53b9e7e8a8511e77271e2b323ed057759542a6d988258afe3a1fa329caf
+if [ -f "$rules" ] && [ "$(shasum -a 256 "$rules" | cut -d' ' -f1)" = "$want" ]; then ok "gitleaks 8.30.1 rules present (redact.py)"
+else run "curl -fsSL https://raw.githubusercontent.com/gitleaks/gitleaks/v8.30.1/config/gitleaks.toml -o $rules" \
+  && [ "$(shasum -a 256 "$rules" | cut -d' ' -f1)" = "$want" ] && ok "gitleaks 8.30.1 rules fetched and checked (SHA-256)" || warn "gitleaks rules didn't match their SHA-256; redact.py runs without them"; fi
 
 echo "7) Runtime folders"
 run "mkdir -p research/briefs ideas prototypes media/exports private/outbox/{pending,approved,posted,rejected} org/board org/tasks"

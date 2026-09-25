@@ -114,4 +114,4 @@ command = "agents/bin/run-role.sh pizzaherald --loop"
 
 [[tabs]]
 name = "weave"
-command = "agents/.venv/bin/python agents/bin/weave_sync.py follow --every 60"
+command = ". agents/bin/env.sh && agents/.venv/bin/python agents/observability/otel_bridge.py follow --every 60"

@@ -263,7 +263,7 @@ render = function(){
   }
   const hb = $("#huddle-btn"); if(hb){ hb.classList.toggle("on", huddleOpen()); hb.textContent = huddleOpen() ? "☕ Huddle open" : "☕ Huddle"; }
   huddleBanner();
-  weaveLink(); adoptRooms(); drawFlags(); drawSleepers(); nameRooms(); roomLines();
+  adoptRooms(); drawFlags(); drawSleepers(); nameRooms(); roomLines();
 };
 // no standing speech bubbles (E-0093): what's said shows briefly above its room's chat icon instead (whisper)
 function roomLines(){ $("#bubbles").querySelectorAll(".bubble").forEach(b => b.remove()); }
@@ -391,6 +391,8 @@ side = function(){
   if(!proposed && !document.querySelector("#side .term-btns")){
     const box = document.createElement("div"); box.className = "term-btns"; box.style.cssText = "display:flex;gap:6px;flex-wrap:wrap;margin:6px 0";
     box.innerHTML = `<button class="btn" title="Talk with this agent in the terminal drawer, right here (recorded)">⌨ Open terminal</button><button class="btn ghost" title="Talk in a herdr tab or a Terminal window instead (recorded)">Outside the browser</button>`;
+    if(window.weavePanel){ const w = document.createElement("button"); w.className = "btn ghost"; w.textContent = "View in Weave";   // P-005
+      w.title = "This agent's traced runs in W&B Weave"; w.onclick = () => window.weavePanel.open({agent: selected}); box.appendChild(w); }
     const [a, b] = box.querySelectorAll("button");
     a.onclick = () => window.webTerminal ? window.webTerminal.open("agent", selected, `talk: ${CAST[selected].name}`) : openTerminal(selected, false);
     b.onclick = () => openTerminal(selected, false);
@@ -674,18 +676,6 @@ side = function(){
   if(focus){ const f = document.getElementById(focus); if(f) f.focus({preventScroll:true}); }
   box.scrollTop = top;
 };
-// ---------- the Weave mirror (Article 12.10, E-0106): a link to the traces, and how far they've synced ----------
-function weaveLink(){
-  const w = L?.weave, hud = document.querySelector(".hud"); if(!w || !hud) return;
-  let a = $("#weave-link");
-  if(!a){ a = document.createElement("a"); a.id = "weave-link"; a.className = "pill"; a.target = "_blank"; a.rel = "noopener noreferrer";
-    const at = hud.querySelector('a[href="/scope"]'); at ? at.before(a) : hud.appendChild(a); }
-  a.href = w.url;
-  const behind = Math.max(0, (L.last_event ?? w.seq) - w.seq);
-  a.textContent = behind > 20 ? `Weave · ${behind} behind` : "Weave";
-  a.title = `Traces of every run and event in W&B Weave. Synced through event ${w.seq}${w.open ? `; ${w.open} runs still open` : ""}${w.last_sync ? `; last sync ${new Date(w.last_sync).toLocaleTimeString()}` : ""}.`;
-}
-
 // ---------- New project: a spec, a codename, a room (E-0089) ----------
 const SPEC_PROMPT = `What is it? (one or two sentences)
 

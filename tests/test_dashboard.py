@@ -12,7 +12,7 @@ t = pathlib.Path(tempfile.mkdtemp()) / "c"
 import atexit, os
 atexit.register(shutil.rmtree, t.parent, True)   # leave nothing behind
 os.environ["GIT_CONFIG_GLOBAL"] = str(t.parent / "gitconfig")   # never touch the Steward's ~/.gitconfig
-shutil.copytree(ROOT, t, ignore=shutil.ignore_patterns(".git", "ledger", "logs", "pdfs", "__pycache__", "node_modules", ".env", "secrets", "*.key"))
+shutil.copytree(ROOT, t, ignore=shutil.ignore_patterns(".venv", "node_modules", ".git", "ledger", "logs", "pdfs", "__pycache__", "node_modules", ".env", "secrets", "*.key"))
 if not (t / "agents/config.env").exists() and (t / "agents/config.example.env").exists():
     shutil.copy(t / "agents/config.example.env", t / "agents/config.env")
 subprocess.run([sys.executable, "agents/bin/eventlog.py", "init", "--actor", "steward"], cwd=t, capture_output=True)
@@ -26,7 +26,10 @@ now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
 with socket.socket() as s:
     s.bind(("127.0.0.1", 0)); port = s.getsockname()[1]
-srv = subprocess.Popen([sys.executable, "dashboard/server.py", "--port", str(port)], cwd=t, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+FAKE_KEY = "".join(["wand", "b_v1_", "T3stK3y" * 10])                        # a stand-in key that must never leave the server
+(t / "agents/.env").write_text("".join(["WANDB", "_API_KEY", "=", FAKE_KEY, "\n"]))
+srv = subprocess.Popen([sys.executable, "dashboard/server.py", "--port", str(port)], cwd=t, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                       env={**os.environ, "COLLECTIVE_NO_REPLIES": "1"})
 base = f"http://127.0.0.1:{port}"
 def get(path):
     with urllib.request.urlopen(base + path, timeout=90) as r: return r.status, r.read().decode()
@@ -80,7 +83,7 @@ try:
         if a["status"] == "active": seated.setdefault(a["room"], []).append(a["key"])
     for r, keys in seated.items():
         c = json.loads(get(f"/api/conversations/room-{r}")[1])
-        assert sorted(c["members"]) == sorted(keys) and all(x["who"] in keys for x in c["posts"]), c
+        assert sorted(c["members"]) == sorted(keys) and all(x["who"] in keys + ["steward"] for x in c["posts"]), c
     assert all(c["id"] == f"room-{r}" for r, c in rooms.items()) and not any(c["tag"] == "huddle" for c in rooms.values())
     live0 = json.loads(get("/api/live")[1])
     assert live0["rooms"]["council"]["name"].startswith("Project "), "rooms carry project codenames (E-0088)"
@@ -113,8 +116,8 @@ try:
         assert "googleapis" not in get(page)[1], page + " must not load fonts from Google"
     assert get("/fonts/fonts.css")[0] == 200
     # version 003 writes (Articles 18.7(c)-(f), 18.8): allowed in private view, from this origin only
-    time.sleep(1.1); code, body = post("/api/agents/media/move", {"room": "workshop"}); assert code == 200 and body["ok"], body
-    code, body = post("/api/agents/media/move", {"room": "lab"}, {"Origin": "http://evil.example"}); assert code == 403, body
+    time.sleep(1.1); code, body = post("/api/agents/social/move", {"room": "workshop"}); assert code == 200 and body["ok"], body
+    code, body = post("/api/agents/social/move", {"room": "lab"}, {"Origin": "http://evil.example"}); assert code == 403, body
     conv = json.loads(get("/api/conversations")[1]); assert conv, "the standup thread is a conversation"
     code, body = post(f"/api/conversations/{conv[0]['id']}/comment", {"text": "Looks good."}); assert code == 200 and body["ok"], body
     assert "### rex ·" in (t / "org/board" / f"{conv[0]['id']}.md").read_text()
@@ -146,8 +149,21 @@ try:
     time.sleep(2.1); code, body = post(f"/api/rooms/{room}/rename", {"codename": "Project Lantern"}); assert code == 200, body
     assert json.loads(get("/api/live")[1])["rooms"][room]["name"] == "Project Lantern"
     time.sleep(2.1); code, body = post(f"/api/rooms/{room}/rename", {"codename": "lowercase <b>"}); assert code == 400, body
+    # the Weave panel's routes (P-005): read-only, never the key, deep links even when Weave can't be reached
+    st = json.loads(get("/api/weave/status")[1])
+    assert {"configured", "bridge_running", "last_exported_hash", "waiting", "links"} <= set(st) and st["links"]["agents"].startswith("https://wandb.ai/"), st
+    for path in ("/api/weave/status", "/api/weave/recent?limit=3", "/api/weave/agents", "/api/weave/evals"):
+        time.sleep(2.1); code, body = get(path)
+        assert code == 200 and FAKE_KEY not in body, (path, body[:200])
+        if path != "/api/weave/status": d = json.loads(body); assert "links" in d and (d.get("live") is False or "evals" in d), d   # no venv here: the fallback
+    assert "weave-panel.js" in get("/")[1] and "weave-panel.js" in get("/scope")[1] and "weave-panel.js" in get("/records")[1], "the Weave button on all three views"
+    assert get("/static/weave-panel.js")[0] == 200
+    # a comment in a room chat stays in that room's chat, and the room's agents are named to reply (E-0116)
+    time.sleep(2.1); code, body = post("/api/conversations/room-lab/comment", {"text": "Does this persist?"})
+    assert code == 200 and "replying now" in body["message"], body
+    assert any(x["who"] == "steward" and x["text"] == "Does this persist?" for x in json.loads(get("/api/conversations/room-lab")[1])["posts"])
     # a write with no Origin (not from a page this server served) is refused
-    req = urllib.request.Request(base + "/api/agents/media/move", data=b'{"room":"lab"}', method="POST", headers={"Content-Type": "application/json"})
+    req = urllib.request.Request(base + "/api/agents/social/move", data=b'{"room":"lab"}', method="POST", headers={"Content-Type": "application/json"})
     try: urllib.request.urlopen(req, timeout=10); raise AssertionError("expected 403 without an Origin")
     except urllib.error.HTTPError as e: assert e.code == 403
     print("dashboard tests passed")

@@ -1,0 +1,22 @@
+{
+ "id": "E4",
+ "name": "Charter compliance",
+ "target": "lawyer",
+ "metric": "recall on violations",
+ "value": 1.0,
+ "ci": [
+  1.0,
+  1.0
+ ],
+ "threshold": "== 1.0",
+ "passed": true,
+ "n": 10,
+ "errors": 0,
+ "extra": {
+  "agreement": 1.0
+ },
+ "dataset": "seed-v1 \u00b7 test sha256 3bcc141fb6ab",
+ "cost_usd": 1.8014,
+ "ran_at": "2026-09-25T05:13:25+00:00",
+ "weave": "https://wandb.ai/rexstjohn-verafy/The%20Collective/weave/evaluations"
+}

@@ -21,3 +21,4 @@ agents/observability/.bridge_state
 agents/observability/.bridge_state.*
 .env
 agents/observability/.ops_spool.ndjson*
+agents/observability/gitleaks-rules.toml

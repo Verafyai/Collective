@@ -78,4 +78,7 @@ def tally(d):
     return res
 
 if __name__ == "__main__":
+    import pathlib
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "observability")); from ops import op   # Weave ops, best effort (P-005)
+    tally = op("governance.count_votes")(tally)
     r = tally(sys.argv[1]); print(json.dumps({k: r[k] for k in ("id","outcome","yes","no","abstain","quorum_met","steward_ratification_required")}))

@@ -161,4 +161,6 @@ def main():
     out.write_text("\n".join(L) + "\n"); print(f"facts: {out.relative_to(ROOT)} ({len(ev)} events)")
 
 if __name__ == "__main__":
-    main()
+    import pathlib, sys
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "observability")); from ops import run_cli   # Weave ops, best effort (P-005)
+    run_cli(main, 'scribe.weekly_digest', keep_flags=('--end', '--days'))

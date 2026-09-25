@@ -1,0 +1,22 @@
+{
+ "id": "E14",
+ "name": "Idea quality",
+ "target": "ideas",
+ "metric": "agreement with outcome",
+ "value": 1.0,
+ "ci": [
+  1.0,
+  1.0
+ ],
+ "threshold": ">= 0.5",
+ "passed": true,
+ "n": 1,
+ "errors": 0,
+ "extra": {
+  "novelty": 0.803
+ },
+ "dataset": "seed-v1 \u00b7 test sha256 4bfc773d82d0",
+ "cost_usd": 0.143,
+ "ran_at": "2026-09-25T05:15:47+00:00",
+ "weave": "https://wandb.ai/rexstjohn-verafy/The%20Collective/weave/evaluations"
+}

@@ -153,4 +153,6 @@ def main():
         print("\n".join(errs) if errs else f"ok: {len(files)} amendments consistent with the Charter log"); sys.exit(1 if errs else 0)
 
 if __name__ == "__main__":
-    main()
+    import pathlib, sys
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "observability")); from ops import run_cli   # Weave ops, best effort (P-005)
+    run_cli(main, 'amendment', only=('new', 'status', 'sync', 'check'), keep_flags=('--class',))

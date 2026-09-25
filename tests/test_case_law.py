@@ -4,7 +4,7 @@ import pathlib, shutil, subprocess, sys, tempfile, atexit
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 tmp = pathlib.Path(tempfile.mkdtemp())
 atexit.register(shutil.rmtree, tmp, True)   # leave nothing behind
-shutil.copytree(ROOT / "agents", tmp / "agents", ignore=shutil.ignore_patterns(".env", "logs")); (tmp / "org").mkdir()
+shutil.copytree(ROOT / "agents", tmp / "agents", ignore=shutil.ignore_patterns(".venv", "node_modules", ".env", "logs")); (tmp / "org").mkdir()
 shutil.copytree(ROOT / "org" / "cases", tmp / "org" / "cases")
 CASE = [sys.executable, str(tmp / "agents/bin/case.py")]
 def run(*a): return subprocess.run(CASE + list(a), capture_output=True, text=True)
